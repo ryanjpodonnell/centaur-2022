@@ -1,4 +1,3 @@
-
 #define LAMP_PLAYFIELD_SPELLOUT_S         0
 #define LAMP_PLAYFIELD_SPELLOUT_I1        1
 #define LAMP_PLAYFIELD_SPELLOUT_L1        2
@@ -60,65 +59,81 @@
 #define LAMP_HEAD_B                       58
 #define LAMP_HEAD_A                       59
 
-#define SW_KICKER_ROLLOVER        0
-#define SW_HOOP_ROLLOVER_BUTTON   1
-#define SW_TOP_RIGHT_ROLLOVER     2
-#define SW_TOP_CENTER_ROLLOVER    3
-#define SW_TOP_LEFT_ROLLOVER      4
-#define SW_CREDIT_RESET           5
-#define SW_TILT                   6
-#define SW_OUTHOLE                7
-#define SW_COIN_3                 8
-#define SW_COIN_2                 9
-#define SW_COIN_1                 10
-#define SW_SLAM                   15
-#define SW_RIGHT_A_TARGET         16
-#define SW_LEFT_B_TARGET          17
-#define SW_LEFT_R_TARGET          18
-#define SW_LEFT_E_TARGET          19
-#define SW_TOP_V_TARGET           20
-#define SW_TOP_L_TARGET           21
-#define SW_TOP_I_TARGET           22
-#define SW_TOP_S_TARGET           23
-#define SW_RIGHT_SPINNER          24
-#define SW_RIGHT_OUTLANE_A        25
-#define SW_RIGHT_INLANE_I         26
-#define SW_CENTER_TARGET          27
-#define SW_LEFT_INLANE_A          28
-#define SW_LEFT_OUTLANE_M         29
-#define SW_LOWER_L_SIDE_TARGET    30
-#define SW_UPPER_L_SIDE_TARGET    31
-#define SW_LEFT_SPINNER           32
-#define SW_REBOUNDS_AND_TOP       33
-#define SW_BACKGLASS_SILVERBALL_SW  34
-#define SW_RIGHT_SLINGSHOT        35
-#define SW_LEFT_SLINGSHOT         36
-#define SW_CENTER_BUMPER          37
-#define SW_RIGHT_BUMPER           38
-#define SW_LEFT_BUMPER            39
+#define SW_4TH_BALL_TROUGH                    0
+#define SW_5TH_BALL_TROUGH                    1
+#define SW_TOP_RIGHT_LANE                     2
+#define SW_TOP_MIDDLE_LANE                    3
+#define SW_TOP_LEFT_LANE                      4
+#define SW_CREDIT_BUTTON                      5
+#define SW_OUTHOLE                            7
+#define SW_COIN_III                           8
+#define SW_COIN_I                             9
+#define SW_COIN_II                            10
+#define SW_TOP_LEFT_LANE_RO_BUTTON            11
+#define SW_ORBS_2_BACK_TARGETS                11
+#define SW_TARGET_BEHIND_RIGHT_THUMPER_BUMPER 11
+#define SW_TILT                               14
+#define SW_SLAM                               15
+#define SW_1ST_BALL_TROUGH                    16
+#define SW_LEFT_SIDE_RO_BUTTON                17
+#define SW_ORBS_RIGHT_LANE_TARGET             18
+#define SW_INLANE_BACK_TARGET                 19
+#define SW_LEFT_&_RIGHT_FLIPPER_BUTTONS       20
+#define SW_RESET_1_THROUGH_4_TARGETS_TARGET   21
+#define SW_TOP_STOP_1_THROUGH_4_TARGET        23
+#define SW_RIGHT_4_DROP_TARGET_4              24
+#define SW_RIGHT_4_DROP_TARGET_3              25
+#define SW_RIGHT_4_DROP_TARGET_2              26
+#define SW_RIGHT_4_DROP_TARGET_1              27
+#define SW_S_DROP_TARGET                      28
+#define SW_B_DROP_TARGET                      29
+#define SW_R_DROP_TARGET                      30
+#define SW_O_DROP_TARGET                      31
+#define SW_END_OF_TROUGH                      32
+#define SW_10_POINT_REBOUND                   33
+#define SW_RIGHT_SLINGSHOT                    36
+#define SW_LEFT_SLINGSHOT                     37
+#define SW_RIGHT_THUMPER_BUMPER               38
+#define SW_LEFT_THUMPER_BUMPER                39
+#define SW_1ST_INLINE_DROP_TARGET             40
+#define SW_2ND_INLINE_DROP_TARGET             41
+#define SW_3RD_INLINE_DROP_TARGET             42
+#define SW_4TH_INLINE_DROP_TARGET             43
+#define SW_RIGHT_OUTLANE                      44
+#define SW_RIGHT_RETURN_LANE                  45
+#define SW_LEFT_RETURN_LANE                   46
+#define SW_LEFT_OUTLANE                       47
 
-#define SOL_KNOCKER       5
-#define SOL_OUTHOLE       6
-#define SOL_RIGHT_BUMPER  7
-#define SOL_LEFT_BUMPER   8
-#define SOL_CENTER_BUMPER 9
-#define SOL_LEFT_SLINGSHOT   10
-#define SOL_RIGHT_SLINGSHOT    11
-#define SOL_KICKBACK_ON   12
-#define SOL_KICKBACK_ARM  13
+#define SOL_OUTHOLE_KICKER            0
+#define SOL_KNOCKER                   1
+#define SOL_INLINE_DROP_TARGET_RESET  2
+#define SOL_4_RIGHT_DROP_TARGET_RESET 3
+#define SOL_LEFT_THUMPER_BUMPER       4
+#define SOL_RIGHT_THUMPER_BUMPER      5
+#define SOL_LEFT_SLINGSHOT            6
+#define SOL_RIGHT_SLINGSHOT           7
+#define SOL_ORBS_TARGET_RESET         8
+#define SOL_RIGHT_4_DROP_TARGETS_1    9
+#define SOL_RIGHT_4_DROP_TARGETS_2    10
+#define SOL_RIGHT_4_DROP_TARGETS_3    11
+#define SOL_RIGHT_4_DROP_TARGETS_4    12
+#define SOL_BALL_RELEASE              13
+#define SOL_BALL_KICK_TO_PLAYFIELD    14
+#define SOL_COIN_LOCKOUT_DOOR         15
+#define SOL_K1_RELAY                  16
+#define SOL_MAGNET                    17
 
-#define SOLCONT_FLIPPERS      0x80
-#define SOLCONT_COIN_LOCKOUT  0x01
+/* #define SOLCONT_FLIPPERS      0x80 */
+/* #define SOLCONT_COIN_LOCKOUT  0x01 */
 
-#define NUM_SWITCHES_WITH_TRIGGERS          5
-#define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 5
+#define NUM_SWITCHES_WITH_TRIGGERS          4
+#define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 4
 
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
   { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
-  { SW_LEFT_BUMPER, SOL_LEFT_BUMPER, 3},
-  { SW_CENTER_BUMPER, SOL_CENTER_BUMPER, 3},
-  { SW_RIGHT_BUMPER, SOL_RIGHT_BUMPER, 3}
+  { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
+  { SW_RIGHT_THUMPER_BUMPER, SOL_RIGHT_THUMPER_BUMPER, 3}
 };
 
 
