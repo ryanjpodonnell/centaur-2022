@@ -1,63 +1,73 @@
-#define LAMP_PLAYFIELD_SPELLOUT_S         0
-#define LAMP_PLAYFIELD_SPELLOUT_I1        1
-#define LAMP_PLAYFIELD_SPELLOUT_L1        2
-#define LAMP_PLAYFIELD_SPELLOUT_V         3
-#define LAMP_PLAYFIELD_SPELLOUT_E         4
-#define LAMP_PLAYFIELD_SPELLOUT_R         5
-#define LAMP_PLAYFIELD_SPELLOUT_B         6
-#define LAMP_PLAYFIELD_SPELLOUT_A1        7
-#define LAMP_PLAYFIELD_SPELLOUT_L2        8
-#define LAMP_PLAYFIELD_SPELLOUT_L3        9
-#define LAMP_PLAYFIELD_SPELLOUT_M         10
-#define LAMP_PLAYFIELD_SPELLOUT_A2        11
-#define LAMP_PLAYFIELD_SPELLOUT_N         12
-#define LAMP_PLAYFIELD_SPELLOUT_I2        13
-#define LAMP_PLAYFIELD_SPELLOUT_A3        14
-#define LAMP_TOPLANE_OUTER_WHEN_LIT       15
-#define LAMP_PLAYFIELD_STANDUP_S          16
-#define LAMP_PLAYFIELD_STANDUP_I1         17
-#define LAMP_PLAYFIELD_STANDUP_L1         18
-#define LAMP_PLAYFIELD_STANDUP_V          19
-#define LAMP_PLAYFIELD_STANDUP_E          20
-#define LAMP_PLAYFIELD_STANDUP_R          21
-#define LAMP_PLAYFIELD_STANDUP_B          22
-#define LAMP_PLAYFIELD_STANDUP_A1         23
-#define LAMP_PLAYFIELD_STANDUP_L2         24
-#define LAMP_PLAYFIELD_STANDUP_L3         25
-#define LAMP_PLAYFIELD_STANDUP_M          26
-#define LAMP_PLAYFIELD_STANDUP_A2         27
-#define LAMP_PLAYFIELD_STANDUP_N          28
-#define LAMP_PLAYFIELD_STANDUP_I2         29
-#define LAMP_PLAYFIELD_STANDUP_A3         30
-#define LAMP_RIGHT_SPINNER_1000_WHEN_LIT  31
-#define LAMP_TOPLANE_CENTER_WHEN_LIT      32
-#define LAMP_KICKER_LAMPS                 33
-#define LAMP_15K_BONUS                    34
-#define LAMP_30K_BONUS                    35
-#define LAMP_BONUS_2X                     36
-#define LAMP_BONUS_3X                     37
-#define LAMP_BONUS_4X                     38
-#define LAMP_KICKER_SPECIAL               39
-#define LAMP_BONUS_5X                     40
-#define LAMP_HEAD_MATCH                   41
-#define LAMP_SHOOT_AGAIN                  42
-#define LAMP_APRON_CREDIT                 43
-#define LAMP_HEAD_L2                      44
-#define LAMP_HEAD_L3                      45
-#define LAMP_EXTRA_BALL                   46
-#define LAMP_LEFT_SPINNER_1000_WHEN_LIT   47
-#define LAMP_HEAD_BALL_IN_PLAY            48
-#define LAMP_HEAD_HIGH_SCORE              49
-#define LAMP_HEAD_GAME_OVER               50
-#define LAMP_HEAD_TILT                    51
-#define LAMP_HEAD_S                       52
-#define LAMP_HEAD_I1                      53
-#define LAMP_HEAD_L1                      54
-#define LAMP_HEAD_V                       55
-#define LAMP_HEAD_E                       56
-#define LAMP_HEAD_R                       57
-#define LAMP_HEAD_B                       58
-#define LAMP_HEAD_A                       59
+#define LAMP_PLAYFIELD_GI               0
+#define LAMP_RIGHT_LANE_RELEASE_ORBS    2
+#define LAMP_COLLECT_BONUS_ARROW        3
+#define LAMP_1K_BONUS                   4
+#define LAMP_2K_BONUS                   5
+#define LAMP_3K_BONUS                   6
+#define LAMP_4K_BONUS                   7
+#define LAMP_5K_BONUS                   8
+#define LAMP_6K_BONUS                   9
+#define LAMP_7K_BONUS                   10
+#define LAMP_8K_BONUS                   11
+#define LAMP_9K_BONUS                   12
+#define LAMP_10K_BONUS                  13
+#define LAMP_CHAMBERS_RELEASE           14
+#define LAMP_CHAMBERS_SPECIAL           15
+#define LAMP_2X_BONUS                   16
+#define LAMP_3X_BONUS                   17
+#define LAMP_4X_BONUS                   18
+#define LAMP_5X_BONUS                   19
+#define LAMP_RIGHT_OUT_ROLLOVER         20
+#define LAMP_RIGHT_RETURN_ROLLOVER      21
+#define LAMP_LEFT_RETURN_ROLLOVER       22
+#define LAMP_LEFT_OUT_ROLLOVER          23
+#define LAMP_RIGHT_DROP_TARGET_80_ARROW 24
+#define LAMP_RIGHT_DROP_TARGET_40_ARROW 25
+#define LAMP_RIGHT_DROP_TARGET_20_ARROW 26
+#define LAMP_RIGHT_DROP_TARGET_10_ARROW 27
+#define LAMP_S_DROP_TARGET_ARROW        28
+#define LAMP_B_DROP_TARGET_ARROW        28
+#define LAMP_R_DROP_TARGET_ARROW        28
+#define LAMP_O_DROP_TARGET_ARROW        28
+#define LAMP_10_CHAMBER                 32
+#define LAMP_20_CHAMBER                 33
+#define LAMP_30_CHAMBER                 34
+#define LAMP_40_CHAMBER                 35
+#define LAMP_50_CHAMBER                 36
+#define LAMP_20K_BONUS                  37
+#define LAMP_40K_BONUS                  38
+#define LAMP_60K_BONUS                  39
+#define LAMP_SHOOT_AGAIN                40
+#define LAMP_MATCH                      41
+#define LAMP_WARNING                    42
+#define LAMP_CREDIT_INDICATOR           43
+#define LAMP_1_CAPTIVE_ORBS             44
+#define LAMP_2_CAPTIVE_ORBS             45
+#define LAMP_3_CAPTIVE_ORBS             46
+#define LAMP_4_CAPTIVE_ORBS             47
+#define LAMP_BALL_IN_PLAY               48
+#define LAMP_HIGH_SCORE_TO_DATE         49
+#define LAMP_GAME_OVER                  50
+#define LAMP_TILT                       51
+#define LAMP_ORBS_SPECIAL               52
+#define LAMP_ORBS_50K                   53
+#define LAMP_RESET_1_THROUGH_4_ARROW    54
+#define LAMP_SPOT_1_THROUGH_4           55
+#define LAMP_RIGHT_LANE_2X              56
+#define LAMP_RIGHT_LANE_3X              57
+#define LAMP_RIGHT_LANE_4X              58
+#define LAMP_RIGHT_LANE_5X              59
+#define LAMP_TOP_RIGHT_ROLLOVER         60
+#define LAMP_TOP_MIDDLE_ROLLOVER        61
+#define LAMP_TOP_LEFT_ROLLOVER          62
+#define LAMP_RIGHT_SLINGSHOT_GI         64
+#define LAMP_LEFT_SLINGSHOT_GI          65
+#define LAMP_RIGHT_THUMPER_BUMPER       66
+#define LAMP_LEFT_THUMPER_BUMPER        67
+#define LAMP_QUEENS_CHAMBER_GI_1        68
+#define LAMP_QUEENS_CHAMBER_GI_2        69
+#define LAMP_QUEENS_CHAMBER_GI_3        70
+#define LAMP_QUEENS_CHAMBER_GI_4        71
 
 #define SW_4TH_BALL_TROUGH                    0
 #define SW_5TH_BALL_TROUGH                    1
@@ -124,9 +134,6 @@
 #define SOL_K1_RELAY                  16
 #define SOL_MAGNET                    17
 
-/* #define SOLCONT_FLIPPERS      0x80 */
-/* #define SOLCONT_COIN_LOCKOUT  0x01 */
-
 #define NUM_SWITCHES_WITH_TRIGGERS          4
 #define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 4
 
@@ -135,60 +142,4 @@ struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
   { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
   { SW_RIGHT_THUMPER_BUMPER, SOL_RIGHT_THUMPER_BUMPER, 3}
-};
-
-
-#define LAMP_ANIMATION_STEPS  16
-byte LampAnimations[3][LAMP_ANIMATION_STEPS][8] = {
-  // Radial
-  {{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x55, 0x01, 0x10, 0x00, 0x81, 0x00, 0x00},
-{0x00, 0xAA, 0x02, 0x10, 0x00, 0x41, 0x00, 0x00},
-{0x00, 0x80, 0x02, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x01, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x08, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x10, 0x38, 0x00, 0x00},
-{0x08, 0x00, 0x00, 0x10, 0xA0, 0x04, 0x00, 0x00},
-{0x12, 0x00, 0x00, 0x10, 0xC0, 0x04, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x04, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00}},
-// Center out
-  {{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x03, 0x00, 0x80, 0x00, 0x00, 0x00},
-{0x00, 0x80, 0x03, 0x00, 0x90, 0x00, 0x00, 0x00},
-{0x05, 0xC0, 0x01, 0x00, 0x30, 0x00, 0x00, 0x00},
-{0x05, 0x70, 0x00, 0x00, 0x60, 0x08, 0x00, 0x00},
-{0x00, 0x3C, 0x00, 0x00, 0x40, 0x08, 0x00, 0x00},
-{0x00, 0x07, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00},
-{0x00, 0x01, 0x00, 0x00, 0x00, 0xE0, 0x00, 0x00},
-{0x10, 0x00, 0x00, 0x00, 0x00, 0xE1, 0x00, 0x00},
-{0x10, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-// Bottom to top
-  {{0x00, 0x00, 0x00, 0x00, 0x00, 0xC1, 0x00, 0x00},
-{0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x80, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00},
-{0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x90, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x60, 0x08, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00},
-{0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}
 };
