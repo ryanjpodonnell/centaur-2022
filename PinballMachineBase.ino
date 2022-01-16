@@ -39,7 +39,7 @@ SendOnlyWavTrigger wTrig;             // Our WAV Trigger object
 //  0 - Attract Mode
 //  negative - self-test modes
 //  positive - game play
-char MachineState = 0;
+char MachineState = -1;
 boolean MachineStateChanged = true;
 #define MACHINE_STATE_ATTRACT         0
 #define MACHINE_STATE_INIT_GAMEPLAY   1
@@ -747,7 +747,7 @@ int RunSelfTest(int curState, boolean curStateChanged) {
   // Any state that's greater than CHUTE_3 is handled by the Base Self-test code
   // Any that's less, is machine specific, so we handle it here.
   if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
-    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_RESET, SW_SLAM);
+    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
   } else {
     byte curSwitch = BSOS_PullFirstFromSwitchStack();
 
@@ -856,7 +856,7 @@ int RunSelfTest(int curState, boolean curStateChanged) {
     }
 
     // Change value, if the switch is hit
-    if (curSwitch == SW_CREDIT_RESET) {
+    if (curSwitch == SW_CREDIT_BUTTON) {
 
       if (CurrentAdjustmentByte && (AdjustmentType == ADJ_TYPE_MIN_MAX || AdjustmentType == ADJ_TYPE_MIN_MAX_DEFAULT)) {
         byte curVal = *CurrentAdjustmentByte;
@@ -1106,7 +1106,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
 
   byte switchHit;
   while ( (switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
-    if (switchHit == SW_CREDIT_RESET) {
+    if (switchHit == SW_CREDIT_BUTTON) {
       if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
     }
     if (switchHit == SW_COIN_1 || switchHit == SW_COIN_2 || switchHit == SW_COIN_3) {
@@ -1264,7 +1264,7 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
 
     // Start appropriate mode music
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE, 4, CurrentTime + 600);
+      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 600);
     }
 
     // Reset progress unless holdover awards
@@ -1493,7 +1493,7 @@ int ManageGameMode() {
 
         if (BallFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings) {
           // Nothing hit yet, so return the ball to the player
-          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE, 4, CurrentTime);
+          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime);
           BallTimeInTrough = 0;
           returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
         } else {
@@ -1503,7 +1503,7 @@ int ManageGameMode() {
           ShowPlayerScores(0xFF, false, false);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
           if (!BallSaveUsed && ((CurrentTime - BallFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
-            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE, 4, CurrentTime + 100);
+            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 100);
             BallSaveUsed = true;
             //            PlaySoundEffect(SOUND_EFFECT_SHOOT_AGAIN);
             BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
@@ -1782,18 +1782,6 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
           returnState = MACHINE_STATE_TEST_LIGHTS;
           SetLastSelfTestChangedTime(CurrentTime);
           break;
-        //        case SW_10_PTS:
-        case SW_REBOUNDS_AND_TOP:
-          TenPointPhase += 1;
-          PlaySoundEffect(SOUND_EFFECT_10PT_SWITCH);
-          CurrentScores[CurrentPlayer] += (ScoreMultiplier) * 10;
-          if (LanePhase) {
-            LanePhase += 1;
-            if (LanePhase == 3) LanePhase = 1;
-            else if (LanePhase == 5) LanePhase = 3;
-          }
-          if (RolloverPhase && !(RolloverPhase % 2)) RolloverPhase = 1;
-          break;
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
           CurrentScores[CurrentPlayer] += 10;
@@ -1806,7 +1794,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
           AddCoinToAudit(switchHit);
           AddCredit(true, 1);
           break;
-        case SW_CREDIT_RESET:
+        case SW_CREDIT_BUTTON:
           if (CurrentBallInPlay < 2) {
             // If we haven't finished the first ball, we can add players
             AddPlayer();

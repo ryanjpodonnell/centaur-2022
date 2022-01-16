@@ -66,9 +66,9 @@
 #define SW_TOP_LEFT_LANE                      4
 #define SW_CREDIT_BUTTON                      5
 #define SW_OUTHOLE                            7
-#define SW_COIN_III                           8
-#define SW_COIN_I                             9
-#define SW_COIN_II                            10
+#define SW_COIN_3                             8
+#define SW_COIN_1                             9
+#define SW_COIN_2                             10
 #define SW_TOP_LEFT_LANE_RO_BUTTON            11
 #define SW_ORBS_2_BACK_TARGETS                11
 #define SW_TARGET_BEHIND_RIGHT_THUMPER_BUMPER 11
@@ -78,7 +78,8 @@
 #define SW_LEFT_SIDE_RO_BUTTON                17
 #define SW_ORBS_RIGHT_LANE_TARGET             18
 #define SW_INLANE_BACK_TARGET                 19
-#define SW_LEFT_&_RIGHT_FLIPPER_BUTTONS       20
+#define SW_LEFT_FLIPPER_BUTTON                20
+#define SW_RIGHT_FLIPPER_BUTTON               20
 #define SW_RESET_1_THROUGH_4_TARGETS_TARGET   21
 #define SW_TOP_STOP_1_THROUGH_4_TARGET        23
 #define SW_RIGHT_4_DROP_TARGET_4              24

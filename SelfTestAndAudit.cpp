@@ -39,7 +39,13 @@ byte SoundPlaying = 0;
 boolean SolenoidCycle = true;
 
 
-int RunBaseSelfTest(int curState, boolean curStateChanged, unsigned long CurrentTime, byte resetSwitch, byte slamSwitch) {
+int RunBaseSelfTest(
+    int curState,
+    boolean curStateChanged,
+    unsigned long CurrentTime,
+    byte resetSwitch,
+    byte slamSwitch
+    ) {
   byte curSwitch = BSOS_PullFirstFromSwitchStack();
   int returnState = curState;
   boolean resetDoubleClick = false;
