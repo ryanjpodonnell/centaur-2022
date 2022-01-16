@@ -20,29 +20,22 @@
 
 #ifndef BALLY_STERN_OS_H
 
-
-#define BALLY_STERN_OS_MAJOR_VERSION  2
-#define BALLY_STERN_OS_MINOR_VERSION  1
-
 struct PlayfieldAndCabinetSwitch {
   byte switchNum;
   byte solenoid;
   byte solenoidHoldTime;
 };
 
-
 /*
  * For Arduino wiring, see documentation on
  * GitHub https://ballysternos.github.io/
  */
-
 
 #define SW_SELF_TEST_SWITCH 0x7F
 #define SOL_NONE 0x0F
 #define SWITCH_STACK_EMPTY  0xFF
 #define CONTSOL_DISABLE_FLIPPERS      0x40
 #define CONTSOL_DISABLE_COIN_LOCKOUT  0x20
-
 
 
 // Function Prototypes
@@ -83,9 +76,6 @@ void BSOS_SetDisplayFlash(int displayNumber, unsigned long value, unsigned long 
 void BSOS_SetDisplayFlashCredits(unsigned long curTime, int period=100);
 void BSOS_CycleAllDisplays(unsigned long curTime, byte digitNum=0); // Self-test function
 byte BSOS_GetDisplayBlank(int displayNumber);
-#if defined(BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT) && defined(BALLY_STERN_OS_ADJUSTABLE_DISPLAY_INTERRUPT)
-void BSOS_SetDisplayRefreshConstant(int intervalConstant);
-#endif
 
 //   Lamps
 void BSOS_SetLampState(int lampNum, byte s_lampState, byte s_lampDim=0, int s_lampFlashPeriod=0);
@@ -95,27 +85,7 @@ void BSOS_TurnOffAllLamps();
 void BSOS_SetDimDivisor(byte level=1, byte divisor=2); // 2 means 50% duty cycle, 3 means 33%, 4 means 25%...
 
 //   Sound
-#ifdef BALLY_STERN_OS_USE_SQUAWK_AND_TALK
 void BSOS_PlaySoundSquawkAndTalk(byte soundByte);
-#endif
-#ifdef BALLY_STERN_OS_USE_SB100
-void BSOS_PlaySB100(byte soundByte);
-
-#if (BALLY_STERN_OS_HARDWARE_REV==2)
-void BSOS_PlaySB100Chime(byte soundByte);
-#endif 
-
-#endif
-
-#ifdef BALLY_STERN_OS_USE_DASH51
-void BSOS_PlaySoundDash51(byte soundByte);
-#endif
-
-#if (BALLY_STERN_OS_HARDWARE_REV>=2 && defined(BALLY_STERN_OS_USE_SB300))
-void BSOS_PlaySB300SquareWave(byte soundRegister, byte soundByte);
-void BSOS_PlaySB300Analog(byte soundRegister, byte soundByte);
-#endif 
-
 
 //   General
 byte BSOS_DataRead(int address);

@@ -18,7 +18,6 @@
     See <https://www.gnu.org/licenses/>.
  */
 
-
  
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -27,16 +26,6 @@
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 
-#ifndef BALLY_STERN_OS_HARDWARE_REV
-#define BALLY_STERN_OS_HARDWARE_REV 1
-#endif
-
-// To use this library, take the example_BSOS_Config.h, 
-// edit it for your hardware and game parameters and put
-// it in your game's code folder as BSOS_Config.h
-// (so when you fetch new versions of the library, you won't 
-// overwrite your config)
-#include "BSOS_Config.h"
 
 #if !defined(BSOS_SWITCH_DELAY_IN_MICROSECONDS) || !defined(BSOS_TIMING_LOOP_PADDING_IN_MICROSECONDS)
 #error "Must define BSOS_SWITCH_DELAY_IN_MICROSECONDS and BSOS_TIMING_LOOP_PADDING_IN_MICROSECONDS in BSOS_Config.h"
@@ -45,9 +34,6 @@
 // Global variables
 volatile byte DisplayDigits[5][BALLY_STERN_OS_NUM_DIGITS];
 volatile byte DisplayDigitEnable[5];
-#ifdef BALLY_STERN_OS_DIMMABLE_DISPLAYS
-volatile boolean DisplayDim[5];
-#endif
 volatile boolean DisplayOffCycle = false;
 volatile byte CurrentDisplayDigit=0;
 volatile byte LampStates[BSOS_NUM_LAMP_BITS], LampDim0[BSOS_NUM_LAMP_BITS], LampDim1[BSOS_NUM_LAMP_BITS];
@@ -58,10 +44,6 @@ byte DimDivisor2 = 3;
 volatile byte SwitchesMinus2[5];
 volatile byte SwitchesMinus1[5];
 volatile byte SwitchesNow[5];
-#ifdef BALLY_STERN_OS_USE_DIP_SWITCHES
-byte DipSwitches[4];
-#endif
-
 
 #define SOLENOID_STACK_SIZE 64
 #define SOLENOID_STACK_EMPTY 0xFF
@@ -87,33 +69,6 @@ volatile byte SwitchStackFirst;
 volatile byte SwitchStackLast;
 volatile byte SwitchStack[SWITCH_STACK_SIZE];
 
-#if (BALLY_STERN_OS_HARDWARE_REV==1)
-#define ADDRESS_U10_A           0x14
-#define ADDRESS_U10_A_CONTROL   0x15
-#define ADDRESS_U10_B           0x16
-#define ADDRESS_U10_B_CONTROL   0x17
-#define ADDRESS_U11_A           0x18
-#define ADDRESS_U11_A_CONTROL   0x19
-#define ADDRESS_U11_B           0x1A
-#define ADDRESS_U11_B_CONTROL   0x1B
-#define ADDRESS_SB100           0x10
-
-#elif (BALLY_STERN_OS_HARDWARE_REV==2)
-#define ADDRESS_U10_A           0x00
-#define ADDRESS_U10_A_CONTROL   0x01
-#define ADDRESS_U10_B           0x02
-#define ADDRESS_U10_B_CONTROL   0x03
-#define ADDRESS_U11_A           0x08
-#define ADDRESS_U11_A_CONTROL   0x09
-#define ADDRESS_U11_B           0x0A
-#define ADDRESS_U11_B_CONTROL   0x0B
-#define ADDRESS_SB100           0x10
-#define ADDRESS_SB100_CHIMES    0x18
-#define ADDRESS_SB300_SQUARE_WAVES  0x10
-#define ADDRESS_SB300_ANALOG        0x18
-
-#elif (BALLY_STERN_OS_HARDWARE_REV==3)
-
 #define ADDRESS_U10_A           0x88
 #define ADDRESS_U10_A_CONTROL   0x89
 #define ADDRESS_U10_B           0x8A
@@ -127,129 +82,6 @@ volatile byte SwitchStack[SWITCH_STACK_SIZE];
 #define ADDRESS_SB300_SQUARE_WAVES  0xA0
 #define ADDRESS_SB300_ANALOG        0xC0
 
-#endif 
-
-
-
-
-#if (BALLY_STERN_OS_HARDWARE_REV==1) or (BALLY_STERN_OS_HARDWARE_REV==2)
-
-#if defined(__AVR_ATmega2560__)
-#error "ATMega requires BALLY_STERN_OS_HARDWARE_REV of 3, check BSOS_Config.h and adjust settings"
-#endif
-
-void BSOS_DataWrite(int address, byte data) {
-  
-  // Set data pins to output
-  // Make pins 5-7 output (and pin 3 for R/W)
-  DDRD = DDRD | 0xE8;
-  // Make pins 8-12 output
-  DDRB = DDRB | 0x1F;
-
-  // Set R/W to LOW
-  PORTD = (PORTD & 0xF7);
-
-  // Put data on pins
-  // Put lower three bits on 5-7
-  PORTD = (PORTD&0x1F) | ((data&0x07)<<5);
-  // Put upper five bits on 8-12
-  PORTB = (PORTB&0xE0) | (data>>3);
-
-  // Set up address lines
-  PORTC = (PORTC & 0xE0) | address;
-
-  // Wait for a falling edge of the clock
-  while((PIND & 0x10));
-
-  // Pulse VMA over one clock cycle
-  // Set VMA ON
-  PORTC = PORTC | 0x20;
-  
-  // Wait while clock is low
-  while(!(PIND & 0x10));
-  // Wait while clock is high
-// Doesn't seem to help --  while((PIND & 0x10));
-
-  // Set VMA OFF
-  PORTC = PORTC & 0xDF;
-
-  // Unset address lines
-  PORTC = PORTC & 0xE0;
-  
-  // Set R/W back to HIGH
-  PORTD = (PORTD | 0x08);
-
-  // Set data pins to input
-  // Make pins 5-7 input
-  DDRD = DDRD & 0x1F;
-  // Make pins 8-12 input
-  DDRB = DDRB & 0xE0;
-}
-
-
-
-byte BSOS_DataRead(int address) {
-  
-  // Set data pins to input
-  // Make pins 5-7 input
-  DDRD = DDRD & 0x1F;
-  // Make pins 8-12 input
-  DDRB = DDRB & 0xE0;
-
-  // Set R/W to HIGH
-  DDRD = DDRD | 0x08;
-  PORTD = (PORTD | 0x08);
-
-  // Set up address lines
-  PORTC = (PORTC & 0xE0) | address;
-
-  // Wait for a falling edge of the clock
-  while((PIND & 0x10));
-
-  // Pulse VMA over one clock cycle
-  // Set VMA ON
-  PORTC = PORTC | 0x20;
-
-  // Wait a full clock cycle to make sure data lines are ready
-  // (important for faster clocks)
-  // Wait while clock is low
-  while(!(PIND & 0x10));
-
-  // Wait for a falling edge of the clock
-  while((PIND & 0x10));
-  
-  // Wait while clock is low
-  while(!(PIND & 0x10));
-
-  byte inputData = (PIND>>5) | (PINB<<3);
-
-  // Set VMA OFF
-  PORTC = PORTC & 0xDF;
-
-  // Wait for a falling edge of the clock
-// Doesn't seem to help  while((PIND & 0x10));
-
-  // Set R/W to LOW
-  PORTD = (PORTD & 0xF7);
-
-  // Clear address lines
-  PORTC = (PORTC & 0xE0);
-
-  return inputData;
-}
-
-
-void WaitClockCycle(int numCycles=1) {
-  for (int count=0; count<numCycles; count++) {
-    // Wait while clock is low
-    while(!(PIND & 0x10));
-  
-    // Wait for a falling edge of the clock
-    while((PIND & 0x10));
-  }
-}
-
-#elif (BALLY_STERN_OS_HARDWARE_REV==3)
 
 // Rev 3 connections
 // Pin D2 = IRQ
@@ -266,9 +98,7 @@ void WaitClockCycle(int numCycles=1) {
 #error "BALLY_STERN_OS_HARDWARE_REV 3 requires ATMega2560, check BSOS_Config.h and adjust settings"
 #endif
 
-
 void BSOS_DataWrite(int address, byte data) {
-  
   // Set data pins to output
   DDRH = DDRH | 0x78;
   DDRB = DDRB | 0x70;
@@ -317,9 +147,7 @@ void BSOS_DataWrite(int address, byte data) {
   DDRH = DDRH & 0x87;
   DDRB = DDRB & 0x8F;
   DDRJ = DDRJ & 0xFE;
-  
 }
-
 
 
 byte BSOS_DataRead(int address) {
@@ -388,17 +216,15 @@ void WaitClockCycle(int numCycles=1) {
   }
 }
 
-#endif
-
 
 void TestLightOn() {
   BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
 }
 
+
 void TestLightOff() {
   BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);
 }
-
 
 
 void InitializeU10PIA() {
@@ -425,43 +251,6 @@ void InitializeU10PIA() {
 
 }
 
-#ifdef BALLY_STERN_OS_USE_DIP_SWITCHES
-void ReadDipSwitches() {
-  byte backupU10A = BSOS_DataRead(ADDRESS_U10_A);
-  byte backupU10BControl = BSOS_DataRead(ADDRESS_U10_B_CONTROL);
-
-  // Turn on Switch strobe 5 & Read Switches
-  BSOS_DataWrite(ADDRESS_U10_A, 0x20);
-  BSOS_DataWrite(ADDRESS_U10_B_CONTROL, backupU10BControl & 0xF7);
-  // Wait for switch capacitors to charge
-  delayMicroseconds(BSOS_SWITCH_DELAY_IN_MICROSECONDS);
-  DipSwitches[0] = BSOS_DataRead(ADDRESS_U10_B);
- 
-  // Turn on Switch strobe 6 & Read Switches
-  BSOS_DataWrite(ADDRESS_U10_A, 0x40);
-  BSOS_DataWrite(ADDRESS_U10_B_CONTROL, backupU10BControl & 0xF7);
-  // Wait for switch capacitors to charge
-  delayMicroseconds(BSOS_SWITCH_DELAY_IN_MICROSECONDS);
-  DipSwitches[1] = BSOS_DataRead(ADDRESS_U10_B);
-
-  // Turn on Switch strobe 7 & Read Switches
-  BSOS_DataWrite(ADDRESS_U10_A, 0x80);
-  BSOS_DataWrite(ADDRESS_U10_B_CONTROL, backupU10BControl & 0xF7);
-  // Wait for switch capacitors to charge
-  delayMicroseconds(BSOS_SWITCH_DELAY_IN_MICROSECONDS);
-  DipSwitches[2] = BSOS_DataRead(ADDRESS_U10_B);
-
-  // Turn on U10 CB2 (strobe 8) and read switches
-  BSOS_DataWrite(ADDRESS_U10_A, 0x00);
-  BSOS_DataWrite(ADDRESS_U10_B_CONTROL, backupU10BControl | 0x08);
-  // Wait for switch capacitors to charge
-  delayMicroseconds(BSOS_SWITCH_DELAY_IN_MICROSECONDS);
-  DipSwitches[3] = BSOS_DataRead(ADDRESS_U10_B);
-
-  BSOS_DataWrite(ADDRESS_U10_B_CONTROL, backupU10BControl);
-  BSOS_DataWrite(ADDRESS_U10_A, backupU10A);
-}
-#endif
 
 void InitializeU11PIA() {
   // CA1 - Display interrupt generator
@@ -496,6 +285,7 @@ int SpaceLeftOnSwitchStack() {
   if (SwitchStackLast>=SwitchStackFirst) return ((SWITCH_STACK_SIZE-1) - (SwitchStackLast-SwitchStackFirst));
   return (SwitchStackFirst - SwitchStackLast) - 1;
 }
+
 
 void PushToSwitchStack(byte switchNumber) {
   if ((switchNumber>39 && switchNumber!=SW_SELF_TEST_SWITCH)) return;
@@ -571,6 +361,7 @@ void BSOS_PushToSolenoidStack(byte solenoidNumber, byte numPushes, boolean disab
   }
 }
 
+
 void PushToFrontOfSolenoidStack(byte solenoidNumber, byte numPushes) {
   // If the stack is full, return
   if (SpaceLeftOnSolenoidStack()==0  || !SolenoidStackEnabled) return;
@@ -581,8 +372,8 @@ void PushToFrontOfSolenoidStack(byte solenoidNumber, byte numPushes) {
     SolenoidStack[SolenoidStackFirst] = solenoidNumber;
     if (SpaceLeftOnSolenoidStack()==0) return;
   }
-  
 }
+
 
 byte PullFirstFromSolenoidStack() {
   // If first and last are equal, there's nothing on the stack
@@ -622,7 +413,6 @@ void BSOS_UpdateTimedSolenoidStack(unsigned long curTime) {
 }
 
 
-
 volatile int numberOfU10Interrupts = 0;
 volatile int numberOfU11Interrupts = 0;
 volatile byte InsideZeroCrossingInterrupt = 0;
@@ -654,11 +444,10 @@ void InterruptService2() {
     BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
     BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) | 0x08);
     BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) & 0xF7);
-#ifdef BALLY_STERN_OS_USE_AUX_LAMPS
+
     // Also park the aux lamp board 
     BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
     BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);    
-#endif
 
     // Blank Displays
     BSOS_DataWrite(ADDRESS_U10_A_CONTROL, BSOS_DataRead(ADDRESS_U10_A_CONTROL) & 0xF7);
@@ -675,9 +464,6 @@ void InterruptService2() {
   
         // if this digit shouldn't be displayed, then set data lines to 0xFX so digit will be blank
         if (!displayEnable) displayDataByte = 0xFF;
-#ifdef BALLY_STERN_OS_DIMMABLE_DISPLAYS        
-        if (DisplayDim[displayCount] && DisplayOffCycle) displayDataByte = 0xFF;
-#endif        
   
         // Set low the appropriate latch strobe bit
         if (displayCount<4) {
@@ -701,11 +487,7 @@ void InterruptService2() {
           BSOS_DataWrite(ADDRESS_U11_A, BSOS_DataRead(ADDRESS_U11_A) | 0x01);
           
           // Set proper display digit enable
-#ifdef BALLY_STERN_OS_USE_7_DIGIT_DISPLAYS          
           byte displayDigitsMask = (0x02<<CurrentDisplayDigit) | 0x01;
-#else
-          byte displayDigitsMask = (0x04<<CurrentDisplayDigit) | 0x01;
-#endif          
           BSOS_DataWrite(ADDRESS_U11_A, displayDigitsMask);
         }
       }
@@ -842,7 +624,6 @@ void InterruptService2() {
       BSOS_DataWrite(ADDRESS_U11_B, CurrentSolenoidByte);
     }
 
-#ifndef BALLY_STERN_OS_USE_AUX_LAMPS
     for (int lampBitCount = 0; lampBitCount<BSOS_NUM_LAMP_BITS; lampBitCount++) {
       byte lampData = 0xF0 + lampBitCount;
 
@@ -885,74 +666,6 @@ void InterruptService2() {
     BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) | 0x08);
     BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) & 0xF7);
 
-#else 
-
-    for (int lampBitCount=0; lampBitCount<15; lampBitCount++) {
-      byte lampData = 0xF0 + lampBitCount;
-
-      interrupts();
-      BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-      noInterrupts();
-      
-      // Latch address & strobe
-      BSOS_DataWrite(ADDRESS_U10_A, lampData);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-      BSOS_DataWrite(ADDRESS_U10_B_CONTROL, 0x38);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-      BSOS_DataWrite(ADDRESS_U10_B_CONTROL, 0x30);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-      // Use the inhibit lines to set the actual data to the lamp SCRs 
-      // (here, we don't care about the lower nibble because the address was already latched)
-      byte lampOutput = LampStates[lampBitCount];
-      // Every other time through the cycle, we OR in the dim variable
-      // in order to dim those lights
-      if (numberOfU10Interrupts%DimDivisor1) lampOutput |= LampDim0[lampBitCount];
-      if (numberOfU10Interrupts%DimDivisor2) lampOutput |= LampDim1[lampBitCount];
-
-      BSOS_DataWrite(ADDRESS_U10_A, lampOutput);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-    }
-    // Latch 0xFF separately without interrupt clear
-    // to park 0xFF in main lamp board
-    BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-    BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) | 0x08);
-    BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) & 0xF7);
-
-    for (int lampBitCount=15; lampBitCount<22; lampBitCount++) {
-      byte lampOutput = (LampStates[lampBitCount]&0xF0) | (lampBitCount-15);
-      // Every other time through the cycle, we OR in the dim variable
-      // in order to dim those lights
-      if (numberOfU10Interrupts%DimDivisor1) lampOutput |= LampDim0[lampBitCount];
-      if (numberOfU10Interrupts%DimDivisor2) lampOutput |= LampDim1[lampBitCount];
-
-      interrupts();
-      BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-      noInterrupts();
-
-      BSOS_DataWrite(ADDRESS_U10_A, lampOutput | 0xF0);
-      BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
-      BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);    
-      BSOS_DataWrite(ADDRESS_U10_A, lampOutput);
-    }
-    
-    BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-    BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
-    BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);
-
-#endif 
-
     interrupts();
     noInterrupts();
 
@@ -977,11 +690,10 @@ ISR(TIMER1_COMPA_vect) {    //This is the interrupt request
   BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
   BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) | 0x08);
   BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) & 0xF7);
-#ifdef BALLY_STERN_OS_USE_AUX_LAMPS
+
   // Also park the aux lamp board 
   BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
   BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);    
-#endif
 
   // Blank Displays
   BSOS_DataWrite(ADDRESS_U10_A_CONTROL, BSOS_DataRead(ADDRESS_U10_A_CONTROL) & 0xF7);
@@ -998,9 +710,6 @@ ISR(TIMER1_COMPA_vect) {    //This is the interrupt request
 
       // if this digit shouldn't be displayed, then set data lines to 0xFX so digit will be blank
       if (!displayEnable) displayDataByte = 0xFF;
-#ifdef BALLY_STERN_OS_DIMMABLE_DISPLAYS        
-      if (DisplayDim[displayCount] && DisplayOffCycle) displayDataByte = 0xFF;
-#endif        
 
       // Set low the appropriate latch strobe bit
       if (displayCount<4) {
@@ -1024,11 +733,7 @@ ISR(TIMER1_COMPA_vect) {    //This is the interrupt request
         BSOS_DataWrite(ADDRESS_U11_A, BSOS_DataRead(ADDRESS_U11_A) | 0x01);
         
         // Set proper display digit enable
-#ifdef BALLY_STERN_OS_USE_7_DIGIT_DISPLAYS          
         byte displayDigitsMask = (0x02<<CurrentDisplayDigit) | 0x01;
-#else
-        byte displayDigitsMask = (0x04<<CurrentDisplayDigit) | 0x01;
-#endif          
         BSOS_DataWrite(ADDRESS_U11_A, displayDigitsMask);
       }
     }
@@ -1046,6 +751,7 @@ ISR(TIMER1_COMPA_vect) {    //This is the interrupt request
     DisplayOffCycle ^= true;
   }
 }
+
 
 void InterruptService3() {
   byte u10AControl = BSOS_DataRead(ADDRESS_U10_A_CONTROL);
@@ -1187,7 +893,6 @@ void InterruptService3() {
       BSOS_DataWrite(ADDRESS_U11_B, CurrentSolenoidByte);
     }
 
-#ifndef BALLY_STERN_OS_USE_AUX_LAMPS
     for (int lampBitCount = 0; lampBitCount<BSOS_NUM_LAMP_BITS; lampBitCount++) {
       byte lampData = 0xF0 + lampBitCount;
 
@@ -1230,73 +935,6 @@ void InterruptService3() {
     BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) | 0x08);
     BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) & 0xF7);
 
-#else 
-
-    for (int lampBitCount=0; lampBitCount<15; lampBitCount++) {
-      byte lampData = 0xF0 + lampBitCount;
-
-      interrupts();
-      BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-      noInterrupts();
-      
-      // Latch address & strobe
-      BSOS_DataWrite(ADDRESS_U10_A, lampData);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-      BSOS_DataWrite(ADDRESS_U10_B_CONTROL, 0x38);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-      BSOS_DataWrite(ADDRESS_U10_B_CONTROL, 0x30);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-      // Use the inhibit lines to set the actual data to the lamp SCRs 
-      // (here, we don't care about the lower nibble because the address was already latched)
-      byte lampOutput = LampStates[lampBitCount];
-      // Every other time through the cycle, we OR in the dim variable
-      // in order to dim those lights
-      if (numberOfU10Interrupts%DimDivisor1) lampOutput |= LampDim0[lampBitCount];
-      if (numberOfU10Interrupts%DimDivisor2) lampOutput |= LampDim1[lampBitCount];
-
-      BSOS_DataWrite(ADDRESS_U10_A, lampOutput);
-#ifdef BSOS_SLOW_DOWN_LAMP_STROBE      
-      WaitClockCycle();
-#endif      
-
-    }
-    // Latch 0xFF separately without interrupt clear
-    // to park 0xFF in main lamp board
-    BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-    BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) | 0x08);
-    BSOS_DataWrite(ADDRESS_U10_B_CONTROL, BSOS_DataRead(ADDRESS_U10_B_CONTROL) & 0xF7);
-
-    for (int lampBitCount=15; lampBitCount<22; lampBitCount++) {
-      byte lampOutput = (LampStates[lampBitCount]&0xF0) | (lampBitCount-15);
-      // Every other time through the cycle, we OR in the dim variable
-      // in order to dim those lights
-      if (numberOfU10Interrupts%DimDivisor1) lampOutput |= LampDim0[lampBitCount];
-      if (numberOfU10Interrupts%DimDivisor2) lampOutput |= LampDim1[lampBitCount];
-
-      interrupts();
-      BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-      noInterrupts();
-
-      BSOS_DataWrite(ADDRESS_U10_A, lampOutput | 0xF0);
-      BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
-      BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);    
-      BSOS_DataWrite(ADDRESS_U10_A, lampOutput);
-    }
-    
-    BSOS_DataWrite(ADDRESS_U10_A, 0xFF);
-    BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
-    BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);
-
-#endif 
 
     interrupts();
     noInterrupts();
@@ -1310,12 +948,6 @@ void InterruptService3() {
     numberOfU10Interrupts+=1;
   }
 }
-
-
-
-#endif 
-
-
 
 
 byte BSOS_SetDisplay(int displayNumber, unsigned long value, boolean blankByMagnitude, byte minDigits) {
@@ -1335,67 +967,19 @@ byte BSOS_SetDisplay(int displayNumber, unsigned long value, boolean blankByMagn
   return blank;
 }
 
+
 void BSOS_SetDisplayBlank(int displayNumber, byte bitMask) {
   if (displayNumber<0 || displayNumber>4) return;
   
   DisplayDigitEnable[displayNumber] = bitMask;
 }
 
-// This is confusing -
-// Digit mask is like this
-//   bit=   b7 b6 b5 b4 b3 b2 b1 b0
-//   digit=  x  x  6  5  4  3  2  1
-//   (with digit 6 being the least-significant, 1's digit
-//  
-// so, looking at it from left to right on the display
-//   digit=  1  2  3  4  5  6
-//   bit=   b0 b1 b2 b3 b4 b5
-
-/*
-void BSOS_SetDisplayBlankByMagnitude(int displayNumber, unsigned long value, byte minDigits) {
-  if (displayNumber<0 || displayNumber>4) return;
-
-  DisplayDigitEnable[displayNumber] = 0x20;
-  if (value>9 || minDigits>1) DisplayDigitEnable[displayNumber] |= 0x10;
-  if (value>99 || minDigits>2) DisplayDigitEnable[displayNumber] |= 0x08;
-  if (value>999 || minDigits>3) DisplayDigitEnable[displayNumber] |= 0x04;
-  if (value>9999 || minDigits>4) DisplayDigitEnable[displayNumber] |= 0x02;
-  if (value>99999 || minDigits>5) DisplayDigitEnable[displayNumber] |= 0x01;
-}
-*/
 
 byte BSOS_GetDisplayBlank(int displayNumber) {
   if (displayNumber<0 || displayNumber>4) return 0;
   return DisplayDigitEnable[displayNumber];
 }
 
-#if defined(BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT) && defined(BALLY_STERN_OS_ADJUSTABLE_DISPLAY_INTERRUPT)
-void BSOS_SetDisplayRefreshConstant(int intervalConstant) {
-  cli();
-  //set timer1 interrupt at 1Hz
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for selected increment
-  OCR1A = intervalConstant;
-  // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS10 and CS12 bits for 1024 prescaler
-  TCCR1B |= (1 << CS12) | (1 << CS10);  
-  // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
-  sei();
-}
-#endif
-
-
-/*
-void BSOS_SetDisplayBlankForCreditMatch(boolean creditsOn, boolean matchOn) {
-  DisplayDigitEnable[4] = 0;
-  if (creditsOn) DisplayDigitEnable[4] |= 0x03;
-  if (matchOn) DisplayDigitEnable[4] |= 0x18;
-}
-*/
 
 void BSOS_SetDisplayFlash(int displayNumber, unsigned long value, unsigned long curTime, int period, byte minDigits) {
   // A period of zero toggles display every other time
@@ -1422,13 +1006,9 @@ void BSOS_SetDisplayFlashCredits(unsigned long curTime, int period) {
 
 
 void BSOS_SetDisplayCredits(int value, boolean displayOn, boolean showBothDigits) {
-#ifdef BALLY_STERN_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
   DisplayDigits[4][2] = (value%100) / 10;
   DisplayDigits[4][3] = (value%10);
-#else
-  DisplayDigits[4][1] = (value%100) / 10;
-  DisplayDigits[4][2] = (value%10);
-#endif 
+
   byte enableMask = DisplayDigitEnable[4] & BALLY_STERN_OS_MASK_SHIFT_1;
 
   if (displayOn) {
@@ -1444,13 +1024,9 @@ void BSOS_SetDisplayMatch(int value, boolean displayOn, boolean showBothDigits) 
 }
 
 void BSOS_SetDisplayBallInPlay(int value, boolean displayOn, boolean showBothDigits) {
-#ifdef BALLY_STERN_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
   DisplayDigits[4][5] = (value%100) / 10;
   DisplayDigits[4][6] = (value%10); 
-#else
-  DisplayDigits[4][4] = (value%100) / 10;
-  DisplayDigits[4][5] = (value%10); 
-#endif
+
   byte enableMask = DisplayDigitEnable[4] & BALLY_STERN_OS_MASK_SHIFT_2;
 
   if (displayOn) {
@@ -1462,18 +1038,11 @@ void BSOS_SetDisplayBallInPlay(int value, boolean displayOn, boolean showBothDig
 }
 
 
-/*
-void BSOS_SetDisplayBIPBlank(byte digitsOn) {
-  if (digitsOn==0) DisplayDigitEnable[4] &= 0x0F;
-  else if (digitsOn==1) DisplayDigitEnable[4] = (DisplayDigitEnable[4] & 0x0F)|0x20;
-  else if (digitsOn==2) DisplayDigitEnable[4] = (DisplayDigitEnable[4] & 0x0F)|0x30;  
-}
-*/
-
 void BSOS_SetDimDivisor(byte level, byte divisor) {
   if (level==1) DimDivisor1 = divisor;
   if (level==2) DimDivisor2 = divisor;
 }
+
 
 void BSOS_SetLampState(int lampNum, byte s_lampState, byte s_lampDim, int s_lampFlashPeriod) {
   if (lampNum>=BSOS_MAX_LAMPS || lampNum<0) return;
@@ -1530,6 +1099,7 @@ void BSOS_FlashAllLamps(unsigned long curTime) {
   BSOS_ApplyFlashToLamps(curTime);
 }
 
+
 void BSOS_TurnOffAllLamps() {
   for (int count=0; count<BSOS_MAX_LAMPS; count++) {
     BSOS_SetLampState(count, 0, 0, 0);  
@@ -1542,35 +1112,6 @@ void BSOS_InitializeMPU() {
   delayMicroseconds(50000);
   delayMicroseconds(50000);
 
-
-#if (BALLY_STERN_OS_HARDWARE_REV==1) or (BALLY_STERN_OS_HARDWARE_REV==2)
-  // Start out with everything tri-state, in case the original
-  // CPU is running
-  // Set data pins to input
-  // Make pins 2-7 input
-  DDRD = DDRD & 0x03;
-  // Make pins 8-13 input
-  DDRB = DDRB & 0xC0;
-  // Set up the address lines A0-A5 as input (for now)
-  DDRC = DDRC & 0xC0;
-
-  unsigned long startTime = millis();
-  boolean sawHigh = false;
-  boolean sawLow = false;
-  // for three seconds, look for activity on the VMA line (A5)
-  // If we see anything, then the MPU is active so we shouldn't run
-  while ((millis()-startTime)<1000) {
-    if (digitalRead(A5)) sawHigh = true;
-    else sawLow = true;
-  }
-  // If we saw both a high and low signal, then someone is toggling the 
-  // VMA line, so we should hang here forever (until reset)
-  if (sawHigh && sawLow) {
-    while (1);
-  }
-
-
-#elif (BALLY_STERN_OS_HARDWARE_REV==3)
   for (byte count=2; count<32; count++) pinMode(count, INPUT);
 
   // Decide if halt should be raised (based on switch) 
@@ -1586,29 +1127,6 @@ void BSOS_InitializeMPU() {
     while(1);
   }  
   
-#endif  
-
-  
-
-#if (BALLY_STERN_OS_HARDWARE_REV==1)
-  // Arduino A0 = MPU A0
-  // Arduino A1 = MPU A1
-  // Arduino A2 = MPU A3
-  // Arduino A3 = MPU A4
-  // Arduino A4 = MPU A7
-  // Arduino A5 = MPU VMA
-  // Set up the address lines A0-A7 as output
-  DDRC = DDRC | 0x3F;
-  // Set up D13 as address line A5 (and set it low)
-  DDRB = DDRB | 0x20;
-  PORTB = PORTB & 0xDF;
-#elif (BALLY_STERN_OS_HARDWARE_REV==2) 
-  // Set up the address lines A0-A7 as output
-  DDRC = DDRC | 0x3F;
-  // Set up D13 as address line A7 (and set it high)
-  DDRB = DDRB | 0x20;
-  PORTB = PORTB | 0x20;
-#elif (BALLY_STERN_OS_HARDWARE_REV==3) 
   pinMode(3, INPUT); // CLK
   pinMode(4, OUTPUT); // VMA
   pinMode(5, OUTPUT); // R/W
@@ -1619,22 +1137,6 @@ void BSOS_InitializeMPU() {
   for (byte count=16; count<32; count++) pinMode(count, OUTPUT); // Address lines are output
   digitalWrite(5, HIGH);  // Set R/W line high (Read)
   digitalWrite(4, LOW);  // Set VMA line LOW
-#endif
-
-#if (BALLY_STERN_OS_HARDWARE_REV==1) or (BALLY_STERN_OS_HARDWARE_REV==2)
-  // Arduino 2 = /IRQ (input)
-  // Arduino 3 = R/W (output)
-  // Arduino 4 = Clk (input)
-  // Arduino 5 = D0
-  // Arduino 6 = D1
-  // Arduino 7 = D3
-  // Set up control lines & data lines
-  DDRD = DDRD & 0xEB;
-  DDRD = DDRD | 0xE8;
-
-  digitalWrite(3, HIGH);  // Set R/W line high (Read)
-  digitalWrite(A5, LOW);  // Set VMA line LOW
-#endif 
 
   // Interrupt line (IRQ)
   pinMode(2, INPUT);
@@ -1645,11 +1147,6 @@ void BSOS_InitializeMPU() {
   InitializeU10PIA();
   InitializeU11PIA();
 
-  // Read values from MPU dip switches
-#ifdef BALLY_STERN_OS_USE_DIP_SWITCHES  
-  ReadDipSwitches();
-#endif 
-  
   // Reset address bus
   BSOS_DataRead(0);
 
@@ -1669,9 +1166,6 @@ void BSOS_InitializeMPU() {
       DisplayDigits[displayCount][digitCount] = 0;
     }
     DisplayDigitEnable[displayCount] = 0x03;
-#ifdef BALLY_STERN_OS_DIMMABLE_DISPLAYS    
-    DisplayDim[displayCount] = false;
-#endif
   }
 
   // Turn off all lamp states
@@ -1735,13 +1229,9 @@ void BSOS_InitializeMPU() {
 
 }
 
+
 byte BSOS_GetDipSwitches(byte index) {
-#ifdef BALLY_STERN_OS_USE_DIP_SWITCHES
-  if (index>3) return 0x00;
-  return DipSwitches[index];
-#else
   return 0x00 & index;
-#endif
 }
 
 
@@ -1750,20 +1240,6 @@ void BSOS_SetupGameSwitches(int s_numSwitches, int s_numPrioritySwitches, Playfi
   NumGamePrioritySwitches = s_numPrioritySwitches;
   GameSwitches = s_gameSwitchArray;
 }
-
-
-/*
-void BSOS_SetupGameLights(int s_numLights, PlayfieldLight *s_gameLightArray) {
-  NumGameLights = s_numLights;
-  GameLights = s_gameLightArray;
-}
-*/
-/*
-void BSOS_SetContinuousSolenoids(byte continuousSolenoidMask = CONTSOL_DISABLE_FLIPPERS | CONTSOL_DISABLE_COIN_LOCKOUT) {
-  CurrentSolenoidByte = (CurrentSolenoidByte&0x0F) | continuousSolenoidMask;
-  BSOS_DataWrite(ADDRESS_U11_B, CurrentSolenoidByte);
-}
-*/
 
 
 void BSOS_SetCoinLockout(boolean lockoutOn, byte solbit) {
@@ -1787,7 +1263,6 @@ void BSOS_SetDisableFlippers(boolean disableFlippers, byte solbit) {
 }
 
 void BSOS_SetContinuousSolenoidBit(boolean bitOn, byte solbit) {
-
   if (bitOn) {
     CurrentSolenoidByte = CurrentSolenoidByte | solbit;
   } else {
@@ -1812,26 +1287,17 @@ void BSOS_EnableSolenoidStack() {
 }
 
 
-
 void BSOS_CycleAllDisplays(unsigned long curTime, byte digitNum) {
   int displayDigit = (curTime/250)%10;
   unsigned long value;
-#ifdef BALLY_STERN_OS_USE_7_DIGIT_DISPLAYS
   value = displayDigit*1111111;
-#else  
-  value = displayDigit*111111;
-#endif
 
   byte displayNumToShow = 0;
   byte displayBlank = BALLY_STERN_OS_ALL_DIGITS_MASK;
 
   if (digitNum!=0) {
     displayNumToShow = (digitNum-1)/6;
-#ifdef BALLY_STERN_OS_USE_7_DIGIT_DISPLAYS
     displayBlank = (0x40)>>((digitNum-1)%7);
-#else    
-    displayBlank = (0x20)>>((digitNum-1)%6);
-#endif    
   }
 
   for (int count=0; count<5; count++) {
@@ -1845,7 +1311,6 @@ void BSOS_CycleAllDisplays(unsigned long curTime, byte digitNum) {
   }
 }
 
-#ifdef BALLY_STERN_OS_USE_SQUAWK_AND_TALK
 
 void BSOS_PlaySoundSquawkAndTalk(byte soundByte) {
 
@@ -1891,121 +1356,13 @@ void BSOS_PlaySoundSquawkAndTalk(byte soundByte) {
 
   interrupts();
 }
-#endif
 
-// With hardware rev 1, this function relies on D13 being connected to A5 because it writes to address 0xA0
-// A0  - A0   0
-// A1  - A1   0   
-// A2  - n/c  0
-// A3  - A2   0
-// A4  - A3   0
-// A5  - D13  1
-// A6  - n/c  0
-// A7  - A4   1
-// A8  - n/c  0
-// A9  - GND  0
-// A10 - n/c  0
-// A11 - n/c  0
-// A12 - GND  0
-// A13 - n/c  0
-#ifdef BALLY_STERN_OS_USE_SB100
-void BSOS_PlaySB100(byte soundByte) {
-
-#if (BALLY_STERN_OS_HARDWARE_REV==1)
-  PORTB = PORTB | 0x20;
-#endif 
-
-  BSOS_DataWrite(ADDRESS_SB100, soundByte);
-
-#if (BALLY_STERN_OS_HARDWARE_REV==1)
-  PORTB = PORTB & 0xDF;
-#endif 
-  
-}
-
-#if (BALLY_STERN_OS_HARDWARE_REV==2)
-void BSOS_PlaySB100Chime(byte soundByte) {
-
-  BSOS_DataWrite(ADDRESS_SB100_CHIMES, soundByte);
-
-}
-#endif 
-#endif
-
-
-#ifdef BALLY_STERN_OS_USE_DASH51
-void BSOS_PlaySoundDash51(byte soundByte) {
-
-  // This device has 32 possible sounds, but they're mapped to 
-  // 0 - 15 and then 128 - 143 on the original card, with bits b4, b5, and b6 reserved
-  // for timing controls.
-  // For ease of use, I've mapped the sounds from 0-31
-  
-  byte oldSolenoidControlByte, soundLowerNibble, displayWithSoundBit4, oldDisplayByte;
-
-  // mask further zero-crossing interrupts during this 
-  noInterrupts();
-
-  // Get the current value of U11:PortB - current solenoids
-  oldSolenoidControlByte = BSOS_DataRead(ADDRESS_U11_B);
-  oldDisplayByte = BSOS_DataRead(ADDRESS_U11_A);
-  soundLowerNibble = (oldSolenoidControlByte&0xF0) | (soundByte&0x0F); 
-  displayWithSoundBit4 = oldDisplayByte;
-  if (soundByte & 0x10) displayWithSoundBit4 |= 0x02;
-  else displayWithSoundBit4 &= 0xFD;
-    
-  // Put 1s on momentary solenoid lines
-  BSOS_DataWrite(ADDRESS_U11_B, oldSolenoidControlByte | 0x0F);
-
-  // Put sound latch low
-  BSOS_DataWrite(ADDRESS_U11_B_CONTROL, 0x34);
-
-  // Let the strobe stay low for a moment
-  delayMicroseconds(68);
-
-  // put bit 4 on Display Enable 7
-  BSOS_DataWrite(ADDRESS_U11_A, displayWithSoundBit4);
-
-  // Put sound latch high
-  BSOS_DataWrite(ADDRESS_U11_B_CONTROL, 0x3C);
-  
-  // put the new byte on U11:PortB (the lower nibble is currently loaded)
-  BSOS_DataWrite(ADDRESS_U11_B, soundLowerNibble);
-        
-  // wait 180 microseconds
-  delayMicroseconds(180);
-
-  // Restore the original solenoid byte
-  BSOS_DataWrite(ADDRESS_U11_B, oldSolenoidControlByte);
-
-  // Restore the original display byte
-  BSOS_DataWrite(ADDRESS_U11_A, oldDisplayByte);
-
-  // Put sound latch low
-  BSOS_DataWrite(ADDRESS_U11_B_CONTROL, 0x34);
-
-  interrupts();
-}
-
-#endif
-
-#if (BALLY_STERN_OS_HARDWARE_REV>=2 && defined(BALLY_STERN_OS_USE_SB300))
-
-void BSOS_PlaySB300SquareWave(byte soundRegister, byte soundByte) {
-  BSOS_DataWrite(ADDRESS_SB300_SQUARE_WAVES+soundRegister, soundByte);
-}
-
-void BSOS_PlaySB300Analog(byte soundRegister, byte soundByte) {
-  BSOS_DataWrite(ADDRESS_SB300_ANALOG+soundRegister, soundByte);
-}
-
-#endif 
 
 // EEProm Helper functions
-
 void BSOS_WriteByteToEEProm(unsigned short startByte, byte value) {
   EEPROM.write(startByte, value);
 }
+
 
 byte BSOS_ReadByteFromEEProm(unsigned short startByte) {
   byte value = EEPROM.read(startByte);
@@ -2017,7 +1374,6 @@ byte BSOS_ReadByteFromEEProm(unsigned short startByte) {
   }
   return value;
 }
-
 
 
 unsigned long BSOS_ReadULFromEEProm(unsigned short startByte, unsigned long defaultValue) {

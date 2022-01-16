@@ -23,20 +23,19 @@
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 
-#define MACHINE_STATE_ATTRACT         0
-//#define USE_SB100
+#define MACHINE_STATE_ATTRACT 0
 
-unsigned long LastSolTestTime = 0; 
-unsigned long LastSelfTestChange = 0;
-unsigned long SavedValue = 0;
-unsigned long ResetHold = 0;
+unsigned long LastSolTestTime       = 0;
+unsigned long LastSelfTestChange    = 0;
+unsigned long SavedValue            = 0;
+unsigned long ResetHold             = 0;
 unsigned long NextSpeedyValueChange = 0;
-unsigned long NumSpeedyChanges = 0;
-unsigned long LastResetPress = 0;
-byte CurValue = 0;
-byte CurSound = 0x01;
-byte SoundPlaying = 0;
-boolean SolenoidCycle = true;
+unsigned long NumSpeedyChanges      = 0;
+unsigned long LastResetPress        = 0;
+byte CurValue                       = 0;
+byte CurSound                       = 0x01;
+byte SoundPlaying                   = 0;
+boolean SolenoidCycle               = true;
 
 
 int RunBaseSelfTest(
@@ -46,11 +45,11 @@ int RunBaseSelfTest(
     byte resetSwitch,
     byte slamSwitch
     ) {
-  byte curSwitch = BSOS_PullFirstFromSwitchStack();
-  int returnState = curState;
-  boolean resetDoubleClick = false;
+  byte curSwitch                     = BSOS_PullFirstFromSwitchStack();
+  int returnState                    = curState;
+  boolean resetDoubleClick           = false;
   unsigned short savedScoreStartByte = 0;
-  unsigned short auditNumStartByte = 0;
+  unsigned short auditNumStartByte   = 0;
 
   if (curSwitch==resetSwitch) {
     ResetHold = CurrentTime;
@@ -195,17 +194,7 @@ int RunBaseSelfTest(
   } else if (curState==MACHINE_STATE_TEST_SOUNDS) {
     BSOS_SetDisplayCredits(0);
     BSOS_SetDisplayBallInPlay(5);
-#ifdef USE_SB100    
-    byte soundToPlay = 0x01 << (((CurrentTime-LastSelfTestChange)/750)%8);
-    if (SoundPlaying!=soundToPlay) {
-      BSOS_PlaySB100(soundToPlay);
-      SoundPlaying = soundToPlay;
-      BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
-      LastSolTestTime = CurrentTime; // Time the sound started to play
-    }
-    // If the sound play call was more than 300ms ago, turn it off
-//    if ((CurrentTime-LastSolTestTime)>300) BSOS_PlaySB100(128);
-#elif defined (BALLY_STERN_OS_USE_SQUAWK_AND_TALK)
+
     byte soundToPlay = ((CurrentTime-LastSelfTestChange)/2000)%256;
     if (SoundPlaying!=soundToPlay) {
       BSOS_PlaySoundSquawkAndTalk(soundToPlay);
@@ -213,20 +202,7 @@ int RunBaseSelfTest(
       BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
       LastSolTestTime = CurrentTime; // Time the sound started to play
     }
-#elif defined (BALLY_STERN_OS_USE_DASH51) 
-    byte soundToPlay = ((CurrentTime-LastSelfTestChange)/2000)%32;
-    if (SoundPlaying!=soundToPlay) {
-      if (soundToPlay==17) soundToPlay = 0;
-      BSOS_PlaySoundDash51(soundToPlay);
-      SoundPlaying = soundToPlay;
-      BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
-      LastSolTestTime = CurrentTime; // Time the sound started to play
-    }
-#endif
   } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_1) {
-#ifdef USE_SB100    
-    if (curStateChanged) BSOS_PlaySB100(0);
-#endif
     savedScoreStartByte = BSOS_AWARD_SCORE_1_EEPROM_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_2) {
     savedScoreStartByte = BSOS_AWARD_SCORE_2_EEPROM_START_BYTE;
@@ -308,6 +284,7 @@ int RunBaseSelfTest(
   
   return returnState;
 }
+
 
 unsigned long GetLastSelfTestChangedTime() {
   return LastSelfTestChange;
