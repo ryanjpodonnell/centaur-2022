@@ -1,1728 +1,1063 @@
-/**************************************************************************
-    Stars2021 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    See <https://www.gnu.org/licenses/>.
-*/
-
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
-#include <EEPROM.h>
 
+//============================== OPERATOR GAME ADJUSTMENTS ==============================
+boolean FreePlay = true;            // false = coin drop, true = free play
 
-// Wav Trigger defines have been moved to BSOS_Config.h
+#define MAX_CREDITS          25     // (25) max credits
+#define BALLS_PER_GAME       3      // (3) balls per game
+#define WIZARD_GOAL_DTARGET  16     // (16) set number of drop targets needed to light wizard mode at outlanes
+#define WIZARD_GOAL_ATTACK   140    // (140) set attack power needed to light saucer in wizard mode
+#define ATTRACT_SPEECH       1      // 0 = no attract speech, 1 = attract speect "Emperor Ming awaits!"
+#define ATTRACT_SPEECH_TIMER 300000 // (300000) Ammount of time between attract mode speech callouts. 60000 = 1 minute
+#define USE_STROBE           0      // Strobe use is currently not recommended. Please message me if you would like to help! 0 = don't use backglass strobe, 1 = use backglass strobe
+#define DEBUG_MESSAGES       1      // 0 = no serial monitor, 1 = serial monitor for testing
+//=====================================================================================
 
-#define USE_SCORE_OVERRIDES
+#define VERSION_NUMBER 80085
 
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-#include "SendOnlyWavTrigger.h"
-SendOnlyWavTrigger wTrig;             // Our WAV Trigger object
-#endif
-
-#define PINBALL_MACHINE_BASE_MAJOR_VERSION  2021
-#define PINBALL_MACHINE_BASE_MINOR_VERSION  1
-#define DEBUG_MESSAGES  0
-
-
-
-/*********************************************************************
-
-    Game specific code
-
-*********************************************************************/
-
-// MachineState
-//  0 - Attract Mode
-//  negative - self-test modes
-//  positive - game play
-char MachineState = -1;
+int MachineState            = 0;
 boolean MachineStateChanged = true;
+
 #define MACHINE_STATE_ATTRACT         0
 #define MACHINE_STATE_INIT_GAMEPLAY   1
 #define MACHINE_STATE_INIT_NEW_BALL   2
+#define MACHINE_STATE_SKILL_SHOT      3
 #define MACHINE_STATE_NORMAL_GAMEPLAY 4
-#define MACHINE_STATE_COUNTDOWN_BONUS 99
+#define MACHINE_STATE_COUNTDOWN_BONUS 90
+#define MACHINE_STATE_WIZARD_MODE     91
 #define MACHINE_STATE_BALL_OVER       100
 #define MACHINE_STATE_MATCH_MODE      110
 
-#define MACHINE_STATE_ADJUST_FREEPLAY           -17
-#define MACHINE_STATE_ADJUST_BALL_SAVE          -18
-#define MACHINE_STATE_ADJUST_MUSIC_LEVEL        -19
-#define MACHINE_STATE_ADJUST_TOURNAMENT_SCORING -20
-#define MACHINE_STATE_ADJUST_TILT_WARNING       -21
-#define MACHINE_STATE_ADJUST_AWARD_OVERRIDE     -22
-#define MACHINE_STATE_ADJUST_BALLS_OVERRIDE     -23
-#define MACHINE_STATE_ADJUST_SCROLLING_SCORES   -24
-#define MACHINE_STATE_ADJUST_EXTRA_BALL_AWARD   -25
-#define MACHINE_STATE_ADJUST_SPECIAL_AWARD      -26
-#define MACHINE_STATE_ADJUST_DIM_LEVEL          -27
-#define MACHINE_STATE_ADJUST_DONE               -28
+unsigned long CurrentTime       = 0;
+unsigned long InitGameStartTime = 0;
 
-// The lower 4 bits of the Game Mode are modes, the upper 4 are for frenzies
-// and other flags that carry through different modes
-#define GAME_MODE_SKILL_SHOT                        0
-#define GAME_MODE_UNSTRUCTURED_PLAY                 4
-#define GAME_MODE_WIZARD_START                      12
-#define GAME_MODE_WIZARD                            13
-#define GAME_MODE_WIZARD_FINISHED                   14
-#define GAME_BASE_MODE                              0x0F
+byte Credits               = 0;
+unsigned long TotalPlays   = 0;
+unsigned long TotalReplays = 0;
+unsigned long ScoreAward1  = 0;
+unsigned long ScoreAward2  = 0;
+unsigned long ScoreAward3  = 0;
+byte ScoreAwardStates[4]   = {0, 0, 0, 0};
 
+unsigned long HighScore            = 0;
+unsigned long HighScoreBeat        = 0;
+unsigned long TotalSkill1          = 0;
+unsigned long TotalSkill2          = 0;
+unsigned long TotalSkill3          = 0;
+unsigned long TotalWizardModes     = 0;
+unsigned long TotalWizardModesBeat = 0;
 
+byte WholeCredit = 0;
 
-#define EEPROM_BALL_SAVE_BYTE           100
-#define EEPROM_FREE_PLAY_BYTE           101
-#define EEPROM_MUSIC_LEVEL_BYTE         102
-#define EEPROM_SKILL_SHOT_BYTE          103
-#define EEPROM_TILT_WARNING_BYTE        104
-#define EEPROM_AWARD_OVERRIDE_BYTE      105
-#define EEPROM_BALLS_OVERRIDE_BYTE      106
-#define EEPROM_TOURNAMENT_SCORING_BYTE  107
-#define EEPROM_SCROLLING_SCORES_BYTE    110
-#define EEPROM_DIM_LEVEL_BYTE           113
-#define EEPROM_EXTRA_BALL_SCORE_BYTE    140
-#define EEPROM_SPECIAL_SCORE_BYTE       144
+unsigned long AttractStartAnimation    = 0;
+unsigned long InitGamePlayAnimation    = 0;
+unsigned long InitNewBallAnimation     = 0;
+unsigned long SkillShotScoreAnimation  = 0;
+unsigned long SaucerAnimation          = 0;
+unsigned long InitWizardModeAnimation  = 0;
+unsigned long MingAttackAnimation      = 0;
+unsigned long MingDefeatCelebrationBPM = 0;
 
+byte AttractHeadMode              = 255;
+byte AttractPlayfieldMode         = 255;
+unsigned long AttractSweepTime    = 0;
+unsigned long AttractSirenTime    = 0;
+byte AttractSweepLights           = 1;
+byte AttractSirenLights           = 1;
+unsigned long AttractCalloutTimer = 0;
+byte NormalGameplayBackglassMode  = 255;
 
-#define SOUND_EFFECT_NONE               0
-#define SOUND_EFFECT_BONUS_COUNT        1
-#define SOUND_EFFECT_INLANE_UNLIT       3
-#define SOUND_EFFECT_OUTLANE_UNLIT      4
-#define SOUND_EFFECT_INLANE_LIT         5
-#define SOUND_EFFECT_OUTLANE_LIT        6
-#define SOUND_EFFECT_BUMPER_HIT         7
-#define SOUND_EFFECT_ADD_CREDIT         10
-#define SOUND_EFFECT_BALL_OVER          19
-#define SOUND_EFFECT_GAME_OVER          20
-#define SOUND_EFFECT_EXTRA_BALL         23
-#define SOUND_EFFECT_MACHINE_START      24
-#define SOUND_EFFECT_SKILL_SHOT         25
-#define SOUND_EFFECT_TILT_WARNING       28
-#define SOUND_EFFECT_MATCH_SPIN         30
-#define SOUND_EFFECT_SPINNER_HIGH       32
-#define SOUND_EFFECT_SPINNER_LOW        33
-#define SOUND_EFFECT_SLING_SHOT         34
-#define SOUND_EFFECT_ROLLOVER           35
-#define SOUND_EFFECT_10PT_SWITCH        36
-#define SOUND_EFFECT_ADD_PLAYER_1       50
-#define SOUND_EFFECT_ADD_PLAYER_2       (SOUND_EFFECT_ADD_PLAYER_1+1)
-#define SOUND_EFFECT_ADD_PLAYER_3       (SOUND_EFFECT_ADD_PLAYER_1+2)
-#define SOUND_EFFECT_ADD_PLAYER_4       (SOUND_EFFECT_ADD_PLAYER_1+3)
-#define SOUND_EFFECT_PLAYER_1_UP        54
-#define SOUND_EFFECT_PLAYER_2_UP        (SOUND_EFFECT_PLAYER_1_UP+1)
-#define SOUND_EFFECT_PLAYER_3_UP        (SOUND_EFFECT_PLAYER_1_UP+2)
-#define SOUND_EFFECT_PLAYER_4_UP        (SOUND_EFFECT_PLAYER_1_UP+3)
-#define SOUND_EFFECT_SHOOT_AGAIN        60
-#define SOUND_EFFECT_TILT               61
-#define SOUND_EFFECT_VOICE_EXTRA_BALL             81
-#define SOUND_EFFECT_WIZARD_MODE_START            88
-#define SOUND_EFFECT_WIZARD_MODE_FINISHED         89
-#define SOUND_EFFECT_BACKGROUND_1       90
-#define SOUND_EFFECT_BACKGROUND_2       91
-#define SOUND_EFFECT_BACKGROUND_3       92
-#define SOUND_EFFECT_BACKGROUND_WIZ     93
-
-#define MAX_DISPLAY_BONUS     55
-#define TILT_WARNING_DEBOUNCE_TIME      1000
-
-
-/*********************************************************************
-
-    Machine state and options
-
-*********************************************************************/
-unsigned long HighScore = 0;
-unsigned long AwardScores[3];
-byte Credits = 0;
-boolean FreePlayMode = false;
-byte MusicLevel = 3;
-byte BallSaveNumSeconds = 0;
-unsigned long ExtraBallValue = 0;
-unsigned long SpecialValue = 0;
-unsigned long CurrentTime = 0;
-byte MaximumCredits = 40;
-byte BallsPerGame = 3;
-byte DimLevel = 2;
-byte ScoreAwardReplay = 0;
-boolean HighScoreReplay = true;
-boolean MatchFeature = true;
-boolean TournamentScoring = false;
-boolean ScrollingScores = true;
-
-
-/*********************************************************************
-
-    Game State
-
-*********************************************************************/
-byte CurrentPlayer = 0;
+byte CurrentPlayer     = 0;
 byte CurrentBallInPlay = 1;
 byte CurrentNumPlayers = 0;
-byte Bonus[4];
-byte CurrentBonus;
-byte BonusX[4];
-byte GameMode = GAME_MODE_SKILL_SHOT;
-byte MaxTiltWarnings = 2;
-byte NumTiltWarnings = 0;
-
-boolean SamePlayerShootsAgain = false;
-boolean BallSaveUsed = false;
-boolean CurrentlyShowingBallSave = false;
-boolean ExtraBallCollected = false;
-boolean SpecialCollected = false;
-boolean ShowingModeStats = false;
 
 unsigned long CurrentScores[4];
+
+boolean BallDrained    = false;
+
+byte NumTiltWarnings = 0;
+#define MAX_TILT_WARNINGS 1
+
+byte SkillShotHits = 0;
+byte SkillShotState = 0; // 0 not started, 1 started, 2 collecting, 3 collected/fail
+
+#define TIME_TO_WAIT_FOR_BALL 1000
+unsigned long BallTimeInTrough       = 0;
 unsigned long BallFirstSwitchHitTime = 0;
-unsigned long BallTimeInTrough = 0;
-unsigned long GameModeStartTime = 0;
-unsigned long GameModeEndTime = 0;
-unsigned long LastTiltWarningTime = 0;
-unsigned long ScoreAdditionAnimation;
-unsigned long ScoreAdditionAnimationStartTime;
-unsigned long LastRemainingAnimatedScoreShown;
-unsigned long ScoreMultiplier;
+boolean PFValidated                  = false;
+boolean BallSaveUsed                 = false;
+unsigned long BallSaveNumSeconds     = 0;
+
+unsigned long InlaneLeftBlip = 0;
+unsigned long InlaneRightBlip = 0;
+unsigned long TargetUpperBlip = 0;
+unsigned long TargetLowerTopBlip = 0;
+unsigned long TargetLowerBottomBlip = 0;
+
+byte DTarget3Lights[3] = {0, 0, 0}; // A, B, C // 0 off, 1 flashing, 2 hurry up, 3 collected
+byte DTarget3Flashing  = 0;
+
+byte DTarget4Light[4] = {0, 0, 0, 0}; // A, B, C, D // 0 off, 1 flashing, 2 hurry up, 3 collected
+#define DTARGET_4_HURRY_UP_TIMER 12500;
+unsigned long WhiteHurryUpStart = 0;
+unsigned long AmberHurryUpStart = 0;
+
+byte DropTargetCount      = 0;
+boolean DTargetInlineGoal = false;
+boolean DTarget3Goal      = false;
+boolean DTarget4Goal      = false;
+byte DTarget3Completions  = 0;
+
+boolean LeftSpinnerHurryUpLit          = false;
+unsigned long LeftSpinnerHurryUpTimer  = 0;
+boolean RightSpinnerHurryUpLit         = false;
+unsigned long RightSpinnerHurryUpTimer = 0;
+boolean LeftSpinnerLit                 = false;
+boolean RightSpinnerLit                = false;
+boolean TopPopLit                      = false;
+boolean TopSpecialLit                  = false;
+
+boolean PlayerShootsAgain   = false;
+byte WoodBeastXBallState[4] = {0, 0, 0, 0}; // 0 off, 1 lit, 2 collected, 3 used
+byte SaucerXBallState[4]    = {0, 0, 0, 0}; // ^
+
+byte SaucerLamps = 1;
+unsigned long SaucerHitTime = 0;
+byte SaucerDirection = 0;
+boolean BallInSaucer = false;
+
+byte BonusXState = 1;
+#define PLAYFIELD_X_TIMER 15000;
+byte Playfield2xState = 0; // 0 off, 1 lit, 2 started
+byte Playfield3xState = 0; // ^
+unsigned long Playfield2XStart = 0;
+unsigned long Playfield3XStart = 0;
+
+#define MAX_MINI_BONUS 19
+#define MAX_MINI_DISPLAY_BONUS 19
+#define MAX_SUPER_BONUS 19
+#define MAX_SUPER_DISPLAY_BONUS 19
+byte MiniBonus;
+byte SuperBonus;
+byte CountdownMini                    = 0;
+byte CountdownSuper                   = 0;
+byte CountdownBonusX                  = 0;
+boolean Super100kCollected            = false;
+boolean Mini50kCollected              = false;
+boolean SuperBonusReady               = false;
+boolean MiniBonusReady                = false;
+unsigned long CountdownStartTime      = 0;
+unsigned long LastCountdownReportTime = 0;
+unsigned long BonusCountDownEndTime   = 0;
+boolean MiniBonusCollecting           = false;
+unsigned long MiniBonusCollectTimer   = 0;
+boolean SuperBonusCollecting          = false;
+unsigned long SuperBonusCollectTimer  = 0;
+
+unsigned long MatchSequenceStartTime = 0;
+unsigned long MatchDelay             = 150;
+byte MatchDigit                      = 0;
+byte NumMatchSpins                   = 0;
+byte ScoreMatches                    = 0;
+
+byte WizardState                    = 0; // 0 unqualified, 1 qualified, 2 collected, 3 initball, 4 started, 5 validated, 6 ming defeated
+byte MingAttackProgress             = 0;
+boolean MingAttackReady             = false;
+byte MingHealth                     = 2; // 3
+byte MingAttackLamps                = 1;
+boolean MingDefeatCelebration       = false;
+byte MingDefeatCelebrationIncrement = 1;
+
+unsigned long CurrentSoundEffectTimer = 0;
 
 
-
-/*********************************************************************
-
-    Game Specific State Variables
-
-*********************************************************************/
-byte TotalSpins[4];
-byte LanePhase;
-byte RolloverPhase;
-byte TenPointPhase;
-byte LastAwardShotCalloutPlayed;
-byte LastWizardTimer;
-
-boolean WizardScoring;
-
-unsigned long LastInlaneHitTime;
-unsigned long BonusXAnimationStart;
-unsigned long LastSpinnerHit;
-
-#define WIZARD_START_DURATION             5000
-#define WIZARD_DURATION                   39000
-#define WIZARD_DURATION_SECONDS           39
-#define WIZARD_FINISHED_DURATION          5000
-#define WIZARD_SWITCH_SCORE               5000
-#define WIZARD_MODE_REWARD_SCORE          250000
-
-#define SPINNER_MAX_GOAL                  100
-
-void ReadStoredParameters() {
-  HighScore = BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, 10000);
-  Credits = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
-  if (Credits > MaximumCredits) Credits = MaximumCredits;
-
-  ReadSetting(EEPROM_FREE_PLAY_BYTE, 0);
-  FreePlayMode = (EEPROM.read(EEPROM_FREE_PLAY_BYTE)) ? true : false;
-
-  BallSaveNumSeconds = ReadSetting(EEPROM_BALL_SAVE_BYTE, 15);
-  if (BallSaveNumSeconds > 20) BallSaveNumSeconds = 20;
-
-  MusicLevel = ReadSetting(EEPROM_MUSIC_LEVEL_BYTE, 3);
-  if (MusicLevel > 3) MusicLevel = 3;
-
-  TournamentScoring = (ReadSetting(EEPROM_TOURNAMENT_SCORING_BYTE, 0)) ? true : false;
-
-  MaxTiltWarnings = ReadSetting(EEPROM_TILT_WARNING_BYTE, 2);
-  if (MaxTiltWarnings > 2) MaxTiltWarnings = 2;
-
-  byte awardOverride = ReadSetting(EEPROM_AWARD_OVERRIDE_BYTE, 99);
-  if (awardOverride != 99) {
-    ScoreAwardReplay = awardOverride;
-  }
-
-  byte ballsOverride = ReadSetting(EEPROM_BALLS_OVERRIDE_BYTE, 99);
-  if (ballsOverride == 3 || ballsOverride == 5) {
-    BallsPerGame = ballsOverride;
-  } else {
-    if (ballsOverride != 99) EEPROM.write(EEPROM_BALLS_OVERRIDE_BYTE, 99);
-  }
-
-  ScrollingScores = (ReadSetting(EEPROM_SCROLLING_SCORES_BYTE, 1)) ? true : false;
-
-  ExtraBallValue = BSOS_ReadULFromEEProm(EEPROM_EXTRA_BALL_SCORE_BYTE);
-  if (ExtraBallValue % 1000 || ExtraBallValue > 100000) ExtraBallValue = 20000;
-
-  SpecialValue = BSOS_ReadULFromEEProm(EEPROM_SPECIAL_SCORE_BYTE);
-  if (SpecialValue % 1000 || SpecialValue > 100000) SpecialValue = 40000;
-
-  DimLevel = ReadSetting(EEPROM_DIM_LEVEL_BYTE, 2);
-  if (DimLevel < 2 || DimLevel > 3) DimLevel = 2;
-  BSOS_SetDimDivisor(1, DimLevel);
-
-  AwardScores[0] = BSOS_ReadULFromEEProm(BSOS_AWARD_SCORE_1_EEPROM_START_BYTE);
-  AwardScores[1] = BSOS_ReadULFromEEProm(BSOS_AWARD_SCORE_2_EEPROM_START_BYTE);
-  AwardScores[2] = BSOS_ReadULFromEEProm(BSOS_AWARD_SCORE_3_EEPROM_START_BYTE);
-
-}
-
-
+// #################### SETUP ####################
 void setup() {
   if (DEBUG_MESSAGES) {
-    Serial.begin(57600);
+    Serial.begin(115200);
   }
 
+  // read analog pin for match sequence
+  randomSeed(analogRead(A6));
+
   // Tell the OS about game-specific lights and switches
-  BSOS_SetupGameSwitches(
-      NUM_SWITCHES_WITH_TRIGGERS,
-      NUM_PRIORITY_SWITCHES_WITH_TRIGGERS,
-      SolenoidAssociatedSwitches
-      );
+  BSOS_SetupGameSwitches(NUM_SWITCHES_WITH_TRIGGERS, NUM_PRIORITY_SWITCHES_WITH_TRIGGERS, TriggeredSwitches);
+
+  if (DEBUG_MESSAGES) {
+    Serial.write("Attempting to initialize the MPU\n");
+  }
 
   // Set up the chips and interrupts
   BSOS_InitializeMPU();
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
 
-  // Read parameters from EEProm
-  ReadStoredParameters();
-  BSOS_SetCoinLockout((Credits >= MaximumCredits) ? true : false);
+  byte dipBank = BSOS_GetDipSwitches(0);
 
-  CurrentScores[0] = PINBALL_MACHINE_BASE_MAJOR_VERSION;
-  CurrentScores[1] = PINBALL_MACHINE_BASE_MINOR_VERSION;
-  CurrentScores[2] = BALLY_STERN_OS_MAJOR_VERSION;
-  CurrentScores[3] = BALLY_STERN_OS_MINOR_VERSION;
-
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  // WAV Trigger startup at 57600
-  wTrig.start();
-  wTrig.stopAllTracks();
-  delayMicroseconds(10000);
-#endif
-
-  StopAudio();
-  CurrentTime = millis();
-  PlaySoundEffect(SOUND_EFFECT_MACHINE_START);
-}
-
-byte ReadSetting(byte setting, byte defaultValue) {
-  byte value = EEPROM.read(setting);
-  if (value == 0xFF) {
-    EEPROM.write(setting, defaultValue);
-    return defaultValue;
+  // Use dip switches to set up game variables
+  if (DEBUG_MESSAGES) {
+    char buf[32];
+    sprintf(buf, "DipBank 0 = 0x%02X\n", dipBank);
+    Serial.write(buf);
   }
-  return value;
-}
 
+  BSOS_SetDisplay(0, VERSION_NUMBER, true, 2);
+  BSOS_SetDisplayBlank(1, 0x00);
+  BSOS_SetDisplayBlank(2, 0x00);
+  BSOS_SetDisplayBlank(3, 0x00);
 
-// This function is useful for checking the status of drop target switches
-byte CheckSequentialSwitches(byte startingSwitch, byte numSwitches) {
-  byte returnSwitches = 0;
-  for (byte count = 0; count < numSwitches; count++) {
-    returnSwitches |= (BSOS_ReadSingleSwitchState(startingSwitch + count) << count);
+  delay(4000);
+
+  Credits                          = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
+  if (Credits>MAX_CREDITS) Credits = MAX_CREDITS;
+  TotalPlays                       = BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, 0);
+  TotalReplays                     = BSOS_ReadULFromEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, 0);
+  ScoreAward1                      = BSOS_ReadULFromEEProm(BSOS_SCORE_AWARD_1_EEPROM_START_BYTE, 0); // 600000
+  ScoreAward2                      = BSOS_ReadULFromEEProm(BSOS_SCORE_AWARD_2_EEPROM_START_BYTE, 0); // 1000000
+  ScoreAward3                      = BSOS_ReadULFromEEProm(BSOS_SCORE_AWARD_3_EEPROM_START_BYTE, 0); // 1500000
+  HighScore                        = BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, 1000); // 300000
+  HighScoreBeat                    = BSOS_ReadULFromEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE, 0);
+  TotalSkill1                      = BSOS_ReadULFromEEProm(BSOS_TOTAL_SKILL_1_EEPROM_BYTE, 0);
+  TotalSkill2                      = BSOS_ReadULFromEEProm(BSOS_TOTAL_SKILL_2_EEPROM_BYTE, 0);
+  TotalSkill3                      = BSOS_ReadULFromEEProm(BSOS_TOTAL_SKILL_3_EEPROM_BYTE, 0);
+  TotalWizardModes                 = BSOS_ReadULFromEEProm(BSOS_TOTAL_WIZ_EEPROM_BYTE, 0);
+  TotalWizardModesBeat             = BSOS_ReadULFromEEProm(BSOS_TOTAL_WIZ_BEAT_EEPROM_BYTE, 0);
+
+  if (DEBUG_MESSAGES) {
+    Serial.write("Done with setup\n");
   }
-  return returnSwitches;
 }
 
 
-////////////////////////////////////////////////////////////////////////////
-//
-//  Lamp Management functions
-//
-////////////////////////////////////////////////////////////////////////////
-void ShowLampAnimation(byte animationNum, unsigned long divisor, unsigned long baseTime, byte subOffset, boolean dim, boolean reverse = false, byte keepLampOn = 99) {
-  byte currentStep = (baseTime / divisor) % LAMP_ANIMATION_STEPS;
-  if (reverse) currentStep = (LAMP_ANIMATION_STEPS - 1) - currentStep;
+// #################### PLAY SOUND ####################
+void PlaySound(byte soundByte) {
+  // don't interupt currently playing sound
+  if (CurrentTime<CurrentSoundEffectTimer) return;
+  // if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) && (soundByte==8 || soundByte==9)) return;
+  if (BallDrained==true && (soundByte==7 || soundByte==8 || soundByte==9)) return;
+  if ((SuperBonusCollecting==true) && (soundByte!=12)) return;
+  if ((MiniBonusCollecting==true) && (soundByte!=12)) return;
 
-  byte lampNum = 0;
-  for (int byteNum = 0; byteNum < 8; byteNum++) {
-    for (byte bitNum = 0; bitNum < 8; bitNum++) {
+  // if no timed sound is being played, play triggered sound
+  if (SoundTimings[soundByte]) CurrentSoundEffectTimer = CurrentTime + ((unsigned long)SoundTimings[soundByte] * 250); // 1000 = 1 sec
+  BSOS_PlaySoundSquawkAndTalk(soundByte);
+}
 
-      // if there's a subOffset, turn off lights at that offset
-      if (subOffset) {
-        byte lampOff = true;
-        lampOff = LampAnimations[animationNum][(currentStep + subOffset) % LAMP_ANIMATION_STEPS][byteNum] & (1 << bitNum);
-        if (lampOff && lampNum != keepLampOn) BSOS_SetLampState(lampNum, 0);
-      }
 
-      byte lampOn = false;
-      lampOn = LampAnimations[animationNum][currentStep][byteNum] & (1 << bitNum);
-      if (lampOn) BSOS_SetLampState(lampNum, 1, dim);
-
-      lampNum += 1;
+// #################### ADD CREDIT ####################
+void AddCredit(byte numToAdd=1) {
+  if (Credits<MAX_CREDITS) {
+    WholeCredit = WholeCredit + numToAdd;
+    if (WholeCredit==1) {
+      PlaySound(32);
+    } else if (WholeCredit==2) {
+      PlaySound(33);
+    } else if (WholeCredit==3) {
+      PlaySound(34);
+    } else if (WholeCredit>=4) {
+      PlaySound(35);
+      Credits = Credits + 1;
+      BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
+      WholeCredit = 0;
     }
-#if not defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-    if (byteNum % 2) BSOS_DataRead(0);
-#endif
   }
+  BSOS_SetCoinLockout((Credits<MAX_CREDITS)?false:true);
 }
 
 
-void ShowBonusLamps() {
-  if ((GameMode & GAME_BASE_MODE) == GAME_MODE_SKILL_SHOT) {
-
-  } else {
-
-  }
-}
-
-
-void ShowBonusXLamps() {
-  if ((GameMode & GAME_BASE_MODE) == GAME_MODE_SKILL_SHOT) {
-  } else {
-    //    BSOS_SetLampState(LAMP_BONUS_2X, BonusX[CurrentPlayer]==2);
-    //    BSOS_SetLampState(LAMP_BONUS_3X, BonusX[CurrentPlayer]==2);
-    //    BSOS_SetLampState(LAMP_BONUS_5X, BonusX[CurrentPlayer]==2);
-  }
-}
-
-
-void ShowLaneAndRolloverLamps() {
-  if ((GameMode & GAME_BASE_MODE) == GAME_MODE_SKILL_SHOT) {
-  } else {
-    //    BSOS_SetLampState(LAMP_LEFT_INLANE, LanePhase&0x01);
-    //    BSOS_SetLampState(LAMP_LEFT_OUTLANE, LanePhase&0x02);
-    //    BSOS_SetLampState(LAMP_RIGHT_INLANE, LanePhase&0x01);
-    //    BSOS_SetLampState(LAMP_RIGHT_OUTLANE, LanePhase&0x02);
-  }
-}
-
-
-void ShowShootAgainLamps() {
-
-  if (!BallSaveUsed && BallSaveNumSeconds > 0 && (CurrentTime - BallFirstSwitchHitTime) < ((unsigned long)(BallSaveNumSeconds - 1) * 1000)) {
-    unsigned long msRemaining = ((unsigned long)(BallSaveNumSeconds - 1) * 1000) - (CurrentTime - BallFirstSwitchHitTime);
-    BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, (msRemaining < 1000) ? 100 : 500);
-  } else {
-    BSOS_SetLampState(LAMP_SHOOT_AGAIN, SamePlayerShootsAgain);
-  }
-}
-
-
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Display Management functions
-//
-////////////////////////////////////////////////////////////////////////////
-unsigned long LastTimeScoreChanged = 0;
-unsigned long LastTimeOverrideAnimated = 0;
-unsigned long LastFlashOrDash = 0;
-#ifdef USE_SCORE_OVERRIDES
-unsigned long ScoreOverrideValue[4] = {0, 0, 0, 0};
-byte ScoreOverrideStatus = 0;
-#define DISPLAY_OVERRIDE_BLANK_SCORE 0xFFFFFFFF
-#endif
-byte LastScrollPhase = 0;
-
-byte MagnitudeOfScore(unsigned long score) {
-  if (score == 0) return 0;
-
-  byte retval = 0;
-  while (score > 0) {
-    score = score / 10;
-    retval += 1;
-  }
-  return retval;
-}
-
-#ifdef USE_SCORE_OVERRIDES
-void OverrideScoreDisplay(byte displayNum, unsigned long value, boolean animate) {
-  if (displayNum > 3) return;
-  ScoreOverrideStatus |= (0x10 << displayNum);
-  if (animate) ScoreOverrideStatus |= (0x01 << displayNum);
-  else ScoreOverrideStatus &= ~(0x01 << displayNum);
-  ScoreOverrideValue[displayNum] = value;
-}
-#endif
-
-byte GetDisplayMask(byte numDigits) {
-  byte displayMask = 0;
-  for (byte digitCount = 0; digitCount < numDigits; digitCount++) {
-    displayMask |= (0x20 >> digitCount);
-  }
-  return displayMask;
-}
-
-
-void ShowPlayerScores(byte displayToUpdate, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue = 0) {
-
-#ifdef USE_SCORE_OVERRIDES
-  if (displayToUpdate == 0xFF) ScoreOverrideStatus = 0;
-#endif
-
-  byte displayMask = 0x3F;
-  unsigned long displayScore = 0;
-  unsigned long overrideAnimationSeed = CurrentTime / 250;
-  byte scrollPhaseChanged = false;
-
-  byte scrollPhase = ((CurrentTime - LastTimeScoreChanged) / 250) % 16;
-  if (scrollPhase != LastScrollPhase) {
-    LastScrollPhase = scrollPhase;
-    scrollPhaseChanged = true;
-  }
-
-  boolean updateLastTimeAnimated = false;
-
-  for (byte scoreCount = 0; scoreCount < 4; scoreCount++) {
-
-#ifdef USE_SCORE_OVERRIDES
-    // If this display is currently being overriden, then we should update it
-    if (allScoresShowValue == 0 && (ScoreOverrideStatus & (0x10 << scoreCount))) {
-      displayScore = ScoreOverrideValue[scoreCount];
-      if (displayScore != DISPLAY_OVERRIDE_BLANK_SCORE) {
-        byte numDigits = MagnitudeOfScore(displayScore);
-        if (numDigits == 0) numDigits = 1;
-        if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1) && (ScoreOverrideStatus & (0x01 << scoreCount))) {
-          // This score is going to be animated (back and forth)
-          if (overrideAnimationSeed != LastTimeOverrideAnimated) {
-            updateLastTimeAnimated = true;
-            byte shiftDigits = (overrideAnimationSeed) % (((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits) + ((BALLY_STERN_OS_NUM_DIGITS - 1) - numDigits));
-            if (shiftDigits >= ((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits)) shiftDigits = (BALLY_STERN_OS_NUM_DIGITS - numDigits) * 2 - shiftDigits;
-            byte digitCount;
-            displayMask = GetDisplayMask(numDigits);
-            for (digitCount = 0; digitCount < shiftDigits; digitCount++) {
-              displayScore *= 10;
-              displayMask = displayMask >> 1;
-            }
-            BSOS_SetDisplayBlank(scoreCount, 0x00);
-            BSOS_SetDisplay(scoreCount, displayScore, false);
-            BSOS_SetDisplayBlank(scoreCount, displayMask);
-          }
-        } else {
-          BSOS_SetDisplay(scoreCount, displayScore, true, 1);
-        }
-      } else {
-        BSOS_SetDisplayBlank(scoreCount, 0);
-      }
-
-    } else {
-#endif
-      // No override, update scores designated by displayToUpdate
-      //CurrentScores[CurrentPlayer] = CurrentScoreOfCurrentPlayer;
-      if (allScoresShowValue == 0) displayScore = CurrentScores[scoreCount];
-      else displayScore = allScoresShowValue;
-
-      // If we're updating all displays, or the one currently matching the loop, or if we have to scroll
-      if (displayToUpdate == 0xFF || displayToUpdate == scoreCount || displayScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
-
-        // Don't show this score if it's not a current player score (even if it's scrollable)
-        if (displayToUpdate == 0xFF && (scoreCount >= CurrentNumPlayers && CurrentNumPlayers != 0) && allScoresShowValue == 0) {
-          BSOS_SetDisplayBlank(scoreCount, 0x00);
-          continue;
-        }
-
-        if (displayScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
-          // Score needs to be scrolled
-          if ((CurrentTime - LastTimeScoreChanged) < 4000) {
-            BSOS_SetDisplay(scoreCount, displayScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
-            BSOS_SetDisplayBlank(scoreCount, BALLY_STERN_OS_ALL_DIGITS_MASK);
-          } else {
-
-            // Scores are scrolled 10 digits and then we wait for 6
-            if (scrollPhase < 11 && scrollPhaseChanged) {
-              byte numDigits = MagnitudeOfScore(displayScore);
-
-              // Figure out top part of score
-              unsigned long tempScore = displayScore;
-              if (scrollPhase < BALLY_STERN_OS_NUM_DIGITS) {
-                displayMask = BALLY_STERN_OS_ALL_DIGITS_MASK;
-                for (byte scrollCount = 0; scrollCount < scrollPhase; scrollCount++) {
-                  displayScore = (displayScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1)) * 10;
-                  displayMask = displayMask >> 1;
-                }
-              } else {
-                displayScore = 0;
-                displayMask = 0x00;
-              }
-
-              // Add in lower part of score
-              if ((numDigits + scrollPhase) > 10) {
-                byte numDigitsNeeded = (numDigits + scrollPhase) - 10;
-                for (byte scrollCount = 0; scrollCount < (numDigits - numDigitsNeeded); scrollCount++) {
-                  tempScore /= 10;
-                }
-                displayMask |= GetDisplayMask(MagnitudeOfScore(tempScore));
-                displayScore += tempScore;
-              }
-              BSOS_SetDisplayBlank(scoreCount, displayMask);
-              BSOS_SetDisplay(scoreCount, displayScore);
-            }
-          }
-        } else {
-          if (flashCurrent) {
-            unsigned long flashSeed = CurrentTime / 250;
-            if (flashSeed != LastFlashOrDash) {
-              LastFlashOrDash = flashSeed;
-              if (((CurrentTime / 250) % 2) == 0) BSOS_SetDisplayBlank(scoreCount, 0x00);
-              else BSOS_SetDisplay(scoreCount, displayScore, true, 2);
-            }
-          } else if (dashCurrent) {
-            unsigned long dashSeed = CurrentTime / 50;
-            if (dashSeed != LastFlashOrDash) {
-              LastFlashOrDash = dashSeed;
-              byte dashPhase = (CurrentTime / 60) % 36;
-              byte numDigits = MagnitudeOfScore(displayScore);
-              if (dashPhase < 12) {
-                displayMask = GetDisplayMask((numDigits == 0) ? 2 : numDigits);
-                if (dashPhase < 7) {
-                  for (byte maskCount = 0; maskCount < dashPhase; maskCount++) {
-                    displayMask &= ~(0x01 << maskCount);
-                  }
-                } else {
-                  for (byte maskCount = 12; maskCount > dashPhase; maskCount--) {
-                    displayMask &= ~(0x20 >> (maskCount - dashPhase - 1));
-                  }
-                }
-                BSOS_SetDisplay(scoreCount, displayScore);
-                BSOS_SetDisplayBlank(scoreCount, displayMask);
-              } else {
-                BSOS_SetDisplay(scoreCount, displayScore, true, 2);
-              }
-            }
-          } else {
-            BSOS_SetDisplay(scoreCount, displayScore, true, 2);
-          }
-        }
-      } // End if this display should be updated
-#ifdef USE_SCORE_OVERRIDES
-    } // End on non-overridden
-#endif
-  } // End loop on scores
-
-  if (updateLastTimeAnimated) {
-    LastTimeOverrideAnimated = overrideAnimationSeed;
-  }
-
-}
-
-void ShowFlybyValue(byte numToShow, unsigned long timeBase) {
-  byte shiftDigits = (CurrentTime - timeBase) / 120;
-  byte rightSideBlank = 0;
-
-  unsigned long bigVersionOfNum = (unsigned long)numToShow;
-  for (byte count = 0; count < shiftDigits; count++) {
-    bigVersionOfNum *= 10;
-    rightSideBlank /= 2;
-    if (count > 2) rightSideBlank |= 0x20;
-  }
-  bigVersionOfNum /= 1000;
-
-  byte curMask = BSOS_SetDisplay(CurrentPlayer, bigVersionOfNum, false, 0);
-  if (bigVersionOfNum == 0) curMask = 0;
-  BSOS_SetDisplayBlank(CurrentPlayer, ~(~curMask | rightSideBlank));
-}
-
-/*
-
-  XXdddddd---
-           10
-          100
-         1000
-        10000
-       10x000
-      10xx000
-     10xxx000
-    10xxxx000
-   10xxxxx000
-  10xxxxxx000
-*/
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Machine State Helper functions
-//
-////////////////////////////////////////////////////////////////////////////
+// #################### ADD PLAYER ####################
 boolean AddPlayer(boolean resetNumPlayers = false) {
-
-  if (Credits < 1 && !FreePlayMode) return false;
+  if (Credits<1 && !FreePlay) return false;
   if (resetNumPlayers) CurrentNumPlayers = 0;
-  if (CurrentNumPlayers >= 4) return false;
+  if (CurrentNumPlayers>=4) return false;
 
   CurrentNumPlayers += 1;
-  BSOS_SetDisplay(CurrentNumPlayers - 1, 0);
-  BSOS_SetDisplayBlank(CurrentNumPlayers - 1, 0x30);
+  BSOS_SetDisplay(CurrentNumPlayers-1, 0);
+  BSOS_SetDisplayBlank(CurrentNumPlayers-1, 0x60);
+  TotalPlays++;
+  BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, TotalPlays);
+  if (CurrentNumPlayers >= 2) {
+    PlaySound(18); // saucer 0
+  }
 
-  if (!FreePlayMode) {
+  if (!FreePlay) {
     Credits -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-    BSOS_SetDisplayCredits(Credits);
-    BSOS_SetCoinLockout(false);
   }
-  PlaySoundEffect(SOUND_EFFECT_ADD_PLAYER_1 + (CurrentNumPlayers - 1));
-
-  BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
 }
 
-void AddCoinToAudit(byte switchHit) {
 
-  unsigned short coinAuditStartByte = 0;
+// #################### INIT NEW BALL ####################
+int InitNewBall(bool curStateChanged, int ballNum) {
 
-  switch (switchHit) {
-    case SW_COIN_3: coinAuditStartByte = BSOS_CHUTE_3_COINS_START_BYTE; break;
-    case SW_COIN_2: coinAuditStartByte = BSOS_CHUTE_2_COINS_START_BYTE; break;
-    case SW_COIN_1: coinAuditStartByte = BSOS_CHUTE_1_COINS_START_BYTE; break;
+  if (curStateChanged) {
+    InitNewBallAnimation = CurrentTime+2058;
+    PlaySound(44); // ming awaits
+    BSOS_TurnOffAllLamps();
+    BSOS_SetDisableFlippers(false);
+    BSOS_EnableSolenoidStack();
+
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_4_RESET, 15, CurrentTime + 500);
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime + 500);
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_INLINE_RESET, 15, CurrentTime + 500);
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_DOWN, 15, CurrentTime + 500);
+
+    BallDrained = false;
+
+    SkillShotHits = 0;
+    SkillShotState = 0;
+
+    PFValidated = false;
+
+    InlaneLeftBlip = 0;
+    InlaneRightBlip = 0;
+    TargetUpperBlip = 0;
+    TargetLowerTopBlip = 0;
+    TargetLowerBottomBlip = 0;
+
+    for (byte i = 0; i < 3; i++) DTarget3Lights[i] = 0;
+    DTarget3Flashing = 0;
+
+    for (byte i = 0; i < 4; i++) DTarget4Light[i] = 0;
+    WhiteHurryUpStart = 0;
+    AmberHurryUpStart = 0;
+
+    DropTargetCount = 0;
+    DTargetInlineGoal = false;
+    DTarget3Goal = false;
+    DTarget4Goal = false;
+    DTarget3Completions = 0;
+
+    LeftSpinnerHurryUpLit = false;
+    LeftSpinnerHurryUpTimer = 0;
+    RightSpinnerHurryUpLit = false;
+    RightSpinnerHurryUpTimer = 0;
+    LeftSpinnerLit = false;
+    RightSpinnerLit = false;
+    TopPopLit = false;
+    TopSpecialLit = false;
+
+    SkillShotScoreAnimation = 0;
+    SaucerAnimation = 0;
+    MingAttackAnimation = 0;
+    MingDefeatCelebrationBPM = 0;
+    MingDefeatCelebrationIncrement = 1;
+    InitWizardModeAnimation = 0;
+
+    if (WoodBeastXBallState[CurrentPlayer]==2) {
+      WoodBeastXBallState[CurrentPlayer] = 3;
+    } else if (WoodBeastXBallState[CurrentPlayer]==1) {
+      WoodBeastXBallState[CurrentPlayer] = 0;
+    }
+    if (SaucerXBallState[CurrentPlayer]==1) {
+      SaucerXBallState[CurrentPlayer] = 0;
+    }
+
+    SaucerLamps = 1;
+    SaucerAnimation = 0;
+    SaucerHitTime = 0;
+    SaucerDirection = 0;
+
+    BonusXState = 1;
+    Playfield2xState = 0;
+    Playfield3xState = 0;
+    Playfield2XStart = 0;
+    Playfield3XStart = 0;
+
+    CountdownMini = 0;
+    CountdownSuper = 0;
+    CountdownBonusX = 0;
+    Super100kCollected = false;
+    Mini50kCollected = false;
+    SuperBonusReady = false;
+    MiniBonusReady = false;
+
+    WizardState = 0;
+    MingAttackProgress = 0;
+    MingAttackReady = false;
+    MingHealth = 3;
+    MingDefeatCelebration = false;
+
+    for (byte count=0; count<CurrentNumPlayers; count++) {
+      BSOS_SetDisplay(count, CurrentScores[count], true, 2);
+    }
+
+    BSOS_SetDisplayBallInPlay(ballNum);
+    BSOS_SetLampState(LA_BALL_IN_PLAY, 1);
+    BSOS_SetLampState(LA_TILT, 0);
+    if (PlayerShootsAgain==true) {
+      BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
+      BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
+    }
+
+    if (BallSaveNumSeconds>0) {
+      BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1, 0, 500);
+    }
   }
 
-  if (coinAuditStartByte) {
-    BSOS_WriteULToEEProm(coinAuditStartByte, BSOS_ReadULFromEEProm(coinAuditStartByte) + 1);
-  }
+  MiniBonus = 0;
+  SuperBonus = 0;
+  NumTiltWarnings = 0;
 
-}
-
-
-void AddCredit(boolean playSound = false, byte numToAdd = 1) {
-  if (Credits < MaximumCredits) {
-    Credits += numToAdd;
-    if (Credits > MaximumCredits) Credits = MaximumCredits;
-    BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-    if (playSound) PlaySoundEffect(SOUND_EFFECT_ADD_CREDIT);
-    BSOS_SetDisplayCredits(Credits);
-    BSOS_SetCoinLockout(false);
+  if (CurrentTime>=InitNewBallAnimation) {
+    PlaySound(6);
+    BSOS_PushToTimedSolenoidStack(SO_OUTHOLE, 4, CurrentTime + 100);
+    return MACHINE_STATE_SKILL_SHOT;
   } else {
-    BSOS_SetDisplayCredits(Credits);
-    BSOS_SetCoinLockout(true);
-  }
-
-}
-
-void AddSpecialCredit() {
-  AddCredit(false, 1);
-  BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, 3, CurrentTime, true);
-  BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE) + 1);
-}
-
-void AwardSpecial() {
-  if (SpecialCollected) return;
-  SpecialCollected = true;
-  if (TournamentScoring) {
-    CurrentScores[CurrentPlayer] += SpecialValue;
-  } else {
-    AddSpecialCredit();
+    return MACHINE_STATE_INIT_NEW_BALL;
   }
 }
 
-void AwardExtraBall() {
-  if (ExtraBallCollected) return;
-  ExtraBallCollected = true;
-  if (TournamentScoring) {
-    CurrentScores[CurrentPlayer] += ExtraBallValue;
-  } else {
-    SamePlayerShootsAgain = true;
-    BSOS_SetLampState(LAMP_SHOOT_AGAIN, SamePlayerShootsAgain);
-    StopAudio();
-    PlaySoundEffect(SOUND_EFFECT_EXTRA_BALL);
-    //    PlayBackgroundSongBasedOnLevel(StarLevel[CurrentPlayer]);
-    //ResumeBackgroundSong();
-  }
-}
 
-#define ADJ_TYPE_LIST                 1
-#define ADJ_TYPE_MIN_MAX              2
-#define ADJ_TYPE_MIN_MAX_DEFAULT      3
-#define ADJ_TYPE_SCORE                4
-#define ADJ_TYPE_SCORE_WITH_DEFAULT   5
-#define ADJ_TYPE_SCORE_NO_DEFAULT     6
-byte AdjustmentType = 0;
-byte NumAdjustmentValues = 0;
-byte AdjustmentValues[8];
-unsigned long AdjustmentScore;
-byte *CurrentAdjustmentByte = NULL;
-unsigned long *CurrentAdjustmentUL = NULL;
-byte CurrentAdjustmentStorageByte = 0;
-byte TempValue = 0;
-
-
+// #################### RUN SELF TEST ####################
 int RunSelfTest(int curState, boolean curStateChanged) {
   int returnState = curState;
   CurrentNumPlayers = 0;
-
-  if (curStateChanged) {
-    // Send a stop-all command and reset the sample-rate offset, in case we have
-    //  reset while the WAV Trigger was already playing.
-    StopAudio();
-  }
-
   // Any state that's greater than CHUTE_3 is handled by the Base Self-test code
   // Any that's less, is machine specific, so we handle it here.
-  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
-    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
+  if (curState>=MACHINE_STATE_TEST_SCORE_LEVEL_3) {
+    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON);
   } else {
-    byte curSwitch = BSOS_PullFirstFromSwitchStack();
-
-    if (curSwitch == SW_SELF_TEST_SWITCH && (CurrentTime - GetLastSelfTestChangedTime()) > 250) {
-      SetLastSelfTestChangedTime(CurrentTime);
-      returnState -= 1;
-    }
-
-    if (curSwitch == SW_SLAM) {
-      returnState = MACHINE_STATE_ATTRACT;
-    }
-
-    if (curStateChanged) {
-      for (int count = 0; count < 4; count++) {
-        BSOS_SetDisplay(count, 0);
-        BSOS_SetDisplayBlank(count, 0x00);
-      }
-      BSOS_SetDisplayCredits(MACHINE_STATE_TEST_SOUNDS - curState);
-      BSOS_SetDisplayBallInPlay(0, false);
-      CurrentAdjustmentByte = NULL;
-      CurrentAdjustmentUL = NULL;
-      CurrentAdjustmentStorageByte = 0;
-
-      AdjustmentType = ADJ_TYPE_MIN_MAX;
-      AdjustmentValues[0] = 0;
-      AdjustmentValues[1] = 1;
-      TempValue = 0;
-
-      switch (curState) {
-        case MACHINE_STATE_ADJUST_FREEPLAY:
-          CurrentAdjustmentByte = (byte *)&FreePlayMode;
-          CurrentAdjustmentStorageByte = EEPROM_FREE_PLAY_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_BALL_SAVE:
-          AdjustmentType = ADJ_TYPE_LIST;
-          NumAdjustmentValues = 5;
-          AdjustmentValues[1] = 5;
-          AdjustmentValues[2] = 10;
-          AdjustmentValues[3] = 15;
-          AdjustmentValues[4] = 20;
-          CurrentAdjustmentByte = &BallSaveNumSeconds;
-          CurrentAdjustmentStorageByte = EEPROM_BALL_SAVE_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_MUSIC_LEVEL:
-          AdjustmentType = ADJ_TYPE_MIN_MAX_DEFAULT;
-          AdjustmentValues[1] = 3;
-          CurrentAdjustmentByte = &MusicLevel;
-          CurrentAdjustmentStorageByte = EEPROM_MUSIC_LEVEL_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_TOURNAMENT_SCORING:
-          CurrentAdjustmentByte = (byte *)&TournamentScoring;
-          CurrentAdjustmentStorageByte = EEPROM_TOURNAMENT_SCORING_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_TILT_WARNING:
-          AdjustmentValues[1] = 2;
-          CurrentAdjustmentByte = &MaxTiltWarnings;
-          CurrentAdjustmentStorageByte = EEPROM_TILT_WARNING_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_AWARD_OVERRIDE:
-          AdjustmentType = ADJ_TYPE_MIN_MAX_DEFAULT;
-          AdjustmentValues[1] = 7;
-          CurrentAdjustmentByte = &ScoreAwardReplay;
-          CurrentAdjustmentStorageByte = EEPROM_AWARD_OVERRIDE_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_BALLS_OVERRIDE:
-          AdjustmentType = ADJ_TYPE_LIST;
-          NumAdjustmentValues = 3;
-          AdjustmentValues[0] = 3;
-          AdjustmentValues[1] = 5;
-          AdjustmentValues[2] = 99;
-          CurrentAdjustmentByte = &BallsPerGame;
-          CurrentAdjustmentStorageByte = EEPROM_BALLS_OVERRIDE_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_SCROLLING_SCORES:
-          CurrentAdjustmentByte = (byte *)&ScrollingScores;
-          CurrentAdjustmentStorageByte = EEPROM_SCROLLING_SCORES_BYTE;
-          break;
-
-        case MACHINE_STATE_ADJUST_EXTRA_BALL_AWARD:
-          AdjustmentType = ADJ_TYPE_SCORE_WITH_DEFAULT;
-          CurrentAdjustmentUL = &ExtraBallValue;
-          CurrentAdjustmentStorageByte = EEPROM_EXTRA_BALL_SCORE_BYTE;
-          break;
-
-        case MACHINE_STATE_ADJUST_SPECIAL_AWARD:
-          AdjustmentType = ADJ_TYPE_SCORE_WITH_DEFAULT;
-          CurrentAdjustmentUL = &SpecialValue;
-          CurrentAdjustmentStorageByte = EEPROM_SPECIAL_SCORE_BYTE;
-          break;
-
-        case MACHINE_STATE_ADJUST_DIM_LEVEL:
-          AdjustmentType = ADJ_TYPE_LIST;
-          NumAdjustmentValues = 2;
-          AdjustmentValues[0] = 2;
-          AdjustmentValues[1] = 3;
-          CurrentAdjustmentByte = &DimLevel;
-          CurrentAdjustmentStorageByte = EEPROM_DIM_LEVEL_BYTE;
-          //          for (int count = 0; count < 7; count++) BSOS_SetLampState(MIDDLE_ROCKET_7K + count, 1, 1);
-          break;
-
-        case MACHINE_STATE_ADJUST_DONE:
-          returnState = MACHINE_STATE_ATTRACT;
-          break;
-      }
-
-    }
-
-    // Change value, if the switch is hit
-    if (curSwitch == SW_CREDIT_BUTTON) {
-
-      if (CurrentAdjustmentByte && (AdjustmentType == ADJ_TYPE_MIN_MAX || AdjustmentType == ADJ_TYPE_MIN_MAX_DEFAULT)) {
-        byte curVal = *CurrentAdjustmentByte;
-        curVal += 1;
-        if (curVal > AdjustmentValues[1]) {
-          if (AdjustmentType == ADJ_TYPE_MIN_MAX) curVal = AdjustmentValues[0];
-          else {
-            if (curVal > 99) curVal = AdjustmentValues[0];
-            else curVal = 99;
-          }
-        }
-        *CurrentAdjustmentByte = curVal;
-        if (CurrentAdjustmentStorageByte) EEPROM.write(CurrentAdjustmentStorageByte, curVal);
-      } else if (CurrentAdjustmentByte && AdjustmentType == ADJ_TYPE_LIST) {
-        byte valCount = 0;
-        byte curVal = *CurrentAdjustmentByte;
-        byte newIndex = 0;
-        for (valCount = 0; valCount < (NumAdjustmentValues - 1); valCount++) {
-          if (curVal == AdjustmentValues[valCount]) newIndex = valCount + 1;
-        }
-        *CurrentAdjustmentByte = AdjustmentValues[newIndex];
-        if (CurrentAdjustmentStorageByte) EEPROM.write(CurrentAdjustmentStorageByte, AdjustmentValues[newIndex]);
-      } else if (CurrentAdjustmentUL && (AdjustmentType == ADJ_TYPE_SCORE_WITH_DEFAULT || AdjustmentType == ADJ_TYPE_SCORE_NO_DEFAULT)) {
-        unsigned long curVal = *CurrentAdjustmentUL;
-        curVal += 5000;
-        if (curVal > 100000) curVal = 0;
-        if (AdjustmentType == ADJ_TYPE_SCORE_NO_DEFAULT && curVal == 0) curVal = 5000;
-        *CurrentAdjustmentUL = curVal;
-        if (CurrentAdjustmentStorageByte) BSOS_WriteULToEEProm(CurrentAdjustmentStorageByte, curVal);
-      }
-
-      if (curState == MACHINE_STATE_ADJUST_DIM_LEVEL) {
-        BSOS_SetDimDivisor(1, DimLevel);
-      }
-    }
-
-    // Show current value
-    if (CurrentAdjustmentByte != NULL) {
-      BSOS_SetDisplay(0, (unsigned long)(*CurrentAdjustmentByte), true);
-    } else if (CurrentAdjustmentUL != NULL) {
-      BSOS_SetDisplay(0, (*CurrentAdjustmentUL), true);
-    }
-
+    returnState = MACHINE_STATE_ATTRACT;
   }
-
-  if (curState == MACHINE_STATE_ADJUST_DIM_LEVEL) {
-    //    for (int count = 0; count < 7; count++) BSOS_SetLampState(MIDDLE_ROCKET_7K + count, 1, (CurrentTime / 1000) % 2);
-  }
-
-  if (returnState == MACHINE_STATE_ATTRACT) {
-    // If any variables have been set to non-override (99), return
-    // them to dip switch settings
-    // Balls Per Game, Player Loses On Ties, Novelty Scoring, Award Score
-    //    DecodeDIPSwitchParameters();
-    BSOS_SetDisplayCredits(Credits, true);
-    ReadStoredParameters();
-  }
-
   return returnState;
 }
 
 
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Audio Output functions
-//
-////////////////////////////////////////////////////////////////////////////
-
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-byte CurrentBackgroundSong = SOUND_EFFECT_NONE;
-#endif
-
-void StopAudio() {
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  wTrig.stopAllTracks();
-  CurrentBackgroundSong = SOUND_EFFECT_NONE;
-#endif
-}
-
-void ResumeBackgroundSong() {
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  byte curSong = CurrentBackgroundSong;
-  CurrentBackgroundSong = SOUND_EFFECT_NONE;
-  PlayBackgroundSong(curSong);
-#endif
-}
-
-void PlayBackgroundSong(byte songNum) {
-
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  if (MusicLevel > 1) {
-    if (CurrentBackgroundSong != songNum) {
-      if (CurrentBackgroundSong != SOUND_EFFECT_NONE) wTrig.trackStop(CurrentBackgroundSong);
-      if (songNum != SOUND_EFFECT_NONE) {
-#ifdef USE_WAV_TRIGGER_1p3
-        wTrig.trackPlayPoly(songNum, true);
-#else
-        wTrig.trackPlayPoly(songNum);
-#endif
-        wTrig.trackLoop(songNum, true);
-        wTrig.trackGain(songNum, -4);
-      }
-      CurrentBackgroundSong = songNum;
+// #################### TURN OFF ATTRACT LAMPS ####################
+void TurnOffAttractLamps() {
+  for (int count=0; count<BSOS_MAX_LAMPS; count++) {
+    if (count==40) {
+      count = 42;
+    } else if (count==43) {
+      count = 44;
+    } else if (count==48) {
+      count = 52;
     }
+    BSOS_SetLampState(count, 0, 0, 0);
   }
-#else
-  byte test = songNum;
-  songNum = test;
-#endif
-
 }
 
 
-
-unsigned long NextSoundEffectTime = 0;
-
-void PlaySoundEffect(byte soundEffectNum) {
-
-  if (MusicLevel == 0) return;
-
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-
-#ifndef USE_WAV_TRIGGER_1p3
-  if (  soundEffectNum == SOUND_EFFECT_THUMPER_BUMPER_HIT ||
-        SOUND_EFFECT_SPINNER ) wTrig.trackStop(soundEffectNum);
-#endif
-  wTrig.trackPlayPoly(soundEffectNum);
-  //  char buf[128];
-  //  sprintf(buf, "s=%d\n", soundEffectNum);
-  //  Serial.write(buf);
-#endif
-
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Sound # %d\n", soundEffectNum);
-    Serial.write(buf);
-  }
-
-}
-
-inline void StopSoundEffect(byte soundEffectNum) {
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  wTrig.trackStop(soundEffectNum);
-#else
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Sound # %d\n", soundEffectNum);
-    Serial.write(buf);
-  }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Attract Mode
-//
-////////////////////////////////////////////////////////////////////////////
-
-unsigned long AttractLastLadderTime = 0;
-byte AttractLastLadderBonus = 0;
-unsigned long AttractDisplayRampStart = 0;
-byte AttractLastHeadMode = 255;
-byte AttractLastPlayfieldMode = 255;
-byte InAttractMode = false;
-
-
+// #################### RUN ATTRACT MODE ####################
 int RunAttractMode(int curState, boolean curStateChanged) {
-
   int returnState = curState;
 
+  // If this is the first time in the attract mode loop
   if (curStateChanged) {
-    BSOS_DisableSolenoidStack();
+    // reset eeproms
+    // BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_SCORE_AWARD_1_EEPROM_START_BYTE, 600000);
+    // BSOS_WriteULToEEProm(BSOS_SCORE_AWARD_2_EEPROM_START_BYTE, 1000000);
+    // BSOS_WriteULToEEProm(BSOS_SCORE_AWARD_3_EEPROM_START_BYTE, 1500000);
+    // BSOS_WriteULToEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_SKILL_1_EEPROM_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_SKILL_2_EEPROM_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_SKILL_3_EEPROM_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_WIZ_EEPROM_BYTE, 0);
+    // BSOS_WriteULToEEProm(BSOS_TOTAL_WIZ_BEAT_EEPROM_BYTE, 0);
+
+    if (ATTRACT_SPEECH) AttractCalloutTimer = ATTRACT_SPEECH_TIMER;
     BSOS_TurnOffAllLamps();
+    BSOS_DisableSolenoidStack();
     BSOS_SetDisableFlippers(true);
     if (DEBUG_MESSAGES) {
-      Serial.write("Entering Attract Mode\n\r");
+      Serial.println(F("Entering Attract Mode"));
     }
-    AttractLastHeadMode = 0;
-    AttractLastPlayfieldMode = 0;
-    BSOS_SetDisplayCredits(Credits, true);
+    for (byte count=0; count<5; count++) {
+      BSOS_SetDisplayBlank(count, 0x00);
+    }
+    if (!FreePlay) {
+      BSOS_SetDisplayCredits(Credits);
+    }
+    BSOS_SetLampState(LA_GAME_OVER, 1);
+    BSOS_SetDisplayBallInPlay(0);
+    AttractStartAnimation = CurrentTime+2500;
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    AttractHeadMode = 255;
+    AttractPlayfieldMode = 255;
+    PlaySound(8);
   }
 
-  // Alternate displays between high score and blank
-  if (CurrentTime < 16000) {
-    if (AttractLastHeadMode != 1) {
-      ShowPlayerScores(0xFF, false, false);
-      BSOS_SetDisplayCredits(Credits, true);
-      BSOS_SetDisplayBallInPlay(0, true);
+  if (ATTRACT_SPEECH) {
+    if (CurrentTime>=AttractCalloutTimer) {
+      PlaySound(44);
+      AttractCalloutTimer = CurrentTime + ATTRACT_SPEECH_TIMER;
     }
-  } else if ((CurrentTime / 8000) % 2 == 0) {
+  }
 
-    if (AttractLastHeadMode != 2) {
-      BSOS_SetLampState(LAMP_HEAD_HIGH_SCORE, 1, 0, 250);
-      BSOS_SetLampState(LAMP_HEAD_GAME_OVER, 0);
-      LastTimeScoreChanged = CurrentTime;
-    }
-    AttractLastHeadMode = 2;
-    ShowPlayerScores(0xFF, false, false, HighScore);
-  } else {
-    if (AttractLastHeadMode != 3) {
-      if (CurrentTime < 32000) {
-        for (int count = 0; count < 4; count++) {
-          CurrentScores[count] = 0;
+  if (CurrentTime>=AttractStartAnimation) {
+    // Alternate displays between high score and blank
+    if ((CurrentTime/6000)%2==0) {
+
+      if (AttractHeadMode!=1) {
+        BSOS_SetLampState(LA_HIGH_SCORE_TO_DATE, 1);
+
+        for (byte count=0; count<4; count++) {
+          BSOS_SetDisplay(count, HighScore, true, 2);
         }
-        CurrentNumPlayers = 0;
-      }
-      BSOS_SetLampState(LAMP_HEAD_HIGH_SCORE, 0);
-      BSOS_SetLampState(LAMP_HEAD_GAME_OVER, 1);
-      LastTimeScoreChanged = CurrentTime;
-    }
-    ShowPlayerScores(0xFF, false, false);
-
-    AttractLastHeadMode = 3;
-  }
-
-  byte attractPlayfieldPhase = ((CurrentTime / 5000) % 5);
-
-  if (attractPlayfieldPhase != AttractLastPlayfieldMode) {
-    BSOS_TurnOffAllLamps();
-    AttractLastPlayfieldMode = attractPlayfieldPhase;
-    if (attractPlayfieldPhase == 2) GameMode = GAME_MODE_SKILL_SHOT;
-    else GameMode = GAME_MODE_UNSTRUCTURED_PLAY;
-    AttractLastLadderBonus = 1;
-    AttractLastLadderTime = CurrentTime;
-  }
-
-  if (attractPlayfieldPhase < 2) {
-    ShowLampAnimation(1, 40, CurrentTime, 14, false, false);
-  } else if (attractPlayfieldPhase == 3) {
-    ShowLampAnimation(0, 40, CurrentTime, 11, false, false);
-  } else if (attractPlayfieldPhase == 2) {
-    if ((CurrentTime - AttractLastLadderTime) > 200) {
-      CurrentBonus = AttractLastLadderBonus;
-      ShowBonusLamps();
-      AttractLastLadderBonus += 1;
-      if (AttractLastLadderBonus > 20) AttractLastLadderBonus = 0;
-      AttractLastLadderTime = CurrentTime;
-    }
-#if not defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-    BSOS_DataRead(0);
-#endif
-  } else {
-    ShowLampAnimation(2, 40, CurrentTime, 14, false, false);
-  }
-
-  byte switchHit;
-  while ( (switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
-    if (switchHit == SW_CREDIT_BUTTON) {
-      if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
-    }
-    if (switchHit == SW_COIN_1 || switchHit == SW_COIN_2 || switchHit == SW_COIN_3) {
-      AddCoinToAudit(switchHit);
-      AddCredit(true, 1);
-    }
-    if (switchHit == SW_SELF_TEST_SWITCH && (CurrentTime - GetLastSelfTestChangedTime()) > 250) {
-      returnState = MACHINE_STATE_TEST_LIGHTS;
-      SetLastSelfTestChangedTime(CurrentTime);
-    }
-  }
-
-  return returnState;
-}
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Game Play functions
-//
-////////////////////////////////////////////////////////////////////////////
-byte CountBits(byte byteToBeCounted) {
-  byte numBits = 0;
-
-  for (byte count = 0; count < 8; count++) {
-    numBits += (byteToBeCounted & 0x01);
-    byteToBeCounted = byteToBeCounted >> 1;
-  }
-
-  return numBits;
-}
-
-
-void AddToBonus(byte amountToAdd = 1) {
-  CurrentBonus += amountToAdd;
-  if (CurrentBonus >= MAX_DISPLAY_BONUS) {
-    CurrentBonus = MAX_DISPLAY_BONUS;
-  }
-}
-
-
-void SetGameMode(byte newGameMode) {
-  GameMode = newGameMode | (GameMode & ~GAME_BASE_MODE);
-  GameModeStartTime = 0;
-  GameModeEndTime = 0;
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Game mode set to %d\n", newGameMode);
-    Serial.write(buf);
-  }
-}
-
-void StartScoreAnimation(unsigned long scoreToAnimate) {
-  if (ScoreAdditionAnimation != 0) {
-    CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
-  }
-  ScoreAdditionAnimation = scoreToAnimate;
-  ScoreAdditionAnimationStartTime = CurrentTime;
-  LastRemainingAnimatedScoreShown = 0;
-}
-
-
-
-
-
-
-void IncreaseBonusX() {
-  boolean soundPlayed = false;
-  if (BonusX[CurrentPlayer] < 5) {
-    BonusX[CurrentPlayer] += 1;
-    BonusXAnimationStart = CurrentTime;
-
-    if (BonusX[CurrentPlayer] == 4) {
-      BonusX[CurrentPlayer] += 1;
-    }
-  }
-
-  if (!soundPlayed) {
-    //    PlaySoundEffect(SOUND_EFFECT_BONUS_X_INCREASED);
-  }
-
-}
-
-
-int InitGamePlay() {
-
-  if (DEBUG_MESSAGES) {
-    Serial.write("Starting game\n\r");
-  }
-
-  // The start button has been hit only once to get
-  // us into this mode, so we assume a 1-player game
-  // at the moment
-  BSOS_EnableSolenoidStack();
-  BSOS_SetCoinLockout((Credits >= MaximumCredits) ? true : false);
-  BSOS_TurnOffAllLamps();
-  StopAudio();
-
-  // Reset displays & game state variables
-  for (int count = 0; count < 4; count++) {
-    // Initialize game-specific variables
-    BonusX[count] = 1;
-
-    TotalSpins[count] = 0;
-    Bonus[count] = 0;
-  }
-  memset(CurrentScores, 0, 4 * sizeof(unsigned long));
-
-  SamePlayerShootsAgain = false;
-  CurrentBallInPlay = 1;
-  CurrentNumPlayers = 1;
-  CurrentPlayer = 0;
-  ShowPlayerScores(0xFF, false, false);
-
-  return MACHINE_STATE_INIT_NEW_BALL;
-}
-
-
-int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
-
-  // If we're coming into this mode for the first time
-  // then we have to do everything to set up the new ball
-  if (curStateChanged) {
-    BSOS_TurnOffAllLamps();
-    BallFirstSwitchHitTime = 0;
-
-    BSOS_SetDisableFlippers(false);
-    BSOS_EnableSolenoidStack();
-    BSOS_SetDisplayCredits(Credits, true);
-    if (CurrentNumPlayers > 1 && (ballNum != 1 || playerNum != 0) && !SamePlayerShootsAgain) PlaySoundEffect(SOUND_EFFECT_PLAYER_1_UP + playerNum);
-    SamePlayerShootsAgain = false;
-
-    BSOS_SetDisplayBallInPlay(ballNum);
-    BSOS_SetLampState(LAMP_HEAD_TILT, 0);
-
-    if (BallSaveNumSeconds > 0) {
-      BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
-    }
-
-    BallSaveUsed = false;
-    BallTimeInTrough = 0;
-    NumTiltWarnings = 0;
-    LastTiltWarningTime = 0;
-
-    // Initialize game-specific start-of-ball lights & variables
-    GameModeStartTime = 0;
-    GameModeEndTime = 0;
-    GameMode = GAME_MODE_SKILL_SHOT;
-
-    ExtraBallCollected = false;
-    SpecialCollected = false;
-
-    // Start appropriate mode music
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 600);
-    }
-
-    // Reset progress unless holdover awards
-    Bonus[CurrentPlayer] = 0;
-    BonusX[CurrentPlayer] = 1;
-
-    ScoreMultiplier = 1;
-    LanePhase = 0;
-    LastInlaneHitTime = 0;
-    CurrentBonus = Bonus[CurrentPlayer];
-    ScoreAdditionAnimation = 0;
-    ScoreAdditionAnimationStartTime = 0;
-    BonusXAnimationStart = 0;
-    LastSpinnerHit = 0;
-    //    PlayBackgroundSongBasedOnLevel(StarLevel[CurrentPlayer]);
-    TenPointPhase = 0;
-    WizardScoring = false;
-  }
-
-  // We should only consider the ball initialized when
-  // the ball is no longer triggering the SW_OUTHOLE
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    return MACHINE_STATE_INIT_NEW_BALL;
-  } else {
-    return MACHINE_STATE_NORMAL_GAMEPLAY;
-  }
-
-}
-
-
-void PlayBackgroundSongBasedOnBall(byte ballNum) {
-  if (ballNum == 1) {
-    PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_1);
-  } else if (ballNum == BallsPerGame) {
-    PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_3);
-  } else {
-    PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_2);
-  }
-}
-
-void PlayBackgroundSongBasedOnLevel(byte level) {
-  if (level > 2) level = 2;
-  PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_1 + level);
-}
-
-
-// This function manages all timers, flags, and lights
-int ManageGameMode() {
-  int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-
-  boolean specialAnimationRunning = false;
-
-  if (TotalSpins[CurrentPlayer] > SPINNER_MAX_GOAL) {
-  }
-
-  byte currentWizardTimer;
-
-  switch ( (GameMode & GAME_BASE_MODE) ) {
-    case GAME_MODE_SKILL_SHOT:
-      if (GameModeStartTime == 0) {
-        GameModeStartTime = CurrentTime;
-        GameModeEndTime = 0;
-      }
-
-      if (BallFirstSwitchHitTime != 0) {
-        SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
-      }
-
-      if (GameModeEndTime != 0 && CurrentTime > GameModeEndTime) {
-        ShowPlayerScores(0xFF, false, false);
-      }
-      break;
-
-
-    case GAME_MODE_UNSTRUCTURED_PLAY:
-      // If this is the first time in this mode
-      if (GameModeStartTime == 0) {
-        GameModeStartTime = CurrentTime;
-      }
-      break;
-
-    case GAME_MODE_WIZARD_START:
-      if (GameModeStartTime == 0) {
-        BSOS_TurnOffAllLamps();
-        StopAudio();
-        GameModeStartTime = CurrentTime;
-        GameModeEndTime = CurrentTime + WIZARD_START_DURATION;
-        PlaySoundEffect(SOUND_EFFECT_WIZARD_MODE_START);
-        StartScoreAnimation(WIZARD_MODE_REWARD_SCORE);
-        WizardScoring = true;
-      }
-
-      specialAnimationRunning = true;
-      ShowLampAnimation(1, 80, CurrentTime, 1, false, false);
-
-      if (CurrentTime > GameModeEndTime) {
-        SetGameMode(GAME_MODE_WIZARD);
-        LastWizardTimer = 0xFF;
-      }
-      break;
-
-    case GAME_MODE_WIZARD:
-      if (GameModeStartTime == 0) {
-        PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_WIZ);
-        GameModeStartTime = CurrentTime;
-        GameModeEndTime = CurrentTime + WIZARD_DURATION;
-      }
-
-      currentWizardTimer = (byte)((CurrentTime - GameModeStartTime) / 1000);
-      if (currentWizardTimer != LastWizardTimer) {
-        LastWizardTimer = currentWizardTimer;
-        for (byte count = 0; count < 4; count++) {
-          if (count != CurrentPlayer) OverrideScoreDisplay(count, WIZARD_DURATION_SECONDS - LastWizardTimer, true);
+        if (!FreePlay) {
+          BSOS_SetDisplayCredits(Credits, true);
         }
-        PlaySoundEffect(SOUND_EFFECT_SLING_SHOT);
+        BSOS_SetDisplayBallInPlay(0, true);
       }
+      AttractHeadMode = 1;
 
-      specialAnimationRunning = true;
-      ShowLampAnimation(0, 80, CurrentTime, 14, false, false);
-
-      if (CurrentTime > GameModeEndTime) {
-        SetGameMode(GAME_MODE_WIZARD_FINISHED);
-      }
-      break;
-
-    case GAME_MODE_WIZARD_FINISHED:
-      if (GameModeStartTime == 0) {
-        BSOS_TurnOffAllLamps();
-        StopAudio();
-        GameModeStartTime = CurrentTime;
-        GameModeEndTime = CurrentTime + WIZARD_FINISHED_DURATION;
-        PlaySoundEffect(SOUND_EFFECT_WIZARD_MODE_FINISHED);
-        ShowPlayerScores(0xFF, false, false);
-      }
-
-      specialAnimationRunning = true;
-      ShowLampAnimation(1, 80, CurrentTime, 15, false, false);
-
-      if (CurrentTime > GameModeEndTime) {
-        //        PlayBackgroundSongBasedOnLevel(StarLevel[CurrentPlayer]);
-        SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
-        WizardScoring = false;
-      }
-      break;
-
-  }
-
-  if ( !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings ) {
-    ShowBonusLamps();
-    ShowBonusXLamps();
-#if not defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-    BSOS_DataRead(0);
-#endif
-    ShowShootAgainLamps();
-    ShowLaneAndRolloverLamps();
-  }
-
-
-  // Three types of display modes are shown here:
-  // 1) score animation
-  // 2) fly-bys
-  // 3) normal scores
-  if (ScoreAdditionAnimationStartTime != 0) {
-    // Score animation
-    if ((CurrentTime - ScoreAdditionAnimationStartTime) < 2000) {
-      byte displayPhase = (CurrentTime - ScoreAdditionAnimationStartTime) / 60;
-      byte digitsToShow = 1 + displayPhase / 6;
-      if (digitsToShow > 6) digitsToShow = 6;
-      unsigned long scoreToShow = ScoreAdditionAnimation;
-      for (byte count = 0; count < (6 - digitsToShow); count++) {
-        scoreToShow = scoreToShow / 10;
-      }
-      if (scoreToShow == 0 || displayPhase % 2) scoreToShow = DISPLAY_OVERRIDE_BLANK_SCORE;
-      byte countdownDisplay = (1 + CurrentPlayer) % 4;
-
-      for (byte count = 0; count < 4; count++) {
-        if (count == countdownDisplay) OverrideScoreDisplay(count, scoreToShow, false);
-        else if (count != CurrentPlayer) OverrideScoreDisplay(count, DISPLAY_OVERRIDE_BLANK_SCORE, false);
-      }
     } else {
-      byte countdownDisplay = (1 + CurrentPlayer) % 4;
-      unsigned long remainingScore = 0;
-      if ( (CurrentTime - ScoreAdditionAnimationStartTime) < 5000 ) {
-        remainingScore = (((CurrentTime - ScoreAdditionAnimationStartTime) - 2000) * ScoreAdditionAnimation) / 3000;
-        if ((remainingScore / 1000) != (LastRemainingAnimatedScoreShown / 1000)) {
-          LastRemainingAnimatedScoreShown = remainingScore;
-          PlaySoundEffect(SOUND_EFFECT_SLING_SHOT);
+      if (AttractHeadMode!=2) {
+        BSOS_SetLampState(LA_HIGH_SCORE_TO_DATE, 0);
+        if (!FreePlay) {
+          BSOS_SetDisplayCredits(Credits, true);
         }
-      } else {
-        CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
-        remainingScore = 0;
-        ScoreAdditionAnimationStartTime = 0;
-        ScoreAdditionAnimation = 0;
-      }
-
-      for (byte count = 0; count < 4; count++) {
-        if (count == countdownDisplay) OverrideScoreDisplay(count, ScoreAdditionAnimation - remainingScore, false);
-        else if (count != CurrentPlayer) OverrideScoreDisplay(count, DISPLAY_OVERRIDE_BLANK_SCORE, false);
-        else OverrideScoreDisplay(count, CurrentScores[CurrentPlayer] + remainingScore, false);
-      }
-    }
-    if (ScoreAdditionAnimationStartTime) ShowPlayerScores(CurrentPlayer, false, false);
-    else ShowPlayerScores(0xFF, false, false);
-  } else if (LastSpinnerHit != 0) {
-    byte numberToShow = TotalSpins[CurrentPlayer];
-
-    if (numberToShow < 100) {
-      ShowFlybyValue(100 - numberToShow, LastSpinnerHit);
-    } else {
-      ShowPlayerScores(CurrentPlayer, (BallFirstSwitchHitTime == 0) ? true : false, (BallFirstSwitchHitTime > 0 && ((CurrentTime - LastTimeScoreChanged) > 2000)) ? true : false);
-    }
-
-    if ((CurrentTime - LastSpinnerHit) > 1000) LastSpinnerHit = 0;
-  } else {
-    ShowPlayerScores(CurrentPlayer, (BallFirstSwitchHitTime == 0) ? true : false, (BallFirstSwitchHitTime > 0 && ((CurrentTime - LastTimeScoreChanged) > 2000)) ? true : false);
-  }
-
-  // Check to see if ball is in the outhole
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    if (BallTimeInTrough == 0) {
-      BallTimeInTrough = CurrentTime;
-    } else {
-      // Make sure the ball stays on the sensor for at least
-      // 0.5 seconds to be sure that it's not bouncing
-      if ((CurrentTime - BallTimeInTrough) > 500) {
-
-        if (BallFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings) {
-          // Nothing hit yet, so return the ball to the player
-          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime);
-          BallTimeInTrough = 0;
-          returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-        } else {
-          CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
-          ScoreAdditionAnimationStartTime = 0;
-          ScoreAdditionAnimation = 0;
-          ShowPlayerScores(0xFF, false, false);
-          // if we haven't used the ball save, and we're under the time limit, then save the ball
-          if (!BallSaveUsed && ((CurrentTime - BallFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
-            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 100);
-            BallSaveUsed = true;
-            //            PlaySoundEffect(SOUND_EFFECT_SHOOT_AGAIN);
-            BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
-            BallTimeInTrough = CurrentTime;
-            returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+        BSOS_SetDisplayBallInPlay(0, true);
+        for (byte count=0; count<4; count++) {
+          if (CurrentNumPlayers>0) {
+            if (count<CurrentNumPlayers) {
+              BSOS_SetDisplay(count, CurrentScores[count], true, 2);
+            } else {
+              BSOS_SetDisplay(count, 0);
+              BSOS_SetDisplayBlank(count, 0xE0);
+            }
           } else {
-            ShowPlayerScores(0xFF, false, false);
-            PlayBackgroundSong(SOUND_EFFECT_NONE);
-            StopAudio();
-
-            if (CurrentBallInPlay < BallsPerGame) PlaySoundEffect(SOUND_EFFECT_BALL_OVER);
-            returnState = MACHINE_STATE_COUNTDOWN_BONUS;
+            BSOS_SetDisplay(count, 0);
+            BSOS_SetDisplayBlank(count, 0xE0);
           }
         }
       }
+      AttractHeadMode = 2;
     }
-  } else {
-    BallTimeInTrough = 0;
+
+    // MAIN ATTRACT MODE - 4 MODES AT 7 SECONDS
+    if ((CurrentTime/7000)%4==0) {
+      if (AttractPlayfieldMode!=1) {
+        TurnOffAttractLamps();
+      }
+      AttractRetro();
+      AttractPlayfieldMode = 1;
+    } else if ((CurrentTime/7000)%4==1) {
+      if (AttractPlayfieldMode!=2) {
+        TurnOffAttractLamps();
+      }
+      if ((CurrentTime-AttractSweepTime)>25) { // 50 (15 count right now)
+        AttractSweepTime = CurrentTime;
+        for (byte lightcountdown=0; lightcountdown<NUM_OF_ATTRACT_LAMPS_DOWN; lightcountdown++) {
+          byte dist = AttractSweepLights - AttractLampsDown[lightcountdown].rowDown;
+          BSOS_SetLampState(AttractLampsDown[lightcountdown].lightNumDown, (dist<8), (dist==0/*||dist>5*/)?0:dist/3, (dist>5)?(100+AttractLampsDown[lightcountdown].lightNumDown):0);
+          if (lightcountdown==(NUM_OF_ATTRACT_LAMPS_DOWN/2)) BSOS_DataRead(0);
+        }
+        BSOS_DataRead(0);
+        for (byte lightcountup=0; lightcountup<NUM_OF_ATTRACT_LAMPS_UP; lightcountup++) {
+          byte dist = AttractSweepLights - AttractLampsUp[lightcountup].rowUp;
+          BSOS_SetLampState(AttractLampsUp[lightcountup].lightNumUp, (dist<8), (dist==0/*||dist>5*/)?0:dist/3, (dist>5)?(100+AttractLampsUp[lightcountup].lightNumUp):0);
+          if (lightcountup==(NUM_OF_ATTRACT_LAMPS_UP/2)) BSOS_DataRead(0);
+        }
+        AttractSweepLights += 1;
+        if (AttractSweepLights>24) AttractSweepLights = 0; // 49
+      }
+      backglassLampsCenterOut();
+      AttractPlayfieldMode = 2;
+    } else if ((CurrentTime/7000)%4==2) {
+      if (AttractPlayfieldMode!=3) {
+        TurnOffAttractLamps();
+      }
+      AttractRetro();
+      AttractPlayfieldMode = 3;
+    } else {
+      if (AttractPlayfieldMode!=4) {
+        TurnOffAttractLamps();
+      }
+      if ((CurrentTime-AttractSirenTime)>33) { // 50 (15 count right now)
+        AttractSirenTime = CurrentTime;
+        for (byte lightcountsiren=0; lightcountsiren<NUM_OF_ATTRACT_LAMPS_SIREN; lightcountsiren++) {
+          byte dist = AttractSirenLights - AttractLampsSiren[lightcountsiren].rowSiren;
+          BSOS_SetLampState(AttractLampsSiren[lightcountsiren].lightNumSiren, (dist<8), (dist==0/*||dist>5*/)?0:dist/3, (dist>5)?(100+AttractLampsSiren[lightcountsiren].lightNumSiren):0);
+          if (lightcountsiren==(NUM_OF_ATTRACT_LAMPS_SIREN/2)) BSOS_DataRead(0);
+        }
+        BSOS_DataRead(0);
+        AttractSirenLights += 1;
+        if (AttractSirenLights>33) AttractSirenLights = 0; // 49
+      }
+      BackglassLampsKnightRider();
+      AttractPlayfieldMode = 4;
+    }
+
+    byte switchHit;
+    while ( (switchHit=BSOS_PullFirstFromSwitchStack())!=SWITCH_STACK_EMPTY ) {
+      if (switchHit==SW_CREDIT_BUTTON) {
+        if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      }
+      if (switchHit==SW_COIN_1) {
+        if (!FreePlay) {
+          AddCredit(2);
+          BSOS_SetDisplayCredits(Credits, true);
+        }
+      }
+      if (switchHit==SW_COIN_2) {
+        if (!FreePlay) {
+          AddCredit(2);
+          BSOS_SetDisplayCredits(Credits, true);
+        }
+      }
+      if (switchHit==SW_COIN_3) {
+        if (!FreePlay) {
+          AddCredit(4);
+          BSOS_SetDisplayCredits(Credits, true);
+        }
+      }
+      if (switchHit==SW_SELF_TEST_SWITCH && (CurrentTime-GetLastSelfTestChangedTime())>500) {
+        returnState = MACHINE_STATE_TEST_LIGHTS;
+        SetLastSelfTestChangedTime(CurrentTime);
+      }
+      if (switchHit==SW_REBOUND) {
+        PlaySound(5);
+      }
+    }
   }
 
   return returnState;
 }
 
 
+// #################### NORMAL GAMEPLAY ####################
+int NormalGamePlay(boolean curStateChanged) {
+  int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+  BSOS_SetDisplayCredits(DropTargetCount, true);
 
-unsigned long CountdownStartTime = 0;
-unsigned long LastCountdownReportTime = 0;
-unsigned long BonusCountDownEndTime = 0;
-
-int CountdownBonus(boolean curStateChanged) {
-
-  // If this is the first time through the countdown loop
   if (curStateChanged) {
-
-    Bonus[CurrentPlayer] = CurrentBonus;
-    CountdownStartTime = CurrentTime;
-    ShowBonusLamps();
-
-    LastCountdownReportTime = CountdownStartTime;
-    BonusCountDownEndTime = 0xFFFFFFFF;
+    SuperBonusReady = false;
+    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
+    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
+    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
+    BSOS_SetLampState(LA_STAR_PFIELD_TOP, 0);
+    BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, 0);
+    BSOS_SetLampState(LA_MING_TOP, 1);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1);
+    if (PFValidated==true) {
+      BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+    }
   }
 
-  unsigned long countdownDelayTime = 250 - (CurrentBonus * 3);
-
-  if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime) {
-
-    if (CurrentBonus) {
-
-      // Only give sound & score if this isn't a tilt
-      if (NumTiltWarnings <= MaxTiltWarnings) {
-        PlaySoundEffect(SOUND_EFFECT_BONUS_COUNT);
-        CurrentScores[CurrentPlayer] += 1000 * ((unsigned long)BonusX[CurrentPlayer]);
+  // handle backglass animations
+  if (PFValidated==false) {
+    BackglassLampsLeft2Right();
+  } else if (PFValidated==true && BallInSaucer==false) {
+    BackglassLampsClear();
+    if ((CurrentTime/7000)%3==0) {
+      if (NormalGameplayBackglassMode!=1) {
+        BackglassLampsClear();
       }
+      BackglassLampsKnightRider();
+      NormalGameplayBackglassMode = 1;
+    } else if ((CurrentTime/7000)%3==1) {
+      if (NormalGameplayBackglassMode!=2) {
+        BackglassLampsClear();
+      }
+      backglassLampsCenterOut();
+      NormalGameplayBackglassMode = 2;
+    } else {
+      if (NormalGameplayBackglassMode!=3) {
+        BackglassLampsClear();
+      }
+      BackglassLampsLeft2Right();
+      NormalGameplayBackglassMode = 3;
+    }
+  }
 
-      CurrentBonus -= 1;
+  // handle dtarget 4 lights
+  // 0 off, 1 flashing, 2 hurry up, 3 collected
+  int DTarget4ToHandle = 0;
+  byte lamp4Phase = (CurrentTime/2000)%2;
+  for (int i = 3; i > -1; i--) {
+    if (i==0) {
+      DTarget4ToHandle = LA_DTARGET_4_A;
+    } else if (i==1) {
+      DTarget4ToHandle = LA_DTARGET_4_B;
+    } else if (i==2) {
+      DTarget4ToHandle = LA_DTARGET_4_C;
+    } else if (i==3) {
+      DTarget4ToHandle = LA_DTARGET_4_D;
+    }
+    if (DTarget4Light[i]<=1) {
+      if (lamp4Phase==0) {
+        if (i==0 || i==2) {
+          BSOS_SetLampState(DTarget4ToHandle, 1, 0, 250);
+          DTarget4Light[i] = 1;
+        } else {
+          if (DTarget4Light[0]>=2 && DTarget4Light[2]>=2 && (DTarget4Light[1]<=1 || DTarget4Light[3]<=1)) {
+            if (DTarget4Light[1]<=1 && DTarget4Light[3]<=1) {
+              BSOS_SetLampState(LA_DTARGET_4_B, 1, 0, 250);
+              BSOS_SetLampState(LA_DTARGET_4_D, 1, 0, 250);
+            } else if (DTarget4Light[1]<=1 && DTarget4Light[3]>=2) {
+              BSOS_SetLampState(LA_DTARGET_4_B, 1, 0, 250);
+            } else if (DTarget4Light[1]>=2 && DTarget4Light[3]<=1) {
+              BSOS_SetLampState(LA_DTARGET_4_D, 1, 0, 250);
+            }
+          } else {
+            BSOS_SetLampState(DTarget4ToHandle, 0);
+            DTarget4Light[i] = 0;
+          }
+        }
+      } else {
+        if (i==1 || i==3) {
+          BSOS_SetLampState(DTarget4ToHandle, 1, 0, 250);
+          DTarget4Light[i] = 1;
+        } else {
+          if (DTarget4Light[1]>=2 && DTarget4Light[3]>=2 && (DTarget4Light[0]<=1 || DTarget4Light[2]<=1)) {
+            if (DTarget4Light[0]<=1 && DTarget4Light[2]<=1) {
+              BSOS_SetLampState(LA_DTARGET_4_A, 1, 0, 250);
+              BSOS_SetLampState(LA_DTARGET_4_C, 1, 0, 250);
+            } else if (DTarget4Light[0]<=1 && DTarget4Light[2]>=2) {
+              BSOS_SetLampState(LA_DTARGET_4_A, 1, 0, 250);
+            } else if (DTarget4Light[0]>=2 && DTarget4Light[2]<=1) {
+              BSOS_SetLampState(LA_DTARGET_4_C, 1, 0, 250);
+            }
+          } else {
+            BSOS_SetLampState(DTarget4ToHandle, 0);
+            DTarget4Light[i] = 0;
+          }
+        }
+      }
+    } else if (DTarget4Light[i]>=2) {
+      BSOS_SetLampState(DTarget4ToHandle, 1);
+    }
+  }
 
-      ShowBonusLamps();
-    } else if (BonusCountDownEndTime == 0xFFFFFFFF) {
-      BonusCountDownEndTime = CurrentTime + 1000;
+  // handle dtarget 3 lights
+  unsigned long NumberOf3LampsToStrobe = 3;
+  int DTarget3ToLight = 0;
+  unsigned long lamp3PhaseIncrement = 0;
+  if (DTarget3Lights[0]==1 || DTarget3Lights[0]==2) NumberOf3LampsToStrobe--;
+  if (DTarget3Lights[1]==1 || DTarget3Lights[1]==2) NumberOf3LampsToStrobe--;
+  if (DTarget3Lights[2]==1 || DTarget3Lights[2]==2) NumberOf3LampsToStrobe--;
+  byte lamp3Phase = (CurrentTime/800)%NumberOf3LampsToStrobe;
+  for (byte i = 0; i < 3; i++) {
+    if (i==0) {
+      DTarget3ToLight = LA_DTARGET_ARROW_1;
+    } else if (i==1) {
+      DTarget3ToLight = LA_DTARGET_ARROW_2;
+    } else if (i==2) {
+      DTarget3ToLight = LA_DTARGET_ARROW_3;
+    }
+    if (DTarget3Lights[i]==1 || DTarget3Lights[i]==2) {
+      BSOS_SetLampState(DTarget3ToLight, 1);
+    } else {
+      BSOS_SetLampState(DTarget3ToLight, lamp3Phase==lamp3PhaseIncrement, 0, 200);
+      if (lamp3Phase==lamp3PhaseIncrement) {
+        DTarget3Flashing = DTarget3ToLight;
+      }
+      lamp3PhaseIncrement++;
+    }
+  }
+
+  // handle super bonus collect lit animation
+  if (SuperBonusReady!=true) {
+    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
+    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
+    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
+    BSOS_SetLampState(LA_STAR_PFIELD_TOP, 0);
+    BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, 0);
+  } else {
+    byte lamp6Phase = (CurrentTime/125)%6;
+    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, lamp6Phase==4);
+    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, lamp6Phase==3||lamp6Phase==4, lamp6Phase==4);
+    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, lamp6Phase==2||lamp6Phase==3, lamp6Phase==3);
+    BSOS_SetLampState(LA_STAR_PFIELD_TOP, lamp6Phase==1||lamp6Phase==2, lamp6Phase==2);
+    BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, lamp6Phase<2, lamp6Phase==1);
+  }
+
+  // handle mini bonus ring collect animation
+  if (((CurrentTime-LastCountdownReportTime)>25) && (MiniBonusCollecting==true)) { // adjust speed 300
+    if (MiniBonus>0) {
+      CurrentScores[CurrentPlayer] += 1000;
+      MiniBonus -= 1;
+      ShowMiniBonusOnLadder(MiniBonus);
+      PlaySound(12);
+      if (BonusXState>1 && MiniBonus==0) {
+        MiniBonus = CountdownMini;
+        BonusXState -= 1;
+      }
+    } else {
+      MiniBonusCollecting = false;
+      MiniBonusReady = false;
+      BonusXState = CountdownBonusX;
     }
     LastCountdownReportTime = CurrentTime;
   }
 
-  if (CurrentTime > BonusCountDownEndTime) {
-
-    // Reset any lights & variables of goals that weren't completed
-    BonusCountDownEndTime = 0xFFFFFFFF;
-    return MACHINE_STATE_BALL_OVER;
-  }
-
-  return MACHINE_STATE_COUNTDOWN_BONUS;
-}
-
-
-
-void CheckHighScores() {
-  unsigned long highestScore = 0;
-  int highScorePlayerNum = 0;
-  for (int count = 0; count < CurrentNumPlayers; count++) {
-    if (CurrentScores[count] > highestScore) highestScore = CurrentScores[count];
-    highScorePlayerNum = count;
-  }
-
-  if (highestScore > HighScore) {
-    HighScore = highestScore;
-    if (HighScoreReplay) {
-      AddCredit(false, 3);
-      BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE) + 3);
+  // handle super bonus ring collect animation
+  if (((CurrentTime-LastCountdownReportTime)>25) && (SuperBonusCollecting==true)) { // adjust speed 300
+    if (SuperBonus>0) {
+      CurrentScores[CurrentPlayer] += 1000;
+      SuperBonus -= 1;
+      ShowSuperBonusOnLadder(SuperBonus);
+      PlaySound(12);
+      if (BonusXState>1 && SuperBonus==0) {
+        SuperBonus = CountdownSuper;
+        BonusXState -= 1;
+      }
+    } else {
+      SuperBonusCollecting = false;
+      SuperBonusReady = false;
+      BonusXState = CountdownBonusX;
+      PFValidated = false;
     }
-    BSOS_WriteULToEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, highestScore);
-    BSOS_WriteULToEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE) + 1);
+    LastCountdownReportTime = CurrentTime;
+  }
 
-    for (int count = 0; count < 4; count++) {
-      if (count == highScorePlayerNum) {
-        BSOS_SetDisplay(count, CurrentScores[count], true, 2);
+  // LAMP BLIP
+  if (CurrentTime>=InlaneLeftBlip && (DTarget4Light[1]==0 || DTarget4Light[1]==1)) {
+    BSOS_SetLampState(LA_INLANE_LEFT, 0);
+  }
+  if (CurrentTime>=InlaneRightBlip && (DTarget4Light[2]==0 || DTarget4Light[2]==1)) {
+    BSOS_SetLampState(LA_INLANE_RIGHT, 0);
+  }
+  if (CurrentTime>=TargetUpperBlip && TopSpecialLit==false && MiniBonusReady==false) {
+    BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 0);
+    BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 0);
+  }
+  if (CurrentTime>=TargetLowerTopBlip && (DTarget4Light[0]==0 || DTarget4Light[0]==1)) {
+    BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 0);
+  }
+  if (CurrentTime>=TargetLowerBottomBlip && (DTarget4Light[3]==0 || DTarget4Light[3]==1)) {
+    BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 0);
+  }
+
+  // PLAYFIELD X STOP
+  if ((Playfield2xState==2 && CurrentTime>=Playfield2XStart) || (Playfield3xState==2 && CurrentTime>=Playfield3XStart)) {
+    PlaySound(11); // background sound 2 (restart)
+    if (Playfield2xState==2 && CurrentTime>=Playfield2XStart) {
+      Playfield2xState = 3;
+      BSOS_SetLampState(LA_CLOCK_15_SECONDS_2X, 0);
+    }
+    if (Playfield3xState==2 && CurrentTime>=Playfield3XStart) {
+      Playfield3xState = 3;
+      BSOS_SetLampState(LA_CLOCK_15_SECONDS_3X, 0);
+    }
+  }
+
+  // TARGET HURRY UPS
+  if (DTarget4Light[0]==2 && CurrentTime>=WhiteHurryUpStart) {
+    PlaySound(17);
+    BSOS_SetLampState(LA_DTARGET_4_A, 0);
+    BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 0);
+    DTarget4Light[0] = 0;
+  }
+  if (DTarget4Light[3]==2 && CurrentTime>=AmberHurryUpStart) {
+    PlaySound(17);
+    BSOS_SetLampState(LA_DTARGET_4_D, 0);
+    BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 0);
+    DTarget4Light[3] = 0;
+  }
+
+  // SPINNER HURRY UPS
+  if (LeftSpinnerHurryUpLit==true) {
+    if (CurrentTime>=LeftSpinnerHurryUpTimer) {
+      if (LeftSpinnerLit==true) {
+        BSOS_SetLampState(LA_SPINNER_LEFT, 1);
       } else {
-        BSOS_SetDisplayBlank(count, 0x00);
+        BSOS_SetLampState(LA_SPINNER_LEFT, 0);
+      }
+      LeftSpinnerHurryUpLit = false;
+    }
+  }
+
+  if (RightSpinnerHurryUpLit==true) {
+    if (CurrentTime>=RightSpinnerHurryUpTimer) {
+      if (RightSpinnerLit==true) {
+        BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+      } else {
+        BSOS_SetLampState(LA_SPINNER_RIGHT, 0);
+      }
+      RightSpinnerHurryUpLit = false;
+    }
+  }
+
+  // HANDLE SAUCER
+  if (BallInSaucer==true) {
+    // if (Playfield2xState==1 || Playfield3xState==1) PlaySound(40);
+    if (CurrentTime<=SaucerAnimation) {
+      backglassLampsCenterOut();
+      if ((CurrentTime-AttractSweepTime)>25) { // 50 (15 count right now)
+        AttractSweepTime = CurrentTime;
+        if (SaucerDirection == 0) {
+          for (byte lightcountdown=0; lightcountdown<NUM_OF_SAUCER_LAMPS_DOWN; lightcountdown++) {
+            byte dist = SaucerLamps - SaucerLampsDown[lightcountdown].rowSaucerDown;
+            BSOS_SetLampState(SaucerLampsDown[lightcountdown].lightNumSaucerDown, (dist<8), (dist==0/*||dist>5*/)?0:dist/3, (dist>5)?(100+SaucerLampsDown[lightcountdown].lightNumSaucerDown):0);
+            if (lightcountdown==(NUM_OF_SAUCER_LAMPS_DOWN/2)) BSOS_DataRead(0);
+          }
+        } else {
+          for (byte lightcountup=0; lightcountup<NUM_OF_SAUCER_LAMPS_UP; lightcountup++) {
+            byte dist = SaucerLamps - SaucerLampsUp[lightcountup].rowSaucerUp;
+            BSOS_SetLampState(SaucerLampsUp[lightcountup].lightNumSaucerUp, (dist<8), (dist==0/*||dist>5*/)?0:dist/3, (dist>5)?(100+SaucerLampsUp[lightcountup].lightNumSaucerUp):0);
+            if (lightcountup==(NUM_OF_SAUCER_LAMPS_UP/2)) BSOS_DataRead(0);
+          }
+        }
+        SaucerLamps += 1;
+        if (SaucerLamps>30) SaucerLamps = 0;
+      }
+    } else {
+      if (Playfield2xState==1) {
+        Playfield2xState = 2;
+        Playfield2XStart = CurrentTime + PLAYFIELD_X_TIMER;
+        BSOS_SetLampState(LA_SAUCER_ARROW_2X, 0);
+        BSOS_SetLampState(LA_CLOCK_15_SECONDS_2X, 1, 0, 100);
+        PlaySound(10);
+      }
+      if (Playfield3xState==1) {
+        Playfield3xState = 2;
+        Playfield3XStart = CurrentTime + PLAYFIELD_X_TIMER;
+        BSOS_SetLampState(LA_SAUCER_ARROW_3X, 0);
+        BSOS_SetLampState(LA_CLOCK_15_SECONDS_3X, 1, 0, 100);
+        PlaySound(10);
+      }
+      if (SaucerDirection == 0) {
+        BSOS_PushToTimedSolenoidStack(SO_SAUCER_DOWN, 5, CurrentTime);
+        SaucerDirection = 1;
+      } else {
+        BSOS_PushToTimedSolenoidStack(SO_SAUCER_UP, 5, CurrentTime);
+        SaucerDirection = 0;
+      }
+      SaucerLamps = 1;
+      BallInSaucer = false;
+      for (byte off=LA_BONUS_MINI_1K; off<=LA_BONUS_MINI_10K; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LA_BONUS_SUPER_1K; off<=LA_BONUS_5X; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LA_SAUCER_10K; off<=LA_SAUCER_XBALL; off++) BSOS_SetLampState(off, 0);
+      BSOS_SetLampState(LA_SAUCER_30K, 0);
+      ShowMiniBonusOnLadder(MiniBonus);
+      ShowSuperBonusOnLadder(SuperBonus);
+      ShowExtraBonusLights();
+    }
+  }
+
+  // If the playfield hasn't been validated yet, flash score and player up num
+  BSOS_SetDisplay(CurrentPlayer, CurrentScores[CurrentPlayer], true, 2);
+
+  // Check to see if ball is in the outhole
+  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+    if (BallTimeInTrough==0) {
+      BallTimeInTrough = CurrentTime;
+    } else {
+      // Make sure the ball stays on the sensor for at least
+      // 0.5 seconds to be sure that it's not bouncing
+      if ((CurrentTime-BallTimeInTrough)>500) {
+
+        if (BallFirstSwitchHitTime==0) BallFirstSwitchHitTime = CurrentTime;
+        BallDrained = true;
+        PlaySound(5); // sound off
+        // if we haven't used the ball save, and we're under the time limit, then save the ball
+        if (!BallSaveUsed &&
+            ((CurrentTime-BallFirstSwitchHitTime)/1000)<((unsigned long)BallSaveNumSeconds) ) {
+          BSOS_PushToTimedSolenoidStack(SO_OUTHOLE, 4, CurrentTime + 100);
+          if (BallFirstSwitchHitTime>0) {
+            BallSaveUsed = true;
+            BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 0);
+          }
+          BallTimeInTrough = CurrentTime;
+
+          returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+        } else if (NumTiltWarnings>=MAX_TILT_WARNINGS) {
+          returnState = MACHINE_STATE_BALL_OVER;
+        } else if (NumTiltWarnings<MAX_TILT_WARNINGS) {
+          returnState = MACHINE_STATE_COUNTDOWN_BONUS;
+        }
       }
     }
-
-    BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, 3, CurrentTime, true);
-    BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, 3, CurrentTime + 300, true);
-    BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, 3, CurrentTime + 600, true);
+  } else {
+    BallTimeInTrough = 0;
   }
+
+  return returnState;
 }
 
 
-unsigned long MatchSequenceStartTime = 0;
-unsigned long MatchDelay = 150;
-byte MatchDigit = 0;
-byte NumMatchSpins = 0;
-byte ScoreMatches = 0;
-
-int ShowMatchSequence(boolean curStateChanged) {
-  if (!MatchFeature) return MACHINE_STATE_ATTRACT;
+// #################### INIT GAMEPLAY ####################
+int InitGamePlay(boolean curStateChanged) {
+  int returnState = MACHINE_STATE_INIT_GAMEPLAY;
 
   if (curStateChanged) {
-    MatchSequenceStartTime = CurrentTime;
-    MatchDelay = 1500;
-    MatchDigit = CurrentTime % 10;
-    NumMatchSpins = 0;
-    BSOS_SetLampState(LAMP_HEAD_MATCH, 1, 0);
-    BSOS_SetDisableFlippers();
-    ScoreMatches = 0;
-  }
+    InitGameStartTime = CurrentTime;
+    BSOS_SetCoinLockout((Credits>=MAX_CREDITS)?true:false);
+    BSOS_SetDisableFlippers(true);
+    BSOS_DisableSolenoidStack();
+    BSOS_TurnOffAllLamps();
+    BSOS_SetDisplayBallInPlay(1);
+    InitGamePlayAnimation = CurrentTime+3240;
+    PlaySound(18); // saucer 0
+    BSOS_EnableSolenoidStack();
+    BSOS_PushToSolenoidStack(SO_SAUCER_DOWN, 5, true);
 
-  if (NumMatchSpins < 40) {
-    if (CurrentTime > (MatchSequenceStartTime + MatchDelay)) {
-      MatchDigit += 1;
-      if (MatchDigit > 9) MatchDigit = 0;
-      //PlaySoundEffect(10+(MatchDigit%2));
-      PlaySoundEffect(SOUND_EFFECT_MATCH_SPIN);
-      BSOS_SetDisplayBallInPlay((int)MatchDigit * 10);
-      MatchDelay += 50 + 4 * NumMatchSpins;
-      NumMatchSpins += 1;
-      BSOS_SetLampState(LAMP_HEAD_MATCH, NumMatchSpins % 2, 0);
+    // Set up general game variables
+    for (byte i = 0; i < 4; i++) ScoreAwardStates[i] = 0;
+    CurrentNumPlayers = 1;
+    CurrentPlayer = 0;
+    CurrentBallInPlay = 1;
+    PlayerShootsAgain = false;
+    for (byte i = 0; i < 3; i++) WoodBeastXBallState[i] = 0;
+    for (byte i = 0; i < 3; i++) SaucerXBallState[i] = 0;
+    for (byte count=0; count<4; count++) CurrentScores[count] = 0;
 
-      if (NumMatchSpins == 40) {
-        BSOS_SetLampState(LAMP_HEAD_MATCH, 0);
-        MatchDelay = CurrentTime - MatchSequenceStartTime;
-      }
+    for (byte count=0; count<4; count++) {
+      BSOS_SetDisplay(count, 0);
+      BSOS_SetDisplayBlank(count, 0x00);
     }
   }
 
-  if (NumMatchSpins >= 40 && NumMatchSpins <= 43) {
-    if (CurrentTime > (MatchSequenceStartTime + MatchDelay)) {
-      if ( (CurrentNumPlayers > (NumMatchSpins - 40)) && ((CurrentScores[NumMatchSpins - 40] / 10) % 10) == MatchDigit) {
-        ScoreMatches |= (1 << (NumMatchSpins - 40));
-        AddSpecialCredit();
-        MatchDelay += 1000;
-        NumMatchSpins += 1;
-        BSOS_SetLampState(LAMP_HEAD_MATCH, 1);
-      } else {
-        NumMatchSpins += 1;
-      }
-      if (NumMatchSpins == 44) {
-        MatchDelay += 5000;
-      }
-    }
+  BackglassLampsLeft2Right();
+
+  if (CurrentTime>=InitGamePlayAnimation) {
+    BSOS_EnableSolenoidStack();
+    BSOS_SetDisableFlippers(false);
+    returnState = MACHINE_STATE_INIT_NEW_BALL;
+  } else {
+    AttractRetro();
   }
 
-  if (NumMatchSpins > 43) {
-    if (CurrentTime > (MatchSequenceStartTime + MatchDelay)) {
-      return MACHINE_STATE_ATTRACT;
-    }
-  }
-
-  for (int count = 0; count < 4; count++) {
-    if ((ScoreMatches >> count) & 0x01) {
-      // If this score matches, we're going to flash the last two digits
-      if ( (CurrentTime / 200) % 2 ) {
-        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) & 0x0F);
-      } else {
-        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) | 0x30);
-      }
-    }
-  }
-
-  return MACHINE_STATE_MATCH_MODE;
+  return returnState;
 }
 
 
-
-
-
+// #################### RUN GAMEPLAY MODE ####################
 int RunGamePlayMode(int curState, boolean curStateChanged) {
   int returnState = curState;
+  byte miniBonusAtTop = MiniBonus;
+  byte superBonusAtTop = SuperBonus;
   unsigned long scoreAtTop = CurrentScores[CurrentPlayer];
 
   // Very first time into gameplay loop
-  if (curState == MACHINE_STATE_INIT_GAMEPLAY) {
-    returnState = InitGamePlay();
-  } else if (curState == MACHINE_STATE_INIT_NEW_BALL) {
-    returnState = InitNewBall(curStateChanged, CurrentPlayer, CurrentBallInPlay);
-  } else if (curState == MACHINE_STATE_NORMAL_GAMEPLAY) {
-    returnState = ManageGameMode();
-  } else if (curState == MACHINE_STATE_COUNTDOWN_BONUS) {
+  if (curState==MACHINE_STATE_INIT_GAMEPLAY) {
+    returnState = InitGamePlay(curStateChanged);
+  } else if (curState==MACHINE_STATE_INIT_NEW_BALL) {
+    returnState = InitNewBall(curStateChanged, CurrentBallInPlay);
+  } else if (curState==MACHINE_STATE_SKILL_SHOT) {
+    returnState = SkillShot(curStateChanged);
+  } else if (curState==MACHINE_STATE_NORMAL_GAMEPLAY) {
+    returnState = NormalGamePlay(curStateChanged);
+  } else if (curState==MACHINE_STATE_COUNTDOWN_BONUS) {
     returnState = CountdownBonus(curStateChanged);
-    ShowPlayerScores(0xFF, false, false);
-  } else if (curState == MACHINE_STATE_BALL_OVER) {
-    BSOS_SetDisplayCredits(Credits);
-
-    if (SamePlayerShootsAgain) {
-      PlaySoundEffect(SOUND_EFFECT_SHOOT_AGAIN);
+  } else if (curState==MACHINE_STATE_WIZARD_MODE) {
+    returnState = WizardMode(curStateChanged);
+  } else if (curState==MACHINE_STATE_BALL_OVER) {
+    if (PlayerShootsAgain) {
       returnState = MACHINE_STATE_INIT_NEW_BALL;
     } else {
-
-      CurrentPlayer += 1;
-      if (CurrentPlayer >= CurrentNumPlayers) {
+      CurrentPlayer+=1;
+      if (CurrentPlayer>=CurrentNumPlayers) {
         CurrentPlayer = 0;
-        CurrentBallInPlay += 1;
+        CurrentBallInPlay+=1;
       }
 
-      scoreAtTop = CurrentScores[CurrentPlayer];
-
-      if (CurrentBallInPlay > BallsPerGame) {
-        CheckHighScores();
-        PlaySoundEffect(SOUND_EFFECT_GAME_OVER);
-        for (int count = 0; count < CurrentNumPlayers; count++) {
+      if (CurrentBallInPlay>BALLS_PER_GAME) {
+        // CheckHighScores();
+        for (byte count=0; count<CurrentNumPlayers; count++) {
           BSOS_SetDisplay(count, CurrentScores[count], true, 2);
         }
 
@@ -1730,150 +1065,966 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
       }
       else returnState = MACHINE_STATE_INIT_NEW_BALL;
     }
-  } else if (curState == MACHINE_STATE_MATCH_MODE) {
+  } else if (curState==MACHINE_STATE_MATCH_MODE) {
     returnState = ShowMatchSequence(curStateChanged);
   }
 
   byte switchHit;
-  //  ScoreMultiplier = 1 + CountBits(GameMode & 0xF0);
 
-  if (NumTiltWarnings <= MaxTiltWarnings) {
-    while ( (switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
-
-      if (DEBUG_MESSAGES) {
-        char buf[128];
-        sprintf(buf, "Switch Hit = %d\n", switchHit);
-        Serial.write(buf);
-      }
-
-      if (WizardScoring) {
-        if (switchHit != SW_SLAM && switchHit != SW_TILT) {
-          //          PlaySoundEffect(SOUND_EFFECT_WIZARD_SCORE);
-          CurrentScores[CurrentPlayer] += WIZARD_SWITCH_SCORE;
-        }
-      }
+  if (NumTiltWarnings<MAX_TILT_WARNINGS) {
+    while ( (switchHit=BSOS_PullFirstFromSwitchStack())!=SWITCH_STACK_EMPTY ) {
 
       switch (switchHit) {
-        case SW_SLAM:
-          //          BSOS_DisableSolenoidStack();
-          //          BSOS_SetDisableFlippers(true);
-          //          BSOS_TurnOffAllLamps();
-          //          BSOS_SetLampState(GAME_OVER, 1);
-          //          delay(1000);
-          //          return MACHINE_STATE_ATTRACT;
-          break;
-        case SW_TILT:
-          // This should be debounced
-          if ((CurrentTime - LastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) {
-            LastTiltWarningTime = CurrentTime;
-            NumTiltWarnings += 1;
-            if (NumTiltWarnings > MaxTiltWarnings) {
-              BSOS_DisableSolenoidStack();
-              BSOS_SetDisableFlippers(true);
-              BSOS_TurnOffAllLamps();
-              StopAudio();
-              PlaySoundEffect(SOUND_EFFECT_TILT);
-              BSOS_SetLampState(LAMP_HEAD_TILT, 1);
-            }
-            PlaySoundEffect(SOUND_EFFECT_TILT_WARNING);
-          }
-          break;
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
           SetLastSelfTestChangedTime(CurrentTime);
           break;
-        case SW_LEFT_SLINGSHOT:
-        case SW_RIGHT_SLINGSHOT:
-          CurrentScores[CurrentPlayer] += 10;
-          PlaySoundEffect(SOUND_EFFECT_SLING_SHOT);
-          if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime;
+        case SW_STARS_PFIELD:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            PlaySound(13);
+            AddToScore(1000);
+            AddToMiniBonus(1);
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
           break;
-        case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          AddCoinToAudit(switchHit);
-          AddCredit(true, 1);
+        case SW_STARS_SHOOTER_LANE:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (curState==MACHINE_STATE_NORMAL_GAMEPLAY) {
+              if (SuperBonusReady==true) {
+                PlaySound(13);
+                AddToScore(1000);
+              }
+            } else if (curState==MACHINE_STATE_SKILL_SHOT) {
+              if (SkillShotState==0) {
+                SkillShotState = 1;
+                BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
+                BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
+                BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
+                if (PlayerShootsAgain==true) {
+                  PlayerShootsAgain = false;
+                  BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 0);
+                  BSOS_SetLampState(LA_SHOOT_AGAIN, 0);
+                }
+              }
+              PlaySound(13);
+              SkillShotHits++;
+              if (SkillShotHits>=5) SkillShotHits = 5;
+            }
+          }
+          break;
+        case SW_DTARGET_1:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==true) {
+              SuperBonusReady = true;
+              AddToScore(10000);
+              PlaySound(29);
+              DropTargetHit();
+            }
+          } else  {
+            PlaySound(24); // wizsound bong bounce down
+            if (WizardState==5) {
+              // BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_SHOOTER_LANE_ROLL:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (curState==MACHINE_STATE_NORMAL_GAMEPLAY) {
+              PlaySound(18);
+              if (SuperBonusReady!=true) {
+                if (PFValidated==true) {
+                  BSOS_PushToSolenoidStack(SO_DTARGET_1_DOWN, 5, true);
+                  PFValidated = false;
+                }
+              } else {
+                SuperBonusCollecting = true;
+                CountdownSuper = SuperBonus;
+                CountdownBonusX = BonusXState;
+                LastCountdownReportTime = CurrentTime;
+              }
+            } else if (curState==MACHINE_STATE_SKILL_SHOT) {
+              if (SkillShotState==0) PlaySound(12);
+              if (SkillShotState==1) {
+                PlaySound(42); // wizsound lucky shot earthling
+                SkillShotScoreAnimation = CurrentTime+500;
+                SkillShotState = 2;
+                if (SkillShotHits==1 || SkillShotHits==2) {
+                  CurrentScores[CurrentPlayer] += 15000; // 10000
+                  TotalSkill1++;
+                  BSOS_WriteULToEEProm(BSOS_TOTAL_SKILL_1_EEPROM_BYTE, TotalSkill1);
+                } else if (SkillShotHits==3 || SkillShotHits==4) {
+                  CurrentScores[CurrentPlayer] += 30000; // 25000
+                  TotalSkill2++;
+                  BSOS_WriteULToEEProm(BSOS_TOTAL_SKILL_2_EEPROM_BYTE, TotalSkill2);
+                } else if (SkillShotHits==5) {
+                  CurrentScores[CurrentPlayer] += 75000; // 50000
+                  TotalSkill3++;
+                  BSOS_WriteULToEEProm(BSOS_TOTAL_SKILL_3_EEPROM_BYTE, TotalSkill3);
+                }
+              }
+            }
+          } else {
+            PlaySound(26); // wizsound crash bounce up
+          }
+          break;
+        case SW_DTARGET_REBOUND:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            PlaySound(7);
+            AddToScore(50);
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              PlaySound(13);
+              // PFValidated = true;
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
           break;
         case SW_CREDIT_BUTTON:
-          if (CurrentBallInPlay < 2) {
+          if (DEBUG_MESSAGES) {
+            Serial.println(F("Start game button pressed"));
+          }
+          if (CurrentBallInPlay<2) { // single player
             // If we haven't finished the first ball, we can add players
             AddPlayer();
           } else {
             // If the first ball is over, pressing start again resets the game
-            if (Credits >= 1 || FreePlayMode) {
-              if (!FreePlayMode) {
-                Credits -= 1;
-                BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-                BSOS_SetDisplayCredits(Credits);
+            returnState = MACHINE_STATE_INIT_GAMEPLAY;
+          }
+          break;
+        case SW_TILT:
+        case SW_SLAM:
+          TiltHit();
+          break;
+        case SW_COIN_1:
+          if (!FreePlay) {
+            AddCredit(2);
+            BSOS_SetDisplayCredits(Credits, true);
+          }
+          break;
+        case SW_COIN_2:
+          if (!FreePlay) {
+            AddCredit(2);
+            BSOS_SetDisplayCredits(Credits, true);
+          }
+          break;
+        case SW_COIN_3:
+          if (!FreePlay) {
+            AddCredit(4);
+            BSOS_SetDisplayCredits(Credits, true);
+          }
+          break;
+        case SW_TARGET_LRIGHT_BOTTOM:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            // HURRY UP
+            if (DTarget4Light[3]==0 || DTarget4Light[3]==1) {
+              PlaySound(26);
+              AddToScore(5000);
+              TargetLowerBottomBlip = CurrentTime + 100;
+              BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 1);
+            } else if (DTarget4Light[3]==2) {
+              PlaySound(45);
+              AddToScore(50000);
+              AmberHurryUpStart = 0;
+              DTarget4Light[3] = 3;
+              BSOS_SetLampState(LA_DTARGET_4_D, 1);
+              BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 1);
+              CheckHurryUpCompletion();
+            } else if (DTarget4Light[3]==3) {
+              PlaySound(27);
+              AddToScore(10000);
+            }
+            AddToSuperBonus(1);
+          } else  {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_INLANE_R:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            // HURRY UP
+            if (DTarget4Light[2]==0 || DTarget4Light[2]==1) {
+              PlaySound(26);
+              AddToScore(5000);
+              InlaneRightBlip = CurrentTime + 100;
+              BSOS_SetLampState(LA_INLANE_RIGHT, 1);
+            } else if (DTarget4Light[2]==2) {
+              PlaySound(27);
+              AddToScore(25000);
+              DTarget4Light[2] = 3;
+              BSOS_SetLampState(LA_DTARGET_4_C, 1);
+              BSOS_SetLampState(LA_INLANE_RIGHT, 1);
+              LeftSpinnerHurryUpLit = true;
+              LeftSpinnerHurryUpTimer = CurrentTime + 2000;
+              BSOS_SetLampState(LA_SPINNER_LEFT, 1, 0, 100);
+              CheckHurryUpCompletion();
+            } else if (DTarget4Light[2]==3) {
+              PlaySound(27);
+              AddToScore(10000);
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_INLANE_L:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            // HURRY UP
+            if (DTarget4Light[1]==0 || DTarget4Light[1]==1) {
+              PlaySound(26);
+              AddToScore(5000);
+              InlaneLeftBlip = CurrentTime + 100;
+              BSOS_SetLampState(LA_INLANE_LEFT, 1);
+            } else if (DTarget4Light[1]==2) {
+              PlaySound(27);
+              AddToScore(25000);
+              DTarget4Light[1] = 3;
+              BSOS_SetLampState(LA_DTARGET_4_B, 1);
+              BSOS_SetLampState(LA_INLANE_LEFT, 1);
+              RightSpinnerHurryUpLit = true;
+              RightSpinnerHurryUpTimer = CurrentTime + 2000;
+              BSOS_SetLampState(LA_SPINNER_RIGHT, 1, 0, 100);
+              CheckHurryUpCompletion();
+            } else if (DTarget4Light[1]==3) {
+              PlaySound(27);
+              AddToScore(10000);
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_TARGET_LRIGHT_TOP:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            // HURRY UP
+            if (DTarget4Light[0]==0 || DTarget4Light[0]==1) {
+              PlaySound(26);
+              AddToScore(5000);
+              TargetLowerTopBlip = CurrentTime + 100;
+              BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 1);
+            } else if (DTarget4Light[0]==2) {
+              PlaySound(45);
+              AddToScore(50000);
+              WhiteHurryUpStart = 0;
+              DTarget4Light[0] = 3;
+              BSOS_SetLampState(LA_DTARGET_4_A, 1);
+              BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 1);
+              CheckHurryUpCompletion();
+            } else if (DTarget4Light[0]==3) {
+              PlaySound(27);
+              AddToScore(10000);
+            }
+            AddToSuperBonus(1);
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_DTARGET_4_A:
+        case SW_DTARGET_4_B:
+        case SW_DTARGET_4_C:
+        case SW_DTARGET_4_D:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToSuperBonus(1);
+            DropTargetHit();
+            if (switchHit==SW_DTARGET_4_A) {
+              if (DTarget4Light[0]==0) {
+                PlaySound(24);
+                AddToScore(5000);
+              } else if (DTarget4Light[0]==1) {
+                WhiteHurryUpStart = CurrentTime + DTARGET_4_HURRY_UP_TIMER;
+                BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 1, 0, 100);
+                DTarget4Light[0] = 2;
+                PlaySound(47);
+                AddToScore(10000);
+              } else if (DTarget4Light[0]==2 || DTarget4Light[0]==3) {
+                PlaySound(25);
+                AddToScore(10000);
               }
-              returnState = MACHINE_STATE_INIT_GAMEPLAY;
+            }
+            if (switchHit==SW_DTARGET_4_B) {
+              if (DTarget4Light[1]==0) {
+                PlaySound(24);
+                AddToScore(5000);
+              } else if (DTarget4Light[1]==1) {
+                BSOS_SetLampState(LA_INLANE_LEFT, 1, 0, 250);
+                DTarget4Light[1] = 2;
+                PlaySound(25);
+                AddToScore(10000);
+              } else if (DTarget4Light[1]==2 || DTarget4Light[1]==3) {
+                PlaySound(25);
+                AddToScore(10000);
+              }
+            }
+            if (switchHit==SW_DTARGET_4_C) {
+              if (DTarget4Light[2]==0) {
+                PlaySound(24);
+                AddToScore(5000);
+              } else if (DTarget4Light[2]==1) {
+                BSOS_SetLampState(LA_INLANE_RIGHT, 1, 0, 250);
+                DTarget4Light[2] = 2;
+                PlaySound(25);
+                AddToScore(10000);
+              } else if (DTarget4Light[2]==2 || DTarget4Light[2]==3) {
+                PlaySound(25);
+                AddToScore(10000);
+              }
+            }
+            if (switchHit==SW_DTARGET_4_D) {
+              if (DTarget4Light[3]==0) {
+                PlaySound(24);
+                AddToScore(5000);
+              } else if (DTarget4Light[3]==1) {
+                AmberHurryUpStart = CurrentTime + DTARGET_4_HURRY_UP_TIMER;
+                BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 1, 0, 100);
+                DTarget4Light[3] = 2;
+                PlaySound(47);
+                AddToScore(10000);
+              } else if (DTarget4Light[3]==2 || DTarget4Light[3]==3) {
+                PlaySound(25);
+                AddToScore(10000);
+              }
+            }
+            if (CheckIfDTargets4Down()) {
+              AddToScore(15000);
+              if (LeftSpinnerLit==false) {
+                LeftSpinnerLit = true;
+                BSOS_SetLampState(LA_SPINNER_LEFT, 1);
+              } else {
+                RightSpinnerLit = true;
+                BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+              }
+              DTarget4Goal = true;
+              BSOS_SetLampState(LA_SAUCER_10K, 1);
+              CheckSaucerDTargetGoal();
+              if (BonusXState==4) {
+                BonusXState = 5;
+                ShowExtraBonusLights();
+              }
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_4_RESET, 15, CurrentTime + 500);
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+            // BSOS_PushToTimedSolenoidStack(SO_DTARGET_4_RESET, 15, CurrentTime);
+          }
+          break;
+        case SW_DTARGET_3_A:
+        case SW_DTARGET_3_B:
+        case SW_DTARGET_3_C:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            AddToMiniBonus(1);
+            DropTargetHit();
+            if (switchHit==SW_DTARGET_3_A) {
+              if (DTarget3Lights[0]==0 && DTarget3Flashing==LA_DTARGET_ARROW_1) {
+                BSOS_SetLampState(LA_DTARGET_ARROW_1, 1);
+                DTarget3Lights[0] = 1;
+                PlaySound(24);
+                AddToScore(10000);
+              } else if (DTarget3Lights[0]==1) {
+                PlaySound(25);
+                AddToScore(10000);
+              } else {
+                PlaySound(25);
+                AddToScore(5000);
+              }
+            }
+            if (switchHit==SW_DTARGET_3_B) {
+              if (DTarget3Lights[1]==0 && DTarget3Flashing==LA_DTARGET_ARROW_2) {
+                BSOS_SetLampState(LA_DTARGET_ARROW_2, 1);
+                DTarget3Lights[1] = 1;
+                PlaySound(24);
+                AddToScore(10000);
+              } else if (DTarget3Lights[1]==1) {
+                PlaySound(25);
+                AddToScore(10000);
+              } else {
+                PlaySound(25);
+                AddToScore(5000);
+              }
+            }
+            if (switchHit==SW_DTARGET_3_C) {
+              if (DTarget3Lights[2]==0 && DTarget3Flashing==LA_DTARGET_ARROW_3) {
+                BSOS_SetLampState(LA_DTARGET_ARROW_3, 1);
+                DTarget3Lights[2] = 1;
+                PlaySound(24);
+                AddToScore(10000);
+              } else if (DTarget3Lights[2]==1) {
+                PlaySound(25);
+                AddToScore(10000);
+              } else {
+                PlaySound(25);
+                AddToScore(5000);
+              }
+            }
+            if (CheckIfDTargets3Down()) {
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime + 500);
+              DTarget3Completions++;
+              if (DTarget3Completions==1) {
+                BSOS_SetLampState(LA_POP_TOP, 1);
+                TopPopLit = true;
+              } else if (DTarget3Completions==2) {
+                BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 1);
+                MiniBonusReady = true;
+              } else if (DTarget3Completions==3) {
+                BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 1);
+                TopSpecialLit = true;
+              }
+              AddToScore(15000);
+              BSOS_SetLampState(LA_SAUCER_30K, 1);
+              DTarget3Goal = true;
+              CheckSaucerDTargetGoal();
+              if (BonusXState==3) {
+                BonusXState = 4;
+                ShowExtraBonusLights();
+              }
+            }
+            if (DTarget3Lights[0]==1 && DTarget3Lights[1]==1 && DTarget3Lights[2]==1 && Playfield2xState==0) {
+              Mini50kCollected = true;
+              Playfield2xState = 1;
+              PlaySound(42);
+              BSOS_SetLampState(LA_SAUCER_ARROW_2X, 1, 0, 150);
+              BSOS_SetLampState(LA_BONUS_MINI_50K, 1);
+            }
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              PlaySound(13);
+              // PFValidated = true;
+            }
+          } else  {
+            PlaySound(24); // wizsound bong bounce down
+            // BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime);
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
           }
-          if (DEBUG_MESSAGES) {
-            Serial.write("Start game button pressed\n\r");
+          break;
+        case SW_TARGET_TOP:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            AddToScore(5000);
+            AddToMiniBonus(1);
+            if (MiniBonusReady==false && TopSpecialLit==false) {
+              TargetUpperBlip = CurrentTime + 100;
+              BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 1);
+              BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 1);
+            }
+            if (MiniBonusReady==true) {
+              BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 0);
+              MiniBonusCollecting = true;
+              CountdownMini = MiniBonus;
+              CountdownBonusX = BonusXState;
+              LastCountdownReportTime = CurrentTime;
+            }
+            if (TopSpecialLit==true) {
+              AddToScore(50000);
+              BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 0);
+              AddCredit(4);
+              TotalReplays += 1;
+              BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
+              BSOS_PushToSolenoidStack(SO_KNOCKER, 5, true);
+              TopSpecialLit = false;
+            }
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              PlaySound(13);
+              // PFValidated = true;
+            } else {
+              PlaySound(27);
+            }
+          } else  {
+            PlaySound(24); // wizsound bong bounce down
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_DTARGET_INLINE_1ST:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(10000);
+            AddToSuperBonus(2);
+            DropTargetHit();
+            PlaySound(25);
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+            // BSOS_PushToTimedSolenoidStack(SO_DTARGET_INLINE_RESET, 15, CurrentTime);
+          }
+          break;
+        case SW_DTARGET_INLINE_2ND:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(10000);
+            DropTargetHit();
+            PlaySound(25);
+            if (BonusXState==1) {
+              BonusXState = 2;
+              ShowExtraBonusLights();
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_DTARGET_INLINE_3RD:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(10000);
+            DTargetInlineGoal = true;
+            // RightSpinnerLit = true;
+            // BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+            BSOS_SetLampState(LA_SAUCER_20K, 1);
+            CheckSaucerDTargetGoal();
+            PlaySound(25);
+            if (WoodBeastXBallState[CurrentPlayer]==0) {
+              WoodBeastXBallState[CurrentPlayer] = 1;
+              BSOS_SetLampState(LA_TARGET_WOOD_BEAST_XBALL, 1);
+            }
+            DropTargetHit();
+            if (BonusXState==2) {
+              BonusXState = 3;
+              ShowExtraBonusLights();
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_TARGET_WOOD_BEAST:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (WoodBeastXBallState[CurrentPlayer]==1) {
+              WoodBeastXBallState[CurrentPlayer] = 2;
+              PlayerShootsAgain = true;
+              BSOS_SetLampState(LA_TARGET_WOOD_BEAST_XBALL, 0);
+              BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
+              BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
+            }
+            BSOS_PushToTimedSolenoidStack(SO_DTARGET_INLINE_RESET, 15, CurrentTime + 750);
+            PlaySound(27);
+            AddToScore(25000);
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_REBOUND:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            PlaySound(7);
+            AddToScore(10);
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              PlaySound(13);
+              // PFValidated = true;
+            }
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_SAUCER:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            if (SaucerHitTime==0 || (CurrentTime-SaucerHitTime)>500) {
+              SaucerHitTime = CurrentTime;
+              if (Playfield2xState==1 || Playfield3xState==1) {
+                SaucerAnimation = CurrentTime+3770;
+                PlaySound(40);
+              } else {
+                SaucerAnimation = CurrentTime+1650;
+                PlaySound(22);
+              }
+              if (DTarget4Goal==true) AddToScore(10000);
+              if (DTargetInlineGoal==true) AddToScore(20000);
+              if (DTarget3Goal==true) AddToScore(30000);
+              if (SaucerXBallState[CurrentPlayer]==1) {
+                SaucerXBallState[CurrentPlayer] = 2;
+                PlayerShootsAgain = true;
+                BSOS_SetLampState(LA_SAUCER_XBALL, 0);
+                BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
+                BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
+              }
+              DTarget4Goal = false;
+              DTargetInlineGoal = false;
+              DTarget3Goal = false;
+              BSOS_SetLampState(LA_SAUCER_10K, 0);
+              BSOS_SetLampState(LA_SAUCER_20K, 0);
+              BSOS_SetLampState(LA_SAUCER_30K, 0);
+              BallInSaucer = true;
+            }
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              // PFValidated = true;
+            }
+          } else {
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+            if (SaucerHitTime==0 || (CurrentTime-SaucerHitTime)>500) {
+              SaucerHitTime = CurrentTime;
+              if (MingAttackReady==false) {
+                AddToScore(3500);
+                MingAttackProgress += 35;
+                if (MingAttackProgress>=WIZARD_GOAL_ATTACK && MingAttackReady==false) {
+                  MingAttackReady = true;
+                } else {
+                  PlaySound(25); // wizsound crash bounce up
+                }
+              }
+              if (MingAttackReady==true) {
+                MingHealth--;
+                if (MingHealth==0) {
+                  PlaySound(5);
+                  PlaySound(48); // wizsound defeat miserable earthling
+                  BSOS_PushToTimedSolenoidStack(SO_SAUCER_DOWN, 5, CurrentTime+1600);
+                  BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 5, CurrentTime+1600);
+                  MingAttackAnimation = CurrentTime+2475;
+                } else {
+                  PlaySound(5);
+                  PlaySound(42); // wizsound lucky shot earthling
+                  MingAttackAnimation = CurrentTime+1650;
+                }
+              }
+              BallInSaucer = true;
+            }
+          }
+          break;
+        case SW_OUTLANE_RIGHT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(2000);
+            AddToSuperBonus(2);
+            if (WizardState==0) PlaySound(28);
+            if (WizardState==1) {
+              WizardState = 2;
+              PlaySound(5); // sound off
+              PlaySound(50);
+            }
+          } else {
+            if (WizardState==5) PlaySound(50); // wiz sound outlane
+          }
+          BallDrained = true;
+          break;
+        case SW_OUTLANE_LEFT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(2000);
+            AddToSuperBonus(2);
+            if (WizardState==0) PlaySound(28);
+            if (WizardState==1) {
+              WizardState = 2;
+              PlaySound(5); // sound off
+              PlaySound(50);
+            }
+          } else {
+            if (WizardState==5) PlaySound(50); // wiz sound outlane
+          }
+          BallDrained = true;
+          break;
+        case SW_SPINNER_RIGHT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            // if (PFValidated==false) {
+            //   BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+            //   PFValidated = true;
+            // }
+            if (RightSpinnerLit==false) {
+              PlaySound(8);
+              AddToScore(100);
+            } else {
+              PlaySound(9);
+              AddToScore(1000);
+            }
+            if (RightSpinnerHurryUpLit==true) {
+              RightSpinnerHurryUpTimer = CurrentTime + 500;
+              AddToScore(2000);
+            }
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              // PFValidated = true;
+            }
+          } else {
+            AddToScore(1000);
+            MingAttackProgress++;
+            if (MingAttackProgress>=WIZARD_GOAL_ATTACK && MingAttackReady==false) {
+              PlaySound(45); // wizsound flash
+              MingAttackReady = true;
+            } else {
+              PlaySound(7); // wizsound rebound hit
+            }
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_SPINNER_LEFT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            // if (PFValidated==false) {
+            //   BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+            //   PFValidated = true;
+            // }
+            if (LeftSpinnerLit==false) {
+              PlaySound(8);
+              AddToScore(100);
+            } else {
+              PlaySound(9);
+              AddToScore(1000);
+            }
+            if (LeftSpinnerHurryUpLit==true) {
+              LeftSpinnerHurryUpTimer = CurrentTime + 500;
+              AddToScore(2000);
+            }
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              PlaySound(13);
+              // PFValidated = true;
+            }
+          } else {
+            AddToScore(1000);
+            MingAttackProgress++;
+            if (MingAttackProgress>=WIZARD_GOAL_ATTACK && MingAttackReady==false) {
+              PlaySound(45); // wizsound flash
+              MingAttackReady = true;
+            } else {
+              PlaySound(7); // wizsound rebound hit
+            }
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_SLING_RIGHT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(50);
+            PlaySound(21);
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_SLING_LEFT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            AddToScore(50);
+            PlaySound(21);
+          } else {
+            PlaySound(24); // wizsound bong bounce down
+          }
+          break;
+        case SW_POP_TOP:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            if (PFValidated==false) {
+              BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
+              PFValidated = true;
+            }
+            if (TopPopLit==false) {
+              PlaySound(20);
+              AddToScore(1000);
+            } else {
+              PlaySound(13);
+              AddToScore(5000);
+            }
+            if (curState==MACHINE_STATE_SKILL_SHOT) {
+              SkillShotState = 3;
+              PlaySound(13);
+              // PFValidated = true;
+            }
+          } else {
+            AddToScore(2000);
+            MingAttackProgress += 20;
+            if (MingAttackProgress>=WIZARD_GOAL_ATTACK && MingAttackReady==false) {
+              PlaySound(45); // wizsound flash
+              MingAttackReady = true;
+            } else {
+              PlaySound(27); // wizsound crash bounce up
+            }
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_POP_RIGHT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            PlaySound(20);
+            AddToScore(1000);
+          } else  {
+            AddToScore(2000);
+            MingAttackProgress += 20;
+            if (MingAttackProgress>=WIZARD_GOAL_ATTACK && MingAttackReady==false) {
+              PlaySound(45); // wizsound flash
+              MingAttackReady = true;
+            } else {
+              PlaySound(27); // wizsound crash bounce up
+            }
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
+          }
+          break;
+        case SW_POP_LEFT:
+          if (curState!=MACHINE_STATE_WIZARD_MODE) {
+            PlaySound(20);
+            AddToScore(1000);
+          } else  {
+            AddToScore(2000);
+            MingAttackProgress += 20;
+            if (MingAttackProgress>=WIZARD_GOAL_ATTACK && MingAttackReady==false) {
+              MingAttackReady = true;
+              PlaySound(45); // wizsound flash
+              MingAttackReady = true;
+            } else {
+              PlaySound(27); // wizsound crash bounce up
+            }
+            if (WizardState==4) {
+              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              WizardState = 5;
+              BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
+            }
           }
           break;
       }
     }
   } else {
     // We're tilted, so just wait for outhole
-    while ( (switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
+    while ( (switchHit=BSOS_PullFirstFromSwitchStack())!=SWITCH_STACK_EMPTY ) {
       switch (switchHit) {
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
           SetLastSelfTestChangedTime(CurrentTime);
           break;
         case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          AddCoinToAudit(switchHit);
-          AddCredit(true, 1);
-          break;
-      }
-    }
-  }
-
-  if (!ScrollingScores && CurrentScores[CurrentPlayer] > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
-    CurrentScores[CurrentPlayer] -= BALLY_STERN_OS_MAX_DISPLAY_SCORE;
-  }
-
-  if (scoreAtTop != CurrentScores[CurrentPlayer]) {
-    LastTimeScoreChanged = CurrentTime;
-    if (!TournamentScoring) {
-      for (int awardCount = 0; awardCount < 3; awardCount++) {
-        if (AwardScores[awardCount] != 0 && scoreAtTop < AwardScores[awardCount] && CurrentScores[CurrentPlayer] >= AwardScores[awardCount]) {
-          // Player has just passed an award score, so we need to award it
-          if (((ScoreAwardReplay >> awardCount) & 0x01)) {
-            AddSpecialCredit();
-          } else if (!ExtraBallCollected) {
-            AwardExtraBall();
+          if (!FreePlay) {
+            AddCredit(2);
+            BSOS_SetDisplayCredits(Credits, true);
           }
-        }
+          break;
+        case SW_COIN_2:
+          if (!FreePlay) {
+            AddCredit(2);
+            BSOS_SetDisplayCredits(Credits, true);
+          }
+          break;
+        case SW_COIN_3:
+          if (!FreePlay) {
+            AddCredit(4);
+            BSOS_SetDisplayCredits(Credits, true);
+          }
+          break;
+        case SW_SAUCER:
+          BSOS_PushToTimedSolenoidStack(SO_SAUCER_DOWN, 5, CurrentTime + 500);
+         break;
       }
     }
+  }
 
+  if (miniBonusAtTop!=MiniBonus) {
+    ShowMiniBonusOnLadder(MiniBonus);
+  }
+
+  if (superBonusAtTop!=SuperBonus) {
+    ShowSuperBonusOnLadder(SuperBonus);
+  }
+
+  if (scoreAtTop!=CurrentScores[CurrentPlayer]) {
+  }
+
+  // handle score award thresholds
+  if (CurrentScores[CurrentPlayer]>ScoreAward1 && ScoreAwardStates[CurrentPlayer]==0) {
+    BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime, true);
+    AddCredit(4);
+    ScoreAwardStates[CurrentPlayer] = 1;
+    TotalReplays += 1;
+    BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
+    if (DEBUG_MESSAGES) Serial.println(F("Score award 1"));
+  }
+
+  if (CurrentScores[CurrentPlayer]>ScoreAward2 && ScoreAwardStates[CurrentPlayer]==1) {
+    BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime, true);
+    AddCredit(4);
+    ScoreAwardStates[CurrentPlayer] = 2;
+    TotalReplays += 1;
+    BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
+    if (DEBUG_MESSAGES) Serial.println(F("Score award 2"));
+  }
+  if (CurrentScores[CurrentPlayer]>ScoreAward3 && ScoreAwardStates[CurrentPlayer]==2) {
+    BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime, true);
+    AddCredit(4);
+    ScoreAwardStates[CurrentPlayer] = 3;
+    TotalReplays += 1;
+    BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
+    if (DEBUG_MESSAGES) Serial.println(F("Score award 3"));
   }
 
   return returnState;
 }
 
 
+// #################### LOOP ####################
 void loop() {
-
+  // This line has to be in the main loop
   BSOS_DataRead(0);
 
   CurrentTime = millis();
   int newMachineState = MachineState;
 
-  if (MachineState < 0) {
+  // Machine state is self-test/attract/game play
+  if (MachineState<0) {
     newMachineState = RunSelfTest(MachineState, MachineStateChanged);
-  } else if (MachineState == MACHINE_STATE_ATTRACT) {
+  } else if (MachineState==MACHINE_STATE_ATTRACT) {
     newMachineState = RunAttractMode(MachineState, MachineStateChanged);
   } else {
     newMachineState = RunGamePlayMode(MachineState, MachineStateChanged);
   }
 
-  if (newMachineState != MachineState) {
+  if (newMachineState!=MachineState) {
     MachineState = newMachineState;
     MachineStateChanged = true;
   } else {
@@ -1882,5 +2033,890 @@ void loop() {
 
   BSOS_ApplyFlashToLamps(CurrentTime);
   BSOS_UpdateTimedSolenoidStack(CurrentTime);
+}
 
+
+// #################### LAMP ANIMATIONS ####################
+// ########## BACKGLASS LAMPS CLEAR ##########
+void BackglassLampsClear() {
+  BSOS_SetLampState(LA_FLASH_GORDON_6, 0);
+  BSOS_SetLampState(LA_FLASH_GORDON_1, 0);
+  BSOS_SetLampState(LA_FLASH_GORDON_5, 0);
+  BSOS_SetLampState(LA_FLASH_GORDON_2, 0);
+  BSOS_SetLampState(LA_FLASH_GORDON_4, 0);
+  BSOS_SetLampState(LA_FLASH_GORDON_3, 0);
+  BSOS_SetLampState(LA_FLASH_STROBE, 0);
+}
+
+
+// ########## BACKGLASS LAMPS CENTER OUT ##########
+void backglassLampsCenterOut() {
+  if (USE_STROBE) {
+    byte lampPhase = (CurrentTime/115)%4;
+    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==1||lampPhase==2, lampPhase==2);
+    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY || (MachineState==MACHINE_STATE_NORMAL_GAMEPLAY && BallInSaucer==true)) BSOS_SetLampState(LA_FLASH_STROBE, lampPhase<2, lampPhase==1);
+  } else {
+    byte lampPhase = (CurrentTime/115)%3;
+    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase<2, lampPhase==1);
+  }
+}
+
+
+// ########## BACKGLASS LAMPS KNIGHT RIDER ##########
+void BackglassLampsKnightRider() {
+  if (USE_STROBE) {
+    byte lampPhase = (CurrentTime/80)%14;
+    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==6||lampPhase==7, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==5||lampPhase==8, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==4||lampPhase==9, 0, 0);
+    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY) BSOS_SetLampState(LA_FLASH_STROBE, lampPhase==3||lampPhase==10, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==2||lampPhase==11, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==12, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==0||lampPhase==13, 0, 0);
+  } else {
+    byte lampPhase = (CurrentTime/80)%12;
+    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==5||lampPhase==6, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==4||lampPhase==7, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==3||lampPhase==8, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==2||lampPhase==9, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==10, 0, 0);
+    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==0||lampPhase==11, 0, 0);
+  }
+}
+
+
+// ########## BACKGLASS LAMPS LEFT TO RIGHT ##########
+void BackglassLampsLeft2Right() {
+  if (USE_STROBE) {
+    byte lampPhase = (CurrentTime/85)%4;
+    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==1||lampPhase==2, lampPhase==2);
+    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY) BSOS_SetLampState(LA_FLASH_STROBE, lampPhase<2, lampPhase==1);
+  } else {
+    byte lampPhase = (CurrentTime/95)%3;
+    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase<2, lampPhase==1);
+  }
+}
+
+
+// ########## ATTRACT RETRO ##########
+void AttractRetro() {
+  // bonus
+  byte attractBonus;
+  for (attractBonus=0; attractBonus<10; attractBonus++){
+    if ( attractBonus % 2 == 0) { // even but odd on pf
+      BSOS_SetLampState(LA_BONUS_MINI_1K+attractBonus, 1, 0, 100);
+      BSOS_SetLampState(LA_BONUS_SUPER_1K+attractBonus, 1, 0, 100);
+    } else { // odd even on pf
+      BSOS_SetLampState(LA_BONUS_MINI_1K+attractBonus, 1, 0, 200);
+      BSOS_SetLampState(LA_BONUS_SUPER_1K+attractBonus, 1, 0, 200);
+    }
+  }
+
+  // sweep 4
+  byte lampPhase1 = (CurrentTime/115)%4; // 125
+  BSOS_SetLampState(LA_SAUCER_XBALL, lampPhase1==3||lampPhase1==0, lampPhase1==0); // SAUCER
+  BSOS_SetLampState(LA_SAUCER_30K, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_SAUCER_20K, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LA_SAUCER_10K, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LA_DTARGET_4_A, lampPhase1==3||lampPhase1==0, lampPhase1==0); // DTARGET 4
+  BSOS_SetLampState(LA_DTARGET_4_B, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_DTARGET_4_C, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LA_DTARGET_4_D, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LA_BONUS_5X, lampPhase1==3||lampPhase1==0, lampPhase1==0); // BONUS X
+  BSOS_SetLampState(LA_BONUS_4X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_BONUS_3X, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LA_BONUS_2X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, lampPhase1==3||lampPhase1==0, lampPhase1==0); // OUTLANES & PFX
+  BSOS_SetLampState(LA_SAUCER_ARROW_3X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_CLOCK_15_SECONDS_2X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LA_SAUCER_ARROW_2X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LA_CLOCK_15_SECONDS_3X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LA_INLANE_LEFT, lampPhase1==3||lampPhase1==0, lampPhase1==0); // INLANES & SPINNERS
+  BSOS_SetLampState(LA_SPINNER_RIGHT, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_INLANE_RIGHT, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LA_SPINNER_LEFT, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, lampPhase1==3||lampPhase1==0, lampPhase1==0); // REMAINDER
+  BSOS_SetLampState(LA_TARGET_WOOD_BEAST_XBALL, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LA_DTARGET_BONUS_5X, lampPhase1<2, lampPhase1==1);
+
+  // sweep 5
+  byte lampPhase2 = (CurrentTime/95)%5;
+  BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, lampPhase2==4||lampPhase2==0, lampPhase2==0);
+  BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, lampPhase2==3||lampPhase2==4, lampPhase2==4);
+  BSOS_SetLampState(LA_STAR_SHOOTER_TOP, lampPhase2==2||lampPhase2==3, lampPhase2==3);
+  BSOS_SetLampState(LA_STAR_PFIELD_TOP, lampPhase2==1||lampPhase2==2, lampPhase2==2);
+  BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, lampPhase2<2, lampPhase2==1);
+
+  // sweep 4
+  byte lampPhase3 = (CurrentTime/75)%6;
+  BSOS_SetLampState(LA_DTARGET_ARROW_3, lampPhase3==5||lampPhase3==0, lampPhase3==0);
+  BSOS_SetLampState(LA_DTARGET_ARROW_2, lampPhase3==4||lampPhase3==5, lampPhase3==5);
+  BSOS_SetLampState(LA_DTARGET_ARROW_1, lampPhase3==3, lampPhase3==4, lampPhase3==4);
+  BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, lampPhase3==2||lampPhase3==3, lampPhase3==3);
+  BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, lampPhase3==1||lampPhase3==2, lampPhase3==2);
+  BSOS_SetLampState(LA_DTARGET_BONUS_4X, lampPhase3<2, lampPhase3==1);
+
+  // remainder
+  BSOS_DataRead(0);
+  BSOS_SetLampState(LA_POP_TOP, 1, 0, 250);
+  BSOS_SetLampState(LA_BONUS_MINI_50K, 1, 0, 250);
+  BSOS_SetLampState(LA_BONUS_SUPER_100K, 1, 0, 250);
+  BSOS_SetLampState(LA_SHOOT_AGAIN, 1, 0, 250);
+  BSOS_SetLampState(LA_MING_TOP, 1, 0, 250);
+  BSOS_SetLampState(LA_MING_BOTTOM, 1);
+
+  BackglassLampsLeft2Right();
+}
+
+
+// #################### ADD TO SCORE ####################
+void AddToScore(unsigned long scoreAmount) {
+  if (Playfield3xState==2 && Playfield2xState==2) {
+    scoreAmount = scoreAmount * 5;
+  } else if (Playfield2xState==2) {
+    scoreAmount = scoreAmount * 2;
+  } else if (Playfield3xState==2) {
+    scoreAmount = scoreAmount * 3;
+  }
+  CurrentScores[CurrentPlayer] += scoreAmount;
+}
+
+
+// #################### TILT HIT ####################
+void TiltHit() {
+  NumTiltWarnings += 1;
+  if (NumTiltWarnings>=MAX_TILT_WARNINGS) {
+    PlaySound(5);
+    BSOS_DisableSolenoidStack();
+    BSOS_SetDisableFlippers(true);
+    BSOS_TurnOffAllLamps();
+    if (Credits) BSOS_SetLampState(LA_CREDIT_INDICATOR, 1);
+    BSOS_SetLampState(LA_TILT, 1);
+    PlaySound(50);
+  }
+}
+
+
+// #################### SKILL SHOT ####################
+int SkillShot(boolean curStateChanged) {
+  int returnState = MACHINE_STATE_SKILL_SHOT;
+
+  if (curStateChanged) {
+    BSOS_SetDisplayCredits(0, true);
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    // Serial.println(F("Skill Shot Started"));
+  }
+
+  // HANDLE LAMPS
+  if (SkillShotState==0) {
+    backglassLampsCenterOut();
+    byte lampPhase = (CurrentTime/600)%3;
+    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, lampPhase==2, 0, 100);
+    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, lampPhase==1||lampPhase==2, 0, 100);
+    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, lampPhase==0||lampPhase==1||lampPhase==2, 0, 100);
+  } else if (SkillShotState==1) {
+    BackglassLampsClear();
+    if (SkillShotHits==1 || SkillShotHits==2) {
+      BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1);
+    } else if (SkillShotHits==3 || SkillShotHits==4) {
+      BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1);
+      BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1);
+    } else if (SkillShotHits>=5) {
+      BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 1);
+      BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1);
+      BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1);
+    }
+  } else if (SkillShotState==2) {
+    if (CurrentTime<=SkillShotScoreAnimation) {
+      if (SkillShotHits==1 || SkillShotHits==2) {
+        BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1, 0, 125);
+      } else if (SkillShotHits==3 || SkillShotHits==4) {
+        BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1, 0, 125);
+        BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1, 0, 125);
+      } else if (SkillShotHits>=5) {
+        BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 1, 0, 125);
+        BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1, 0, 125);
+        BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1, 0, 125);
+      }
+      if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 125);
+    } else {
+      SkillShotState = 3;
+    }
+  }
+
+  // If the skillshot hasn't been collected yet, flash score
+  if (SkillShotState<=2) {
+    BSOS_SetDisplayFlash(CurrentPlayer, CurrentScores[CurrentPlayer], CurrentTime, 250, 2);
+  } else {
+    // Serial.println(F("Skill Shot Ended"));
+    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
+    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
+    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
+    if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 0);
+    returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+    for (byte count=0; count<CurrentNumPlayers; count++) {
+      BSOS_SetDisplay(count, CurrentScores[count], true, 2);
+    }
+  }
+
+  return returnState;
+}
+
+
+// #################### DROP TARGETS ####################
+// ########## DROP TARGET HIT ##########
+void DropTargetHit() {
+  DropTargetCount++;
+  if (DropTargetCount==WIZARD_GOAL_DTARGET) {
+    BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 1);
+    BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 1);
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    WizardState = 1;
+    PlaySound(44);
+  }
+}
+
+
+// ########## CHECK IF DROP TARGETS FOUR DOWN ##########
+boolean CheckIfDTargets4Down() {
+  return (  BSOS_ReadSingleSwitchState(SW_DTARGET_4_A) &&
+            BSOS_ReadSingleSwitchState(SW_DTARGET_4_B) &&
+            BSOS_ReadSingleSwitchState(SW_DTARGET_4_C) &&
+            BSOS_ReadSingleSwitchState(SW_DTARGET_4_D) );
+}
+
+
+// ########## CHECK IF DROP TARGETS 3 DOWN ##########
+boolean CheckIfDTargets3Down() {
+  return (  BSOS_ReadSingleSwitchState(SW_DTARGET_3_A) &&
+            BSOS_ReadSingleSwitchState(SW_DTARGET_3_B) &&
+            BSOS_ReadSingleSwitchState(SW_DTARGET_3_C) );
+}
+
+
+// ########## CHECK HURRY UP COMPLETION ##########
+void CheckHurryUpCompletion() {
+  // HURRY UP
+  if (DTarget4Light[0]==3 && DTarget4Light[1]==3 && DTarget4Light[2]==3 && DTarget4Light[3]==3) {
+    Super100kCollected = true;
+    Playfield3xState = 1;
+    PlaySound(48);
+    BSOS_SetLampState(LA_SAUCER_ARROW_3X, 1, 0, 150);
+    BSOS_SetLampState(LA_BONUS_SUPER_100K, 1);
+  }
+}
+
+
+// ########## CHECK SAUCER DROP TARGET GOAL ##########
+void CheckSaucerDTargetGoal() {
+  if (DTarget4Goal==true && DTarget3Goal==true && DTargetInlineGoal==true && WoodBeastXBallState[CurrentPlayer]==3 && SaucerXBallState[CurrentPlayer]==0) {
+    BSOS_SetLampState(LA_SAUCER_XBALL, 1);
+    SaucerXBallState[CurrentPlayer] = 1;
+  }
+}
+
+
+// #################### BONUS ####################
+// ########## ADD TO MINI BONUS ##########
+void AddToMiniBonus(byte bonusAddition) {
+  MiniBonus += bonusAddition;
+  if (MiniBonus>MAX_MINI_BONUS) MiniBonus = MAX_MINI_BONUS;
+}
+
+
+// ########## ADD TO SUPER BONUS ##########
+void AddToSuperBonus(byte bonusAddition) {
+  SuperBonus += bonusAddition;
+  if (SuperBonus>MAX_SUPER_BONUS) SuperBonus = MAX_SUPER_BONUS;
+}
+
+
+// ########## SET MINI BONUS INDICATOR ##########
+void SetMiniBonusIndicator(byte number, byte state, byte dim, int flashPeriod=0) {
+  if (number==0 || number>19) return;
+  BSOS_SetLampState(LA_BONUS_MINI_1K+(number-1), state, dim, flashPeriod);
+}
+
+
+// ########## SET SUPER BONUS INDICATOR ##########
+void SetSuperBonusIndicator(byte number, byte state, byte dim, int flashPeriod=0) {
+  if (number==0 || number>19) return;
+  BSOS_SetLampState(LA_BONUS_SUPER_1K+(number-1), state, dim, flashPeriod);
+}
+
+
+// ########## SHOW MINI BONUS ON LADDER ##########
+void ShowMiniBonusOnLadder(byte bonus) {
+  if (bonus>MAX_MINI_DISPLAY_BONUS) bonus = MAX_MINI_DISPLAY_BONUS;
+  byte cap = 10;
+
+  for (byte count=1; count<11; count++) SetMiniBonusIndicator(count, 0, 0);
+
+  if (bonus==0) {
+    return;
+  } else if (bonus<cap) {
+    SetMiniBonusIndicator(bonus, 1, 0);
+    byte bottom;
+    for (bottom=1; bottom<bonus; bottom++){
+      SetMiniBonusIndicator(bottom, 1, 0, 0);
+    }
+  } else if (bonus==cap) {
+    SetMiniBonusIndicator(cap, 1, 0, 0);
+  } else if (bonus>cap) {
+    SetMiniBonusIndicator(cap, 1, 0, 0);
+    SetMiniBonusIndicator(bonus-10, 1, 0);
+    byte bottom;
+    for (bottom=1; bottom<bonus-10; bottom++){
+      SetMiniBonusIndicator(bottom, 1, 0, 0);
+    }
+  }
+}
+
+
+// ########## SHOW SUPER BONUS ON LADDER ##########
+void ShowSuperBonusOnLadder(byte bonus) {
+  if (bonus>MAX_SUPER_DISPLAY_BONUS) bonus = MAX_SUPER_DISPLAY_BONUS;
+  byte cap = 10;
+
+  for (byte count=1; count<11; count++) SetSuperBonusIndicator(count, 0, 0);
+
+  if (bonus==0) {
+    return;
+  } else if (bonus<cap) {
+    SetSuperBonusIndicator(bonus, 1, 0);
+    byte bottom;
+    for (bottom=1; bottom<bonus; bottom++){
+      SetSuperBonusIndicator(bottom, 1, 0, 0);
+    }
+  } else if (bonus==cap) {
+    SetSuperBonusIndicator(cap, 1, 0, 0);
+  } else if (bonus>cap) {
+    SetSuperBonusIndicator(cap, 1, 0, 0);
+    SetSuperBonusIndicator(bonus-10, 1, 0);
+    byte bottom;
+    for (bottom=1; bottom<bonus-10; bottom++){
+      SetSuperBonusIndicator(bottom, 1, 0, 0);
+    }
+  }
+}
+
+
+// ########## SHOW EXTRA BONUS LIGHTS ##########
+void ShowExtraBonusLights() {
+  if (Mini50kCollected==true) {
+    BSOS_SetLampState(LA_BONUS_MINI_50K, 1);
+  }
+  if (Super100kCollected==true) {
+    BSOS_SetLampState(LA_BONUS_SUPER_100K, 1);
+  }
+  if (BonusXState==2) {
+    BSOS_SetLampState(LA_BONUS_2X, 1);
+  } else if (BonusXState==3) {
+    BSOS_SetLampState(LA_BONUS_2X, 0);
+    BSOS_SetLampState(LA_BONUS_3X, 1);
+    BSOS_SetLampState(LA_DTARGET_BONUS_4X, 1, 0, 200);
+  } else if (BonusXState==4) {
+    BSOS_SetLampState(LA_DTARGET_BONUS_4X, 0);
+    BSOS_SetLampState(LA_BONUS_3X, 0);
+    BSOS_SetLampState(LA_BONUS_4X, 1);
+    BSOS_SetLampState(LA_DTARGET_BONUS_5X, 1, 0, 200);
+  } else if (BonusXState==5) {
+    BSOS_SetLampState(LA_DTARGET_BONUS_5X, 0);
+    BSOS_SetLampState(LA_BONUS_4X, 0);
+    BSOS_SetLampState(LA_BONUS_5X, 1);
+  }
+}
+
+
+// ########## COUNTDOWN BONUS ##########
+int CountdownBonus(boolean curStateChanged) {
+
+  // If this is the first time through the countdown loop
+  if (curStateChanged) {
+    BSOS_SetLampState(LA_BALL_IN_PLAY, 1, 0, 250);
+
+    CountdownMini = MiniBonus;
+    CountdownSuper = SuperBonus;
+    CountdownBonusX = BonusXState;
+
+    CountdownStartTime = CurrentTime;
+    ShowMiniBonusOnLadder(MiniBonus);
+    ShowSuperBonusOnLadder(SuperBonus);
+
+    if (Super100kCollected==true) {
+      CurrentScores[CurrentPlayer] += 100000;
+      BSOS_SetLampState(LA_BONUS_SUPER_100K, 0);
+    }
+    if (Mini50kCollected==true) {
+      CurrentScores[CurrentPlayer] += 50000;
+      BSOS_SetLampState(LA_BONUS_MINI_50K, 0);
+    }
+
+    LastCountdownReportTime = CountdownStartTime;
+    BonusCountDownEndTime = 0xFFFFFFFF;
+  }
+
+  BackglassLampsLeft2Right();
+
+  if ((CurrentTime-LastCountdownReportTime)>100) { // adjust speed 300
+
+    if (MiniBonus>0) {
+      CurrentScores[CurrentPlayer] += 1000;
+      MiniBonus -= 1;
+      ShowMiniBonusOnLadder(MiniBonus);
+      PlaySound(12);
+      if (BonusXState>1 && MiniBonus==0) {
+        MiniBonus = CountdownMini;
+        BonusXState -= 1;
+      }
+      if ((BonusXState==1) && (MiniBonus==0)) BonusXState = CountdownBonusX;
+    } else if (SuperBonus>0) {
+      CurrentScores[CurrentPlayer] += 1000;
+      SuperBonus -= 1;
+      ShowSuperBonusOnLadder(SuperBonus);
+      PlaySound(12);
+      if (BonusXState>1 && SuperBonus==0) {
+        SuperBonus = CountdownSuper;
+        BonusXState -= 1;
+      }
+    } else if (BonusCountDownEndTime==0xFFFFFFFF) {
+      BonusCountDownEndTime = CurrentTime+1000;
+      BSOS_SetLampState(LA_BONUS_MINI_1K, 0);
+      BSOS_SetLampState(LA_BONUS_SUPER_1K, 0);
+    }
+    LastCountdownReportTime = CurrentTime;
+    BSOS_SetDisplay(CurrentPlayer, CurrentScores[CurrentPlayer], true, 2);
+  }
+
+  if (CurrentTime>BonusCountDownEndTime) {
+    BonusCountDownEndTime = 0xFFFFFFFF;
+    PlaySound(8);
+    if (WizardState==2) {
+      WizardState = 3;
+      return MACHINE_STATE_WIZARD_MODE;
+    } else {
+      return MACHINE_STATE_BALL_OVER;
+    }
+  }
+
+  return MACHINE_STATE_COUNTDOWN_BONUS;
+}
+
+
+// #################### SHOW MATCH SEQUENCE ####################
+int ShowMatchSequence(boolean curStateChanged) {
+  if (curStateChanged) {
+    MatchSequenceStartTime = CurrentTime;
+    MatchDelay = 1500;
+    MatchDigit = random(0,10);
+    NumMatchSpins = 0;
+    BSOS_SetLampState(LA_MATCH, 1, 0);
+    BSOS_SetDisableFlippers();
+    ScoreMatches = 0;
+    BSOS_SetLampState(LA_BALL_IN_PLAY, 0);
+
+    unsigned long highestScore = 0;
+    // int highScorePlayerNum = 0;
+    for (byte count=0; count<CurrentNumPlayers; count++) {
+      if (CurrentScores[count]>highestScore) highestScore = CurrentScores[count];
+      // highScorePlayerNum = count;
+    }
+    if (highestScore>HighScore) {
+      HighScore = highestScore;
+      AddCredit(12);
+      TotalReplays += 3;
+      BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
+      HighScoreBeat = HighScoreBeat + 1;
+      BSOS_WriteByteToEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE, HighScoreBeat);
+      BSOS_WriteULToEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, HighScore);
+      for (byte count=0; count<CurrentNumPlayers; count++) {
+        // if (count==highScorePlayerNum) {
+        //   BSOS_SetDisplay(count, CurrentScores[count], true, 2);
+        // } else {
+        //   BSOS_SetDisplayBlank(count, 0x00);
+        // }
+        BSOS_SetDisplay(count, CurrentScores[count], true, 2);
+      }
+      BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime, true);
+      BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime+250, true);
+      BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime+500, true);
+    }
+  }
+
+  if (NumMatchSpins<10) {
+    if (CurrentTime > (MatchSequenceStartTime + MatchDelay)) {
+      MatchDigit += 1;
+      if (MatchDigit>9) MatchDigit = 0;
+      PlaySound(28);
+      BSOS_SetDisplayBallInPlay((int)MatchDigit*10);
+      MatchDelay += 200 + 4*NumMatchSpins;
+      NumMatchSpins += 1;
+      BSOS_SetLampState(LA_MATCH, NumMatchSpins%2, 0);
+
+      if (NumMatchSpins==10) {
+        BSOS_SetLampState(LA_MATCH, 0);
+        MatchDelay = CurrentTime - MatchSequenceStartTime;
+      }
+    }
+  }
+
+  if (NumMatchSpins>=10 && NumMatchSpins<=13) {
+    if (CurrentTime>(MatchSequenceStartTime + MatchDelay)) {
+      if ( (CurrentNumPlayers>(NumMatchSpins-10)) && ((CurrentScores[NumMatchSpins-10]/10)%10)==MatchDigit) {
+        ScoreMatches |= (1<<(NumMatchSpins-10));
+        AddCredit(4);
+        TotalReplays += 1;
+        BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
+        BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime, true);
+        MatchDelay += 1000;
+        NumMatchSpins += 1;
+        BSOS_SetLampState(LA_MATCH, 1);
+      } else {
+        NumMatchSpins += 1;
+      }
+      if (NumMatchSpins==14) {
+        MatchDelay += 5000;
+      }
+    }
+  }
+
+  if (NumMatchSpins>13) {
+    if (CurrentTime>(MatchSequenceStartTime + MatchDelay)) {
+      PlaySound(5); // sound off
+      PlaySound(46);
+      return MACHINE_STATE_ATTRACT;
+    }
+  }
+
+  for (byte count=0; count<4; count++) {
+    if ((ScoreMatches>>count)&0x01) {
+      // If this score matches, we're going to flash the last two digits
+      if ( (CurrentTime/200)%2 ) {
+        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) & 0x1F); // 0x0F 1111 // 0x1F 11111 // 0x7f 1111111
+      } else {
+        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) | 0x60); // 0x30 110000 // 0x60 1100000
+      }
+    }
+  }
+
+  return MACHINE_STATE_MATCH_MODE;
+}
+
+
+// #################### WIZARD MODE ####################
+int WizardMode(boolean curStateChanged) {
+  int returnState = MACHINE_STATE_WIZARD_MODE;
+  BSOS_SetDisplayCredits(MingAttackProgress, true);
+
+  if (curStateChanged) {
+    InitWizardModeAnimation = CurrentTime+1770;
+    TotalWizardModes++;
+    BSOS_WriteULToEEProm(BSOS_TOTAL_WIZ_EEPROM_BYTE, TotalWizardModes);
+    BallDrained = false;
+    PlaySound(48); // wizsound miserable earthling
+    WizardState = 3;
+    AddToScore(50000);
+    BSOS_TurnOffAllLamps();
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_DOWN, 15, CurrentTime);
+    BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 1);
+    BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 1);
+    BSOS_SetLampState(LA_POP_TOP, 1);
+    BSOS_SetLampState(LA_SPINNER_LEFT, 1);
+    BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    if (PlayerShootsAgain==true) {
+      BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
+      BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
+    }
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_4_RESET, 15, CurrentTime);
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime + 250);
+    BSOS_PushToTimedSolenoidStack(SO_DTARGET_INLINE_RESET, 15, CurrentTime + 500);
+    // BSOS_PushToTimedSolenoidStack(SO_OUTHOLE, 4, CurrentTime + 100);
+  }
+
+  // validate wizard mode
+  if (WizardState<4) {
+    BSOS_SetDisplayFlash(CurrentPlayer, CurrentScores[CurrentPlayer], CurrentTime, 250, 2);
+    BackglassLampsLeft2Right();
+  } else {
+    BSOS_SetDisplay(CurrentPlayer, CurrentScores[CurrentPlayer], true, 2);
+  }
+
+  // handle lamps // commented numbers based on 140 ming attack
+  if (WizardState==5) {
+    if (MingAttackProgress==0 || MingAttackProgress<=WIZARD_GOAL_ATTACK/4-1) { // 0-34
+      BSOS_SetLampState(LA_FLASH_GORDON_5, 0);
+      BSOS_SetLampState(LA_FLASH_GORDON_2, 0);
+      BSOS_SetLampState(LA_FLASH_GORDON_4, 0);
+      BSOS_SetLampState(LA_FLASH_GORDON_3, 0);
+      if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 0);
+
+      if (MingAttackProgress==0 || MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)/3-1) { // 0-10 : 11
+        if (MingHealth!=0) {
+          BSOS_SetLampState(LA_SAUCER_10K, 1, 0, 250);
+          BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 250);
+          BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 250);
+        }
+      } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)/3 && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)/3)*2-1) { // 11-22 : 12
+        BSOS_SetLampState(LA_SAUCER_10K, 1, 0, 180);
+        BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 180);
+        BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 180);
+      } else if (MingAttackProgress>=((WIZARD_GOAL_ATTACK/4)/3)*2 && MingAttackProgress<=WIZARD_GOAL_ATTACK/4-1) { // 23-34 : 12
+        BSOS_SetLampState(LA_SAUCER_10K, 1, 0, 110);
+        BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 110);
+        BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 110);
+      }
+
+    } else if (MingAttackProgress>=WIZARD_GOAL_ATTACK/4 && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)*2-1) { // 35-69
+      BSOS_SetLampState(LA_SAUCER_10K, 1);
+      BSOS_SetLampState(LA_FLASH_GORDON_6, 1);
+      BSOS_SetLampState(LA_FLASH_GORDON_1, 1);
+
+      if (MingAttackProgress>=WIZARD_GOAL_ATTACK/4 && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)+(((WIZARD_GOAL_ATTACK/4)/3)-1)) { // 35-45
+        BSOS_SetLampState(LA_SAUCER_20K, 1, 0, 250);
+        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 250);
+        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 250);
+      } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)+((WIZARD_GOAL_ATTACK/4)/3) && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)+((((WIZARD_GOAL_ATTACK/4)/3)*2)-1)) { // 46-57
+        BSOS_SetLampState(LA_SAUCER_20K, 1, 0, 180);
+        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 180);
+        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 180);
+      } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)+(((WIZARD_GOAL_ATTACK/4)/3)*2) && MingAttackProgress<=(((WIZARD_GOAL_ATTACK/4)*2)-1)) { // 58-69
+        BSOS_SetLampState(LA_SAUCER_20K, 1, 0, 110);
+        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 110);
+        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 110);
+      }
+
+    } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)*2 && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)*3-1) { // 70-104
+      BSOS_SetLampState(LA_SAUCER_10K, 1);
+      BSOS_SetLampState(LA_SAUCER_20K, 1);
+      BSOS_SetLampState(LA_FLASH_GORDON_5, 1);
+      BSOS_SetLampState(LA_FLASH_GORDON_2, 1);
+
+      if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)*2 && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*2)+((WIZARD_GOAL_ATTACK/4)/3-1)) { // 70-80
+        BSOS_SetLampState(LA_SAUCER_30K, 1, 0, 250);
+        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 250);
+        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 250);
+      } else if (MingAttackProgress>=((WIZARD_GOAL_ATTACK/4)*2)+((WIZARD_GOAL_ATTACK/4)/3) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*2)+(((WIZARD_GOAL_ATTACK/4)/3)*2-1)) { // 81-92
+        BSOS_SetLampState(LA_SAUCER_30K, 1, 0, 180);
+        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 180);
+        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 180);
+      } else if (MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*2)+(((WIZARD_GOAL_ATTACK/4)/3)*2) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3-1)) { // 91-104
+        BSOS_SetLampState(LA_SAUCER_30K, 1, 0, 110);
+        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 110);
+        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 110);
+      }
+
+    } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4*3) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*4-1)) { // 105-139
+      BSOS_SetLampState(LA_SAUCER_10K, 1);
+      BSOS_SetLampState(LA_SAUCER_20K, 1);
+      BSOS_SetLampState(LA_SAUCER_30K, 1);
+      BSOS_SetLampState(LA_FLASH_GORDON_4, 1);
+      BSOS_SetLampState(LA_FLASH_GORDON_3, 1);
+
+      if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)*3 && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+((WIZARD_GOAL_ATTACK/4)/3-1)) { // 105-115
+        BSOS_SetLampState(LA_SAUCER_XBALL, 1, 0, 250);
+        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 250);
+      } else if (MingAttackProgress>=((WIZARD_GOAL_ATTACK/4)*3)+((WIZARD_GOAL_ATTACK/4)/3) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+(((WIZARD_GOAL_ATTACK/4)/3)*2-1)) { // 116-127
+        BSOS_SetLampState(LA_SAUCER_XBALL, 1, 0, 180);
+        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 180);
+      } else if (MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+(((WIZARD_GOAL_ATTACK/4)/3)*2) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+((WIZARD_GOAL_ATTACK/4)-1)) { // 128-139
+        BSOS_SetLampState(LA_SAUCER_XBALL, 1, 0, 110);
+        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 110);
+      }
+
+    } else if (MingAttackProgress>=WIZARD_GOAL_ATTACK && BallInSaucer==false) { // 140
+      MingAttackProgress = WIZARD_GOAL_ATTACK;
+      // MingAttackReady = true;
+      // BSOS_SetLampState(LA_SAUCER_XBALL, 1);
+
+      byte lampPhaseSaucer = (CurrentTime/150)%4; // 250
+      BSOS_SetLampState(LA_SAUCER_XBALL, lampPhaseSaucer==3, lampPhaseSaucer==0, lampPhaseSaucer==0);
+      BSOS_SetLampState(LA_SAUCER_30K, lampPhaseSaucer==2||lampPhaseSaucer==3, lampPhaseSaucer==3);
+      BSOS_SetLampState(LA_SAUCER_20K, lampPhaseSaucer==1||lampPhaseSaucer==2, lampPhaseSaucer==2);
+      BSOS_SetLampState(LA_SAUCER_10K, lampPhaseSaucer<2, lampPhaseSaucer==1);
+      if (USE_STROBE) {
+        byte lampPhaseFlash = (CurrentTime/150)%4; // 250
+        BSOS_SetLampState(LA_FLASH_STROBE, lampPhaseFlash==3, lampPhaseFlash==0, lampPhaseFlash==0);
+        BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
+        BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
+        BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhaseFlash<2, lampPhaseFlash==1);
+        BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhaseFlash<2, lampPhaseFlash==1);
+      } else {
+        byte lampPhaseFlash = (CurrentTime/150)%3; // 250
+        BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhaseFlash==2||lampPhaseFlash==0, lampPhaseFlash==0);
+        BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
+        BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhaseFlash<2, lampPhaseFlash==1);
+        BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhaseFlash<2, lampPhaseFlash==1);
+      }
+    }
+  }
+
+  // handle ming attack animation
+  if (BallInSaucer==true && MingAttackReady==true) {
+    if (CurrentTime<=MingAttackAnimation) {
+      backglassLampsCenterOut();
+      if ((CurrentTime-AttractSweepTime)>25) {
+        AttractSweepTime = CurrentTime;
+        for (byte lightcountdown=0; lightcountdown<NUM_OF_ATTRACT_LAMPS_MING_ATTACK; lightcountdown++) {
+          byte dist = MingAttackLamps - AttractLampsMingAttack[lightcountdown].rowMingAttack;
+          BSOS_SetLampState(AttractLampsMingAttack[lightcountdown].lightNumMingAttack, (dist<8), (dist==0/*||dist>5*/)?0:dist/3, (dist>5)?(100+AttractLampsMingAttack[lightcountdown].lightNumMingAttack):0);
+          if (lightcountdown==(NUM_OF_ATTRACT_LAMPS_MING_ATTACK/2)) BSOS_DataRead(0);
+        }
+        MingAttackLamps += 1;
+        if (MingAttackLamps>30) MingAttackLamps = 0;
+      }
+      if (MingHealth==0 && CurrentTime>=(MingAttackAnimation-825)) {
+        BSOS_DisableSolenoidStack();
+      }
+    } else {
+      for (byte off=LA_BONUS_MINI_1K; off<=LA_TARGET_LRIGHT_TOP; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LA_SAUCER_10K; off<=LA_DTARGET_BONUS_5X; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LA_POP_TOP; off<=LA_STAR_SHOOTER_BOTTOM; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LA_CLOCK_15_SECONDS_3X; off<=LA_SAUCER_ARROW_2X; off++) BSOS_SetLampState(off, 0);
+      BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+      BSOS_SetLampState(LA_SPINNER_LEFT, 1);
+      BSOS_SetLampState(LA_POP_TOP, 1);
+      if (MingHealth!=0) {
+        AddToScore(50000);
+        BSOS_PushToTimedSolenoidStack(SO_SAUCER_DOWN, 5, CurrentTime);
+      } else {
+        // ming defeated
+        AddToScore(150000);
+        BSOS_SetDisableFlippers(true);
+        byte bonusFireworks;
+        for (bonusFireworks=0; bonusFireworks<10; bonusFireworks++){
+          if ( bonusFireworks % 2 == 0) { // even but odd on pf
+            BSOS_SetLampState(LA_BONUS_MINI_1K+bonusFireworks, 1, 0, 100);
+            BSOS_SetLampState(LA_BONUS_SUPER_1K+bonusFireworks, 1, 0, 100);
+          } else { // odd even on pf
+            BSOS_SetLampState(LA_BONUS_MINI_1K+bonusFireworks, 1, 0, 200);
+            BSOS_SetLampState(LA_BONUS_SUPER_1K+bonusFireworks, 1, 0, 200);
+          }
+        }
+        BSOS_SetLampState(LA_BONUS_MINI_50K, 1, 0, 500);
+        BSOS_SetLampState(LA_BONUS_SUPER_100K, 1, 0, 500);
+        BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 200);
+        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 100);
+        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 200);
+        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 200);
+        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 100);
+        BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 200);
+        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 500);
+        TotalWizardModesBeat++;
+        BSOS_WriteULToEEProm(BSOS_TOTAL_WIZ_BEAT_EEPROM_BYTE, TotalWizardModesBeat);
+        MingDefeatCelebration = true;
+      }
+      MingAttackLamps = 1;
+      MingAttackReady = false;
+      MingAttackProgress = 0;
+      BallInSaucer = false;
+    }
+  } else if (BallInSaucer==true && MingAttackReady==false) {
+    BSOS_PushToTimedSolenoidStack(SO_SAUCER_DOWN, 5, CurrentTime + 1000);
+    BallInSaucer = false;
+  }
+
+  // handle ming health animation
+  if (MingHealth==3) {
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+  } else if (MingHealth==2) {
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 200);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 300);
+  } else if (MingHealth==1) {
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 300);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 400);
+  } else if (MingHealth==0) {
+    BSOS_SetLampState(LA_MING_TOP, 1, 0, 400);
+    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 500);
+    BSOS_SetLampState(LA_SPINNER_LEFT, 0);
+    BSOS_SetLampState(LA_SPINNER_RIGHT, 0);
+    BSOS_SetLampState(LA_POP_TOP, 0);
+    WizardState = 6;
+  }
+
+  // handle ming defeat celebration sound
+  if (MingDefeatCelebration==true) {
+    if (CurrentTime>=MingDefeatCelebrationBPM) {
+      MingDefeatCelebrationBPM = CurrentTime + 182; // 329 from 182 bpm
+      if (MingDefeatCelebrationIncrement==1) {
+        PlaySound(32); // wizsound ding 1
+      } else if (MingDefeatCelebrationIncrement==2) {
+        PlaySound(33); // wizsound ding 2
+      } else if (MingDefeatCelebrationIncrement==3) {
+        PlaySound(34); // wizsound ding 3
+      } else if (MingDefeatCelebrationIncrement==4) {
+        PlaySound(33); // wizsound ding 2
+      } else if (MingDefeatCelebrationIncrement==5) {
+        PlaySound(35); // wizsound ding 4
+      }
+      MingDefeatCelebrationIncrement += 1;
+      if (MingDefeatCelebrationIncrement > 5) MingDefeatCelebrationIncrement = 1;
+    }
+  }
+
+  // switch hits
+  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+    if (BallTimeInTrough==0) {
+      BallTimeInTrough = CurrentTime;
+    } else {
+      BSOS_SetLampState(LA_MING_TOP, 0);
+      BSOS_SetLampState(LA_MING_BOTTOM, 0);
+      // Make sure the ball stays on the sensor for at least
+      // 0.5 seconds to be sure that it's not bouncing
+      if ((CurrentTime-BallTimeInTrough)>3000) {
+        if (BallFirstSwitchHitTime==0) BallFirstSwitchHitTime = CurrentTime;
+
+        if (NumTiltWarnings>=MAX_TILT_WARNINGS) {
+          returnState = MACHINE_STATE_BALL_OVER;
+        } else if (NumTiltWarnings<MAX_TILT_WARNINGS) {
+          if (WizardState==3) {
+            if (CurrentTime>=InitWizardModeAnimation) {
+              PlaySound(6);
+              BSOS_PushToTimedSolenoidStack(SO_OUTHOLE, 4, CurrentTime + 100);
+              WizardState = 4;
+            }
+            returnState = MACHINE_STATE_WIZARD_MODE;
+          } else if (WizardState>=5) {
+            PlaySound(5);
+            BallDrained = true;
+            returnState = MACHINE_STATE_BALL_OVER;
+          }
+        }
+      }
+    }
+  } else {
+    BallTimeInTrough = 0;
+  }
+
+  return returnState;
 }
