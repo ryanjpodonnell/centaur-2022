@@ -388,15 +388,15 @@ int InitNewBall(bool curStateChanged, int ballNum) {
     }
 
     BSOS_SetDisplayBallInPlay(ballNum);
-    BSOS_SetLampState(LA_BALL_IN_PLAY, 1);
-    BSOS_SetLampState(LA_TILT, 0);
+    BSOS_SetLampState(LAMP_BALL_IN_PLAY, 1);
+    BSOS_SetLampState(LAMP_TILT, 0);
     if (PlayerShootsAgain==true) {
-      BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
-      BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
+      BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 1);
+      BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1);
     }
 
     if (BallSaveNumSeconds>0) {
-      BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1, 0, 500);
+      BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 1, 0, 500);
     }
   }
 
@@ -478,11 +478,11 @@ int RunAttractMode(int curState, boolean curStateChanged) {
     if (!FreePlay) {
       BSOS_SetDisplayCredits(Credits);
     }
-    BSOS_SetLampState(LA_GAME_OVER, 1);
+    BSOS_SetLampState(LAMP_GAME_OVER, 1);
     BSOS_SetDisplayBallInPlay(0);
     AttractStartAnimation = CurrentTime+2500;
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 200);
     AttractHeadMode = 255;
     AttractPlayfieldMode = 255;
     PlaySound(8);
@@ -500,7 +500,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
     if ((CurrentTime/6000)%2==0) {
 
       if (AttractHeadMode!=1) {
-        BSOS_SetLampState(LA_HIGH_SCORE_TO_DATE, 1);
+        BSOS_SetLampState(LAMP_HIGH_SCORE_TO_DATE, 1);
 
         for (byte count=0; count<4; count++) {
           BSOS_SetDisplay(count, HighScore, true, 2);
@@ -514,7 +514,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
 
     } else {
       if (AttractHeadMode!=2) {
-        BSOS_SetLampState(LA_HIGH_SCORE_TO_DATE, 0);
+        BSOS_SetLampState(LAMP_HIGH_SCORE_TO_DATE, 0);
         if (!FreePlay) {
           BSOS_SetDisplayCredits(Credits, true);
         }
@@ -634,13 +634,13 @@ int NormalGamePlay(boolean curStateChanged) {
 
   if (curStateChanged) {
     SuperBonusReady = false;
-    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
-    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
-    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
-    BSOS_SetLampState(LA_STAR_PFIELD_TOP, 0);
-    BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, 0);
-    BSOS_SetLampState(LA_MING_TOP, 1);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, 0);
+    BSOS_SetLampState(LAMP_STAR_PFIELD_TOP, 0);
+    BSOS_SetLampState(LAMP_STAR_PFIELD_BOTTOM, 0);
+    BSOS_SetLampState(LAMP_MING_TOP, 1);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1);
     if (PFValidated==true) {
       BSOS_PushToSolenoidStack(SO_DTARGET_1_RESET, 5, true);
     }
@@ -678,13 +678,13 @@ int NormalGamePlay(boolean curStateChanged) {
   byte lamp4Phase = (CurrentTime/2000)%2;
   for (int i = 3; i > -1; i--) {
     if (i==0) {
-      DTarget4ToHandle = LA_DTARGET_4_A;
+      DTarget4ToHandle = LAMP_DTARGET_4_A;
     } else if (i==1) {
-      DTarget4ToHandle = LA_DTARGET_4_B;
+      DTarget4ToHandle = LAMP_DTARGET_4_B;
     } else if (i==2) {
-      DTarget4ToHandle = LA_DTARGET_4_C;
+      DTarget4ToHandle = LAMP_DTARGET_4_C;
     } else if (i==3) {
-      DTarget4ToHandle = LA_DTARGET_4_D;
+      DTarget4ToHandle = LAMP_DTARGET_4_D;
     }
     if (DTarget4Light[i]<=1) {
       if (lamp4Phase==0) {
@@ -694,12 +694,12 @@ int NormalGamePlay(boolean curStateChanged) {
         } else {
           if (DTarget4Light[0]>=2 && DTarget4Light[2]>=2 && (DTarget4Light[1]<=1 || DTarget4Light[3]<=1)) {
             if (DTarget4Light[1]<=1 && DTarget4Light[3]<=1) {
-              BSOS_SetLampState(LA_DTARGET_4_B, 1, 0, 250);
-              BSOS_SetLampState(LA_DTARGET_4_D, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_B, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_D, 1, 0, 250);
             } else if (DTarget4Light[1]<=1 && DTarget4Light[3]>=2) {
-              BSOS_SetLampState(LA_DTARGET_4_B, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_B, 1, 0, 250);
             } else if (DTarget4Light[1]>=2 && DTarget4Light[3]<=1) {
-              BSOS_SetLampState(LA_DTARGET_4_D, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_D, 1, 0, 250);
             }
           } else {
             BSOS_SetLampState(DTarget4ToHandle, 0);
@@ -713,12 +713,12 @@ int NormalGamePlay(boolean curStateChanged) {
         } else {
           if (DTarget4Light[1]>=2 && DTarget4Light[3]>=2 && (DTarget4Light[0]<=1 || DTarget4Light[2]<=1)) {
             if (DTarget4Light[0]<=1 && DTarget4Light[2]<=1) {
-              BSOS_SetLampState(LA_DTARGET_4_A, 1, 0, 250);
-              BSOS_SetLampState(LA_DTARGET_4_C, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_A, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_C, 1, 0, 250);
             } else if (DTarget4Light[0]<=1 && DTarget4Light[2]>=2) {
-              BSOS_SetLampState(LA_DTARGET_4_A, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_A, 1, 0, 250);
             } else if (DTarget4Light[0]>=2 && DTarget4Light[2]<=1) {
-              BSOS_SetLampState(LA_DTARGET_4_C, 1, 0, 250);
+              BSOS_SetLampState(LAMP_DTARGET_4_C, 1, 0, 250);
             }
           } else {
             BSOS_SetLampState(DTarget4ToHandle, 0);
@@ -741,11 +741,11 @@ int NormalGamePlay(boolean curStateChanged) {
   byte lamp3Phase = (CurrentTime/800)%NumberOf3LampsToStrobe;
   for (byte i = 0; i < 3; i++) {
     if (i==0) {
-      DTarget3ToLight = LA_DTARGET_ARROW_1;
+      DTarget3ToLight = LAMP_DTARGET_ARROW_1;
     } else if (i==1) {
-      DTarget3ToLight = LA_DTARGET_ARROW_2;
+      DTarget3ToLight = LAMP_DTARGET_ARROW_2;
     } else if (i==2) {
-      DTarget3ToLight = LA_DTARGET_ARROW_3;
+      DTarget3ToLight = LAMP_DTARGET_ARROW_3;
     }
     if (DTarget3Lights[i]==1 || DTarget3Lights[i]==2) {
       BSOS_SetLampState(DTarget3ToLight, 1);
@@ -760,18 +760,18 @@ int NormalGamePlay(boolean curStateChanged) {
 
   // handle super bonus collect lit animation
   if (SuperBonusReady!=true) {
-    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
-    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
-    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
-    BSOS_SetLampState(LA_STAR_PFIELD_TOP, 0);
-    BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, 0);
+    BSOS_SetLampState(LAMP_STAR_PFIELD_TOP, 0);
+    BSOS_SetLampState(LAMP_STAR_PFIELD_BOTTOM, 0);
   } else {
     byte lamp6Phase = (CurrentTime/125)%6;
-    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, lamp6Phase==4);
-    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, lamp6Phase==3||lamp6Phase==4, lamp6Phase==4);
-    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, lamp6Phase==2||lamp6Phase==3, lamp6Phase==3);
-    BSOS_SetLampState(LA_STAR_PFIELD_TOP, lamp6Phase==1||lamp6Phase==2, lamp6Phase==2);
-    BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, lamp6Phase<2, lamp6Phase==1);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, lamp6Phase==4);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, lamp6Phase==3||lamp6Phase==4, lamp6Phase==4);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, lamp6Phase==2||lamp6Phase==3, lamp6Phase==3);
+    BSOS_SetLampState(LAMP_STAR_PFIELD_TOP, lamp6Phase==1||lamp6Phase==2, lamp6Phase==2);
+    BSOS_SetLampState(LAMP_STAR_PFIELD_BOTTOM, lamp6Phase<2, lamp6Phase==1);
   }
 
   // handle mini bonus ring collect animation
@@ -815,20 +815,20 @@ int NormalGamePlay(boolean curStateChanged) {
 
   // LAMP BLIP
   if (CurrentTime>=InlaneLeftBlip && (DTarget4Light[1]==0 || DTarget4Light[1]==1)) {
-    BSOS_SetLampState(LA_INLANE_LEFT, 0);
+    BSOS_SetLampState(LAMP_INLANE_LEFT, 0);
   }
   if (CurrentTime>=InlaneRightBlip && (DTarget4Light[2]==0 || DTarget4Light[2]==1)) {
-    BSOS_SetLampState(LA_INLANE_RIGHT, 0);
+    BSOS_SetLampState(LAMP_INLANE_RIGHT, 0);
   }
   if (CurrentTime>=TargetUpperBlip && TopSpecialLit==false && MiniBonusReady==false) {
-    BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 0);
-    BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 0);
+    BSOS_SetLampState(LAMP_TARGET_UPPER_SPECIAL, 0);
+    BSOS_SetLampState(LAMP_TARGET_UPPER_COLLECT_BONUS, 0);
   }
   if (CurrentTime>=TargetLowerTopBlip && (DTarget4Light[0]==0 || DTarget4Light[0]==1)) {
-    BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 0);
+    BSOS_SetLampState(LAMP_TARGET_LRIGHT_TOP, 0);
   }
   if (CurrentTime>=TargetLowerBottomBlip && (DTarget4Light[3]==0 || DTarget4Light[3]==1)) {
-    BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 0);
+    BSOS_SetLampState(LAMP_TARGET_LRIGHT_BOTTOM, 0);
   }
 
   // PLAYFIELD X STOP
@@ -836,25 +836,25 @@ int NormalGamePlay(boolean curStateChanged) {
     PlaySound(11); // background sound 2 (restart)
     if (Playfield2xState==2 && CurrentTime>=Playfield2XStart) {
       Playfield2xState = 3;
-      BSOS_SetLampState(LA_CLOCK_15_SECONDS_2X, 0);
+      BSOS_SetLampState(LAMP_CLOCK_15_SECONDS_2X, 0);
     }
     if (Playfield3xState==2 && CurrentTime>=Playfield3XStart) {
       Playfield3xState = 3;
-      BSOS_SetLampState(LA_CLOCK_15_SECONDS_3X, 0);
+      BSOS_SetLampState(LAMP_CLOCK_15_SECONDS_3X, 0);
     }
   }
 
   // TARGET HURRY UPS
   if (DTarget4Light[0]==2 && CurrentTime>=WhiteHurryUpStart) {
     PlaySound(17);
-    BSOS_SetLampState(LA_DTARGET_4_A, 0);
-    BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 0);
+    BSOS_SetLampState(LAMP_DTARGET_4_A, 0);
+    BSOS_SetLampState(LAMP_TARGET_LRIGHT_TOP, 0);
     DTarget4Light[0] = 0;
   }
   if (DTarget4Light[3]==2 && CurrentTime>=AmberHurryUpStart) {
     PlaySound(17);
-    BSOS_SetLampState(LA_DTARGET_4_D, 0);
-    BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 0);
+    BSOS_SetLampState(LAMP_DTARGET_4_D, 0);
+    BSOS_SetLampState(LAMP_TARGET_LRIGHT_BOTTOM, 0);
     DTarget4Light[3] = 0;
   }
 
@@ -862,9 +862,9 @@ int NormalGamePlay(boolean curStateChanged) {
   if (LeftSpinnerHurryUpLit==true) {
     if (CurrentTime>=LeftSpinnerHurryUpTimer) {
       if (LeftSpinnerLit==true) {
-        BSOS_SetLampState(LA_SPINNER_LEFT, 1);
+        BSOS_SetLampState(LAMP_SPINNER_LEFT, 1);
       } else {
-        BSOS_SetLampState(LA_SPINNER_LEFT, 0);
+        BSOS_SetLampState(LAMP_SPINNER_LEFT, 0);
       }
       LeftSpinnerHurryUpLit = false;
     }
@@ -873,9 +873,9 @@ int NormalGamePlay(boolean curStateChanged) {
   if (RightSpinnerHurryUpLit==true) {
     if (CurrentTime>=RightSpinnerHurryUpTimer) {
       if (RightSpinnerLit==true) {
-        BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+        BSOS_SetLampState(LAMP_SPINNER_RIGHT, 1);
       } else {
-        BSOS_SetLampState(LA_SPINNER_RIGHT, 0);
+        BSOS_SetLampState(LAMP_SPINNER_RIGHT, 0);
       }
       RightSpinnerHurryUpLit = false;
     }
@@ -908,15 +908,15 @@ int NormalGamePlay(boolean curStateChanged) {
       if (Playfield2xState==1) {
         Playfield2xState = 2;
         Playfield2XStart = CurrentTime + PLAYFIELD_X_TIMER;
-        BSOS_SetLampState(LA_SAUCER_ARROW_2X, 0);
-        BSOS_SetLampState(LA_CLOCK_15_SECONDS_2X, 1, 0, 100);
+        BSOS_SetLampState(LAMP_SAUCER_ARROW_2X, 0);
+        BSOS_SetLampState(LAMP_CLOCK_15_SECONDS_2X, 1, 0, 100);
         PlaySound(10);
       }
       if (Playfield3xState==1) {
         Playfield3xState = 2;
         Playfield3XStart = CurrentTime + PLAYFIELD_X_TIMER;
-        BSOS_SetLampState(LA_SAUCER_ARROW_3X, 0);
-        BSOS_SetLampState(LA_CLOCK_15_SECONDS_3X, 1, 0, 100);
+        BSOS_SetLampState(LAMP_SAUCER_ARROW_3X, 0);
+        BSOS_SetLampState(LAMP_CLOCK_15_SECONDS_3X, 1, 0, 100);
         PlaySound(10);
       }
       if (SaucerDirection == 0) {
@@ -928,10 +928,10 @@ int NormalGamePlay(boolean curStateChanged) {
       }
       SaucerLamps = 1;
       BallInSaucer = false;
-      for (byte off=LA_BONUS_MINI_1K; off<=LA_BONUS_MINI_10K; off++) BSOS_SetLampState(off, 0);
-      for (byte off=LA_BONUS_SUPER_1K; off<=LA_BONUS_5X; off++) BSOS_SetLampState(off, 0);
-      for (byte off=LA_SAUCER_10K; off<=LA_SAUCER_XBALL; off++) BSOS_SetLampState(off, 0);
-      BSOS_SetLampState(LA_SAUCER_30K, 0);
+      for (byte off=LAMP_BONUS_MINI_1K; off<=LAMP_BONUS_MINI_10K; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LAMP_BONUS_SUPER_1K; off<=LAMP_BONUS_5X; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LAMP_SAUCER_10K; off<=LAMP_SAUCER_XBALL; off++) BSOS_SetLampState(off, 0);
+      BSOS_SetLampState(LAMP_SAUCER_30K, 0);
       ShowMiniBonusOnLadder(MiniBonus);
       ShowSuperBonusOnLadder(SuperBonus);
       ShowExtraBonusLights();
@@ -959,7 +959,7 @@ int NormalGamePlay(boolean curStateChanged) {
           BSOS_PushToTimedSolenoidStack(SO_OUTHOLE, 4, CurrentTime + 100);
           if (BallFirstSwitchHitTime>0) {
             BallSaveUsed = true;
-            BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 0);
+            BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 0);
           }
           BallTimeInTrough = CurrentTime;
 
@@ -1094,8 +1094,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
           } else {
             PlaySound(24); // wizsound bong bounce down
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1111,13 +1111,13 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             } else if (curState==MACHINE_STATE_SKILL_SHOT) {
               if (SkillShotState==0) {
                 SkillShotState = 1;
-                BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
-                BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
-                BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
+                BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, 0);
+                BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 0);
+                BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 0);
                 if (PlayerShootsAgain==true) {
                   PlayerShootsAgain = false;
-                  BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 0);
-                  BSOS_SetLampState(LA_SHOOT_AGAIN, 0);
+                  BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 0);
+                  BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
                 }
               }
               PlaySound(13);
@@ -1197,8 +1197,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
           } else {
             PlaySound(24); // wizsound bong bounce down
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1245,14 +1245,14 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(26);
               AddToScore(5000);
               TargetLowerBottomBlip = CurrentTime + 100;
-              BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 1);
+              BSOS_SetLampState(LAMP_TARGET_LRIGHT_BOTTOM, 1);
             } else if (DTarget4Light[3]==2) {
               PlaySound(45);
               AddToScore(50000);
               AmberHurryUpStart = 0;
               DTarget4Light[3] = 3;
-              BSOS_SetLampState(LA_DTARGET_4_D, 1);
-              BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 1);
+              BSOS_SetLampState(LAMP_DTARGET_4_D, 1);
+              BSOS_SetLampState(LAMP_TARGET_LRIGHT_BOTTOM, 1);
               CheckHurryUpCompletion();
             } else if (DTarget4Light[3]==3) {
               PlaySound(27);
@@ -1270,16 +1270,16 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(26);
               AddToScore(5000);
               InlaneRightBlip = CurrentTime + 100;
-              BSOS_SetLampState(LA_INLANE_RIGHT, 1);
+              BSOS_SetLampState(LAMP_INLANE_RIGHT, 1);
             } else if (DTarget4Light[2]==2) {
               PlaySound(27);
               AddToScore(25000);
               DTarget4Light[2] = 3;
-              BSOS_SetLampState(LA_DTARGET_4_C, 1);
-              BSOS_SetLampState(LA_INLANE_RIGHT, 1);
+              BSOS_SetLampState(LAMP_DTARGET_4_C, 1);
+              BSOS_SetLampState(LAMP_INLANE_RIGHT, 1);
               LeftSpinnerHurryUpLit = true;
               LeftSpinnerHurryUpTimer = CurrentTime + 2000;
-              BSOS_SetLampState(LA_SPINNER_LEFT, 1, 0, 100);
+              BSOS_SetLampState(LAMP_SPINNER_LEFT, 1, 0, 100);
               CheckHurryUpCompletion();
             } else if (DTarget4Light[2]==3) {
               PlaySound(27);
@@ -1296,16 +1296,16 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(26);
               AddToScore(5000);
               InlaneLeftBlip = CurrentTime + 100;
-              BSOS_SetLampState(LA_INLANE_LEFT, 1);
+              BSOS_SetLampState(LAMP_INLANE_LEFT, 1);
             } else if (DTarget4Light[1]==2) {
               PlaySound(27);
               AddToScore(25000);
               DTarget4Light[1] = 3;
-              BSOS_SetLampState(LA_DTARGET_4_B, 1);
-              BSOS_SetLampState(LA_INLANE_LEFT, 1);
+              BSOS_SetLampState(LAMP_DTARGET_4_B, 1);
+              BSOS_SetLampState(LAMP_INLANE_LEFT, 1);
               RightSpinnerHurryUpLit = true;
               RightSpinnerHurryUpTimer = CurrentTime + 2000;
-              BSOS_SetLampState(LA_SPINNER_RIGHT, 1, 0, 100);
+              BSOS_SetLampState(LAMP_SPINNER_RIGHT, 1, 0, 100);
               CheckHurryUpCompletion();
             } else if (DTarget4Light[1]==3) {
               PlaySound(27);
@@ -1322,14 +1322,14 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(26);
               AddToScore(5000);
               TargetLowerTopBlip = CurrentTime + 100;
-              BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 1);
+              BSOS_SetLampState(LAMP_TARGET_LRIGHT_TOP, 1);
             } else if (DTarget4Light[0]==2) {
               PlaySound(45);
               AddToScore(50000);
               WhiteHurryUpStart = 0;
               DTarget4Light[0] = 3;
-              BSOS_SetLampState(LA_DTARGET_4_A, 1);
-              BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 1);
+              BSOS_SetLampState(LAMP_DTARGET_4_A, 1);
+              BSOS_SetLampState(LAMP_TARGET_LRIGHT_TOP, 1);
               CheckHurryUpCompletion();
             } else if (DTarget4Light[0]==3) {
               PlaySound(27);
@@ -1353,7 +1353,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
                 AddToScore(5000);
               } else if (DTarget4Light[0]==1) {
                 WhiteHurryUpStart = CurrentTime + DTARGET_4_HURRY_UP_TIMER;
-                BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, 1, 0, 100);
+                BSOS_SetLampState(LAMP_TARGET_LRIGHT_TOP, 1, 0, 100);
                 DTarget4Light[0] = 2;
                 PlaySound(47);
                 AddToScore(10000);
@@ -1367,7 +1367,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
                 PlaySound(24);
                 AddToScore(5000);
               } else if (DTarget4Light[1]==1) {
-                BSOS_SetLampState(LA_INLANE_LEFT, 1, 0, 250);
+                BSOS_SetLampState(LAMP_INLANE_LEFT, 1, 0, 250);
                 DTarget4Light[1] = 2;
                 PlaySound(25);
                 AddToScore(10000);
@@ -1381,7 +1381,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
                 PlaySound(24);
                 AddToScore(5000);
               } else if (DTarget4Light[2]==1) {
-                BSOS_SetLampState(LA_INLANE_RIGHT, 1, 0, 250);
+                BSOS_SetLampState(LAMP_INLANE_RIGHT, 1, 0, 250);
                 DTarget4Light[2] = 2;
                 PlaySound(25);
                 AddToScore(10000);
@@ -1396,7 +1396,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
                 AddToScore(5000);
               } else if (DTarget4Light[3]==1) {
                 AmberHurryUpStart = CurrentTime + DTARGET_4_HURRY_UP_TIMER;
-                BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, 1, 0, 100);
+                BSOS_SetLampState(LAMP_TARGET_LRIGHT_BOTTOM, 1, 0, 100);
                 DTarget4Light[3] = 2;
                 PlaySound(47);
                 AddToScore(10000);
@@ -1409,13 +1409,13 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               AddToScore(15000);
               if (LeftSpinnerLit==false) {
                 LeftSpinnerLit = true;
-                BSOS_SetLampState(LA_SPINNER_LEFT, 1);
+                BSOS_SetLampState(LAMP_SPINNER_LEFT, 1);
               } else {
                 RightSpinnerLit = true;
-                BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
+                BSOS_SetLampState(LAMP_SPINNER_RIGHT, 1);
               }
               DTarget4Goal = true;
-              BSOS_SetLampState(LA_SAUCER_10K, 1);
+              BSOS_SetLampState(LAMP_SAUCER_10K, 1);
               CheckSaucerDTargetGoal();
               if (BonusXState==4) {
                 BonusXState = 5;
@@ -1439,8 +1439,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             AddToMiniBonus(1);
             DropTargetHit();
             if (switchHit==SW_DTARGET_3_A) {
-              if (DTarget3Lights[0]==0 && DTarget3Flashing==LA_DTARGET_ARROW_1) {
-                BSOS_SetLampState(LA_DTARGET_ARROW_1, 1);
+              if (DTarget3Lights[0]==0 && DTarget3Flashing==LAMP_DTARGET_ARROW_1) {
+                BSOS_SetLampState(LAMP_DTARGET_ARROW_1, 1);
                 DTarget3Lights[0] = 1;
                 PlaySound(24);
                 AddToScore(10000);
@@ -1453,8 +1453,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               }
             }
             if (switchHit==SW_DTARGET_3_B) {
-              if (DTarget3Lights[1]==0 && DTarget3Flashing==LA_DTARGET_ARROW_2) {
-                BSOS_SetLampState(LA_DTARGET_ARROW_2, 1);
+              if (DTarget3Lights[1]==0 && DTarget3Flashing==LAMP_DTARGET_ARROW_2) {
+                BSOS_SetLampState(LAMP_DTARGET_ARROW_2, 1);
                 DTarget3Lights[1] = 1;
                 PlaySound(24);
                 AddToScore(10000);
@@ -1467,8 +1467,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               }
             }
             if (switchHit==SW_DTARGET_3_C) {
-              if (DTarget3Lights[2]==0 && DTarget3Flashing==LA_DTARGET_ARROW_3) {
-                BSOS_SetLampState(LA_DTARGET_ARROW_3, 1);
+              if (DTarget3Lights[2]==0 && DTarget3Flashing==LAMP_DTARGET_ARROW_3) {
+                BSOS_SetLampState(LAMP_DTARGET_ARROW_3, 1);
                 DTarget3Lights[2] = 1;
                 PlaySound(24);
                 AddToScore(10000);
@@ -1484,17 +1484,17 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime + 500);
               DTarget3Completions++;
               if (DTarget3Completions==1) {
-                BSOS_SetLampState(LA_POP_TOP, 1);
+                BSOS_SetLampState(LAMP_POP_TOP, 1);
                 TopPopLit = true;
               } else if (DTarget3Completions==2) {
-                BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 1);
+                BSOS_SetLampState(LAMP_TARGET_UPPER_COLLECT_BONUS, 1);
                 MiniBonusReady = true;
               } else if (DTarget3Completions==3) {
-                BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 1);
+                BSOS_SetLampState(LAMP_TARGET_UPPER_SPECIAL, 1);
                 TopSpecialLit = true;
               }
               AddToScore(15000);
-              BSOS_SetLampState(LA_SAUCER_30K, 1);
+              BSOS_SetLampState(LAMP_SAUCER_30K, 1);
               DTarget3Goal = true;
               CheckSaucerDTargetGoal();
               if (BonusXState==3) {
@@ -1506,8 +1506,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               Mini50kCollected = true;
               Playfield2xState = 1;
               PlaySound(42);
-              BSOS_SetLampState(LA_SAUCER_ARROW_2X, 1, 0, 150);
-              BSOS_SetLampState(LA_BONUS_MINI_50K, 1);
+              BSOS_SetLampState(LAMP_SAUCER_ARROW_2X, 1, 0, 150);
+              BSOS_SetLampState(LAMP_BONUS_MINI_50K, 1);
             }
             if (curState==MACHINE_STATE_SKILL_SHOT) {
               SkillShotState = 3;
@@ -1518,8 +1518,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             PlaySound(24); // wizsound bong bounce down
             // BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime);
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1535,11 +1535,11 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             AddToMiniBonus(1);
             if (MiniBonusReady==false && TopSpecialLit==false) {
               TargetUpperBlip = CurrentTime + 100;
-              BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 1);
-              BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 1);
+              BSOS_SetLampState(LAMP_TARGET_UPPER_SPECIAL, 1);
+              BSOS_SetLampState(LAMP_TARGET_UPPER_COLLECT_BONUS, 1);
             }
             if (MiniBonusReady==true) {
-              BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, 0);
+              BSOS_SetLampState(LAMP_TARGET_UPPER_COLLECT_BONUS, 0);
               MiniBonusCollecting = true;
               CountdownMini = MiniBonus;
               CountdownBonusX = BonusXState;
@@ -1547,7 +1547,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             }
             if (TopSpecialLit==true) {
               AddToScore(50000);
-              BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_TARGET_UPPER_SPECIAL, 0);
               AddCredit(4);
               TotalReplays += 1;
               BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, TotalReplays);
@@ -1564,8 +1564,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
           } else  {
             PlaySound(24); // wizsound bong bounce down
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1600,13 +1600,13 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             AddToScore(10000);
             DTargetInlineGoal = true;
             // RightSpinnerLit = true;
-            // BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
-            BSOS_SetLampState(LA_SAUCER_20K, 1);
+            // BSOS_SetLampState(LAMP_SPINNER_RIGHT, 1);
+            BSOS_SetLampState(LAMP_SAUCER_20K, 1);
             CheckSaucerDTargetGoal();
             PlaySound(25);
             if (WoodBeastXBallState[CurrentPlayer]==0) {
               WoodBeastXBallState[CurrentPlayer] = 1;
-              BSOS_SetLampState(LA_TARGET_WOOD_BEAST_XBALL, 1);
+              BSOS_SetLampState(LAMP_TARGET_WOOD_BEAST_XBALL, 1);
             }
             DropTargetHit();
             if (BonusXState==2) {
@@ -1622,9 +1622,9 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             if (WoodBeastXBallState[CurrentPlayer]==1) {
               WoodBeastXBallState[CurrentPlayer] = 2;
               PlayerShootsAgain = true;
-              BSOS_SetLampState(LA_TARGET_WOOD_BEAST_XBALL, 0);
-              BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
-              BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
+              BSOS_SetLampState(LAMP_TARGET_WOOD_BEAST_XBALL, 0);
+              BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1);
+              BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 1);
             }
             BSOS_PushToTimedSolenoidStack(SO_DTARGET_INLINE_RESET, 15, CurrentTime + 750);
             PlaySound(27);
@@ -1649,8 +1649,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
           } else {
             PlaySound(24); // wizsound bong bounce down
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1677,16 +1677,16 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               if (SaucerXBallState[CurrentPlayer]==1) {
                 SaucerXBallState[CurrentPlayer] = 2;
                 PlayerShootsAgain = true;
-                BSOS_SetLampState(LA_SAUCER_XBALL, 0);
-                BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
-                BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
+                BSOS_SetLampState(LAMP_SAUCER_XBALL, 0);
+                BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1);
+                BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 1);
               }
               DTarget4Goal = false;
               DTargetInlineGoal = false;
               DTarget3Goal = false;
-              BSOS_SetLampState(LA_SAUCER_10K, 0);
-              BSOS_SetLampState(LA_SAUCER_20K, 0);
-              BSOS_SetLampState(LA_SAUCER_30K, 0);
+              BSOS_SetLampState(LAMP_SAUCER_10K, 0);
+              BSOS_SetLampState(LAMP_SAUCER_20K, 0);
+              BSOS_SetLampState(LAMP_SAUCER_30K, 0);
               BallInSaucer = true;
             }
             if (curState==MACHINE_STATE_SKILL_SHOT) {
@@ -1695,8 +1695,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
             }
           } else {
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1790,8 +1790,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(7); // wizsound rebound hit
             }
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1829,8 +1829,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(7); // wizsound rebound hit
             }
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1880,8 +1880,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(27); // wizsound crash bounce up
             }
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1901,8 +1901,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(27); // wizsound crash bounce up
             }
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -1923,8 +1923,8 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               PlaySound(27); // wizsound crash bounce up
             }
             if (WizardState==4) {
-              BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 0);
-              BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 0);
+              BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 0);
               WizardState = 5;
               BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_RESET, 15, CurrentTime);
             }
@@ -2039,13 +2039,13 @@ void loop() {
 // #################### LAMP ANIMATIONS ####################
 // ########## BACKGLASS LAMPS CLEAR ##########
 void BackglassLampsClear() {
-  BSOS_SetLampState(LA_FLASH_GORDON_6, 0);
-  BSOS_SetLampState(LA_FLASH_GORDON_1, 0);
-  BSOS_SetLampState(LA_FLASH_GORDON_5, 0);
-  BSOS_SetLampState(LA_FLASH_GORDON_2, 0);
-  BSOS_SetLampState(LA_FLASH_GORDON_4, 0);
-  BSOS_SetLampState(LA_FLASH_GORDON_3, 0);
-  BSOS_SetLampState(LA_FLASH_STROBE, 0);
+  BSOS_SetLampState(LAMP_FLASH_GORDON_6, 0);
+  BSOS_SetLampState(LAMP_FLASH_GORDON_1, 0);
+  BSOS_SetLampState(LAMP_FLASH_GORDON_5, 0);
+  BSOS_SetLampState(LAMP_FLASH_GORDON_2, 0);
+  BSOS_SetLampState(LAMP_FLASH_GORDON_4, 0);
+  BSOS_SetLampState(LAMP_FLASH_GORDON_3, 0);
+  BSOS_SetLampState(LAMP_FLASH_STROBE, 0);
 }
 
 
@@ -2053,21 +2053,21 @@ void BackglassLampsClear() {
 void backglassLampsCenterOut() {
   if (USE_STROBE) {
     byte lampPhase = (CurrentTime/115)%4;
-    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==3||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==3||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==2||lampPhase==3, lampPhase==3);
-    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==2||lampPhase==3, lampPhase==3);
-    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==1||lampPhase==2, lampPhase==2);
-    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==1||lampPhase==2, lampPhase==2);
-    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY || (MachineState==MACHINE_STATE_NORMAL_GAMEPLAY && BallInSaucer==true)) BSOS_SetLampState(LA_FLASH_STROBE, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhase==1||lampPhase==2, lampPhase==2);
+    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY || (MachineState==MACHINE_STATE_NORMAL_GAMEPLAY && BallInSaucer==true)) BSOS_SetLampState(LAMP_FLASH_STROBE, lampPhase<2, lampPhase==1);
   } else {
     byte lampPhase = (CurrentTime/115)%3;
-    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==2||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==2||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==1||lampPhase==2, lampPhase==2);
-    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==2, lampPhase==2);
-    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase<2, lampPhase==1);
-    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhase<2, lampPhase==1);
   }
 }
 
@@ -2076,21 +2076,21 @@ void backglassLampsCenterOut() {
 void BackglassLampsKnightRider() {
   if (USE_STROBE) {
     byte lampPhase = (CurrentTime/80)%14;
-    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==6||lampPhase==7, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==5||lampPhase==8, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==4||lampPhase==9, 0, 0);
-    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY) BSOS_SetLampState(LA_FLASH_STROBE, lampPhase==3||lampPhase==10, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==2||lampPhase==11, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==12, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==0||lampPhase==13, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhase==6||lampPhase==7, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhase==5||lampPhase==8, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhase==4||lampPhase==9, 0, 0);
+    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY) BSOS_SetLampState(LAMP_FLASH_STROBE, lampPhase==3||lampPhase==10, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhase==2||lampPhase==11, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhase==1||lampPhase==12, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhase==0||lampPhase==13, 0, 0);
   } else {
     byte lampPhase = (CurrentTime/80)%12;
-    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==5||lampPhase==6, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==4||lampPhase==7, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==3||lampPhase==8, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==2||lampPhase==9, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==10, 0, 0);
-    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==0||lampPhase==11, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhase==5||lampPhase==6, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhase==4||lampPhase==7, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhase==3||lampPhase==8, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhase==2||lampPhase==9, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhase==1||lampPhase==10, 0, 0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhase==0||lampPhase==11, 0, 0);
   }
 }
 
@@ -2099,21 +2099,21 @@ void BackglassLampsKnightRider() {
 void BackglassLampsLeft2Right() {
   if (USE_STROBE) {
     byte lampPhase = (CurrentTime/85)%4;
-    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==3||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==3||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==2||lampPhase==3, lampPhase==3);
-    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==2||lampPhase==3, lampPhase==3);
-    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase==1||lampPhase==2, lampPhase==2);
-    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase==1||lampPhase==2, lampPhase==2);
-    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY) BSOS_SetLampState(LA_FLASH_STROBE, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhase==3||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhase==2||lampPhase==3, lampPhase==3);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhase==1||lampPhase==2, lampPhase==2);
+    if (MachineState!=MACHINE_STATE_NORMAL_GAMEPLAY) BSOS_SetLampState(LAMP_FLASH_STROBE, lampPhase<2, lampPhase==1);
   } else {
     byte lampPhase = (CurrentTime/95)%3;
-    BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhase==2||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhase==2||lampPhase==0, lampPhase==0);
-    BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhase==1||lampPhase==2, lampPhase==2);
-    BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhase==1||lampPhase==2, lampPhase==2);
-    BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhase<2, lampPhase==1);
-    BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhase==2||lampPhase==0, lampPhase==0);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhase==1||lampPhase==2, lampPhase==2);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhase<2, lampPhase==1);
+    BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhase<2, lampPhase==1);
   }
 }
 
@@ -2124,68 +2124,68 @@ void AttractRetro() {
   byte attractBonus;
   for (attractBonus=0; attractBonus<10; attractBonus++){
     if ( attractBonus % 2 == 0) { // even but odd on pf
-      BSOS_SetLampState(LA_BONUS_MINI_1K+attractBonus, 1, 0, 100);
-      BSOS_SetLampState(LA_BONUS_SUPER_1K+attractBonus, 1, 0, 100);
+      BSOS_SetLampState(LAMP_BONUS_MINI_1K+attractBonus, 1, 0, 100);
+      BSOS_SetLampState(LAMP_BONUS_SUPER_1K+attractBonus, 1, 0, 100);
     } else { // odd even on pf
-      BSOS_SetLampState(LA_BONUS_MINI_1K+attractBonus, 1, 0, 200);
-      BSOS_SetLampState(LA_BONUS_SUPER_1K+attractBonus, 1, 0, 200);
+      BSOS_SetLampState(LAMP_BONUS_MINI_1K+attractBonus, 1, 0, 200);
+      BSOS_SetLampState(LAMP_BONUS_SUPER_1K+attractBonus, 1, 0, 200);
     }
   }
 
   // sweep 4
   byte lampPhase1 = (CurrentTime/115)%4; // 125
-  BSOS_SetLampState(LA_SAUCER_XBALL, lampPhase1==3||lampPhase1==0, lampPhase1==0); // SAUCER
-  BSOS_SetLampState(LA_SAUCER_30K, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_SAUCER_20K, lampPhase1==1||lampPhase1==2, lampPhase1==2);
-  BSOS_SetLampState(LA_SAUCER_10K, lampPhase1<2, lampPhase1==1);
-  BSOS_SetLampState(LA_DTARGET_4_A, lampPhase1==3||lampPhase1==0, lampPhase1==0); // DTARGET 4
-  BSOS_SetLampState(LA_DTARGET_4_B, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_DTARGET_4_C, lampPhase1==1||lampPhase1==2, lampPhase1==2);
-  BSOS_SetLampState(LA_DTARGET_4_D, lampPhase1<2, lampPhase1==1);
-  BSOS_SetLampState(LA_BONUS_5X, lampPhase1==3||lampPhase1==0, lampPhase1==0); // BONUS X
-  BSOS_SetLampState(LA_BONUS_4X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_BONUS_3X, lampPhase1==1||lampPhase1==2, lampPhase1==2);
-  BSOS_SetLampState(LA_BONUS_2X, lampPhase1<2, lampPhase1==1);
-  BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, lampPhase1==3||lampPhase1==0, lampPhase1==0); // OUTLANES & PFX
-  BSOS_SetLampState(LA_SAUCER_ARROW_3X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_CLOCK_15_SECONDS_2X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, lampPhase1==1||lampPhase1==2, lampPhase1==2);
-  BSOS_SetLampState(LA_SAUCER_ARROW_2X, lampPhase1<2, lampPhase1==1);
-  BSOS_SetLampState(LA_CLOCK_15_SECONDS_3X, lampPhase1<2, lampPhase1==1);
-  BSOS_SetLampState(LA_INLANE_LEFT, lampPhase1==3||lampPhase1==0, lampPhase1==0); // INLANES & SPINNERS
-  BSOS_SetLampState(LA_SPINNER_RIGHT, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_INLANE_RIGHT, lampPhase1==1||lampPhase1==2, lampPhase1==2);
-  BSOS_SetLampState(LA_SPINNER_LEFT, lampPhase1<2, lampPhase1==1);
-  BSOS_SetLampState(LA_TARGET_LRIGHT_BOTTOM, lampPhase1==3||lampPhase1==0, lampPhase1==0); // REMAINDER
-  BSOS_SetLampState(LA_TARGET_WOOD_BEAST_XBALL, lampPhase1==2||lampPhase1==3, lampPhase1==3);
-  BSOS_SetLampState(LA_TARGET_LRIGHT_TOP, lampPhase1==1||lampPhase1==2, lampPhase1==2);
-  BSOS_SetLampState(LA_DTARGET_BONUS_5X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_SAUCER_XBALL, lampPhase1==3||lampPhase1==0, lampPhase1==0); // SAUCER
+  BSOS_SetLampState(LAMP_SAUCER_30K, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_SAUCER_20K, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LAMP_SAUCER_10K, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_DTARGET_4_A, lampPhase1==3||lampPhase1==0, lampPhase1==0); // DTARGET 4
+  BSOS_SetLampState(LAMP_DTARGET_4_B, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_DTARGET_4_C, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LAMP_DTARGET_4_D, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_BONUS_5X, lampPhase1==3||lampPhase1==0, lampPhase1==0); // BONUS X
+  BSOS_SetLampState(LAMP_BONUS_4X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_BONUS_3X, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LAMP_BONUS_2X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, lampPhase1==3||lampPhase1==0, lampPhase1==0); // OUTLANES & PFX
+  BSOS_SetLampState(LAMP_SAUCER_ARROW_3X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_CLOCK_15_SECONDS_2X, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LAMP_SAUCER_ARROW_2X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_CLOCK_15_SECONDS_3X, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_INLANE_LEFT, lampPhase1==3||lampPhase1==0, lampPhase1==0); // INLANES & SPINNERS
+  BSOS_SetLampState(LAMP_SPINNER_RIGHT, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_INLANE_RIGHT, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LAMP_SPINNER_LEFT, lampPhase1<2, lampPhase1==1);
+  BSOS_SetLampState(LAMP_TARGET_LRIGHT_BOTTOM, lampPhase1==3||lampPhase1==0, lampPhase1==0); // REMAINDER
+  BSOS_SetLampState(LAMP_TARGET_WOOD_BEAST_XBALL, lampPhase1==2||lampPhase1==3, lampPhase1==3);
+  BSOS_SetLampState(LAMP_TARGET_LRIGHT_TOP, lampPhase1==1||lampPhase1==2, lampPhase1==2);
+  BSOS_SetLampState(LAMP_DTARGET_BONUS_5X, lampPhase1<2, lampPhase1==1);
 
   // sweep 5
   byte lampPhase2 = (CurrentTime/95)%5;
-  BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, lampPhase2==4||lampPhase2==0, lampPhase2==0);
-  BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, lampPhase2==3||lampPhase2==4, lampPhase2==4);
-  BSOS_SetLampState(LA_STAR_SHOOTER_TOP, lampPhase2==2||lampPhase2==3, lampPhase2==3);
-  BSOS_SetLampState(LA_STAR_PFIELD_TOP, lampPhase2==1||lampPhase2==2, lampPhase2==2);
-  BSOS_SetLampState(LA_STAR_PFIELD_BOTTOM, lampPhase2<2, lampPhase2==1);
+  BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, lampPhase2==4||lampPhase2==0, lampPhase2==0);
+  BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, lampPhase2==3||lampPhase2==4, lampPhase2==4);
+  BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, lampPhase2==2||lampPhase2==3, lampPhase2==3);
+  BSOS_SetLampState(LAMP_STAR_PFIELD_TOP, lampPhase2==1||lampPhase2==2, lampPhase2==2);
+  BSOS_SetLampState(LAMP_STAR_PFIELD_BOTTOM, lampPhase2<2, lampPhase2==1);
 
   // sweep 4
   byte lampPhase3 = (CurrentTime/75)%6;
-  BSOS_SetLampState(LA_DTARGET_ARROW_3, lampPhase3==5||lampPhase3==0, lampPhase3==0);
-  BSOS_SetLampState(LA_DTARGET_ARROW_2, lampPhase3==4||lampPhase3==5, lampPhase3==5);
-  BSOS_SetLampState(LA_DTARGET_ARROW_1, lampPhase3==3, lampPhase3==4, lampPhase3==4);
-  BSOS_SetLampState(LA_TARGET_UPPER_SPECIAL, lampPhase3==2||lampPhase3==3, lampPhase3==3);
-  BSOS_SetLampState(LA_TARGET_UPPER_COLLECT_BONUS, lampPhase3==1||lampPhase3==2, lampPhase3==2);
-  BSOS_SetLampState(LA_DTARGET_BONUS_4X, lampPhase3<2, lampPhase3==1);
+  BSOS_SetLampState(LAMP_DTARGET_ARROW_3, lampPhase3==5||lampPhase3==0, lampPhase3==0);
+  BSOS_SetLampState(LAMP_DTARGET_ARROW_2, lampPhase3==4||lampPhase3==5, lampPhase3==5);
+  BSOS_SetLampState(LAMP_DTARGET_ARROW_1, lampPhase3==3, lampPhase3==4, lampPhase3==4);
+  BSOS_SetLampState(LAMP_TARGET_UPPER_SPECIAL, lampPhase3==2||lampPhase3==3, lampPhase3==3);
+  BSOS_SetLampState(LAMP_TARGET_UPPER_COLLECT_BONUS, lampPhase3==1||lampPhase3==2, lampPhase3==2);
+  BSOS_SetLampState(LAMP_DTARGET_BONUS_4X, lampPhase3<2, lampPhase3==1);
 
   // remainder
   BSOS_DataRead(0);
-  BSOS_SetLampState(LA_POP_TOP, 1, 0, 250);
-  BSOS_SetLampState(LA_BONUS_MINI_50K, 1, 0, 250);
-  BSOS_SetLampState(LA_BONUS_SUPER_100K, 1, 0, 250);
-  BSOS_SetLampState(LA_SHOOT_AGAIN, 1, 0, 250);
-  BSOS_SetLampState(LA_MING_TOP, 1, 0, 250);
-  BSOS_SetLampState(LA_MING_BOTTOM, 1);
+  BSOS_SetLampState(LAMP_POP_TOP, 1, 0, 250);
+  BSOS_SetLampState(LAMP_BONUS_MINI_50K, 1, 0, 250);
+  BSOS_SetLampState(LAMP_BONUS_SUPER_100K, 1, 0, 250);
+  BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 250);
+  BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 250);
+  BSOS_SetLampState(LAMP_MING_BOTTOM, 1);
 
   BackglassLampsLeft2Right();
 }
@@ -2212,8 +2212,8 @@ void TiltHit() {
     BSOS_DisableSolenoidStack();
     BSOS_SetDisableFlippers(true);
     BSOS_TurnOffAllLamps();
-    if (Credits) BSOS_SetLampState(LA_CREDIT_INDICATOR, 1);
-    BSOS_SetLampState(LA_TILT, 1);
+    if (Credits) BSOS_SetLampState(LAMP_CREDIT_INDICATOR, 1);
+    BSOS_SetLampState(LAMP_TILT, 1);
     PlaySound(50);
   }
 }
@@ -2225,8 +2225,8 @@ int SkillShot(boolean curStateChanged) {
 
   if (curStateChanged) {
     BSOS_SetDisplayCredits(0, true);
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 200);
     // Serial.println(F("Skill Shot Started"));
   }
 
@@ -2234,34 +2234,34 @@ int SkillShot(boolean curStateChanged) {
   if (SkillShotState==0) {
     backglassLampsCenterOut();
     byte lampPhase = (CurrentTime/600)%3;
-    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, lampPhase==2, 0, 100);
-    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, lampPhase==1||lampPhase==2, 0, 100);
-    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, lampPhase==0||lampPhase==1||lampPhase==2, 0, 100);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, lampPhase==2, 0, 100);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, lampPhase==1||lampPhase==2, 0, 100);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, lampPhase==0||lampPhase==1||lampPhase==2, 0, 100);
   } else if (SkillShotState==1) {
     BackglassLampsClear();
     if (SkillShotHits==1 || SkillShotHits==2) {
-      BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1);
+      BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 1);
     } else if (SkillShotHits==3 || SkillShotHits==4) {
-      BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1);
-      BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1);
+      BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 1);
+      BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 1);
     } else if (SkillShotHits>=5) {
-      BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 1);
-      BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1);
-      BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1);
+      BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, 1);
+      BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 1);
+      BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 1);
     }
   } else if (SkillShotState==2) {
     if (CurrentTime<=SkillShotScoreAnimation) {
       if (SkillShotHits==1 || SkillShotHits==2) {
-        BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1, 0, 125);
+        BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 1, 0, 125);
       } else if (SkillShotHits==3 || SkillShotHits==4) {
-        BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1, 0, 125);
-        BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1, 0, 125);
+        BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 1, 0, 125);
+        BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 1, 0, 125);
       } else if (SkillShotHits>=5) {
-        BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 1, 0, 125);
-        BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 1, 0, 125);
-        BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 1, 0, 125);
+        BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, 1, 0, 125);
+        BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 1, 0, 125);
+        BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 1, 0, 125);
       }
-      if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 125);
+      if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 1, 0, 125);
     } else {
       SkillShotState = 3;
     }
@@ -2272,10 +2272,10 @@ int SkillShot(boolean curStateChanged) {
     BSOS_SetDisplayFlash(CurrentPlayer, CurrentScores[CurrentPlayer], CurrentTime, 250, 2);
   } else {
     // Serial.println(F("Skill Shot Ended"));
-    BSOS_SetLampState(LA_STAR_SHOOTER_TOP, 0);
-    BSOS_SetLampState(LA_STAR_SHOOTER_MIDDLE, 0);
-    BSOS_SetLampState(LA_STAR_SHOOTER_BOTTOM, 0);
-    if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_TOP, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_MIDDLE, 0);
+    BSOS_SetLampState(LAMP_STAR_SHOOTER_BOTTOM, 0);
+    if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 0);
     returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
     for (byte count=0; count<CurrentNumPlayers; count++) {
       BSOS_SetDisplay(count, CurrentScores[count], true, 2);
@@ -2291,10 +2291,10 @@ int SkillShot(boolean curStateChanged) {
 void DropTargetHit() {
   DropTargetCount++;
   if (DropTargetCount==WIZARD_GOAL_DTARGET) {
-    BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 1);
-    BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 1);
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 1);
+    BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 1);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 200);
     WizardState = 1;
     PlaySound(44);
   }
@@ -2325,8 +2325,8 @@ void CheckHurryUpCompletion() {
     Super100kCollected = true;
     Playfield3xState = 1;
     PlaySound(48);
-    BSOS_SetLampState(LA_SAUCER_ARROW_3X, 1, 0, 150);
-    BSOS_SetLampState(LA_BONUS_SUPER_100K, 1);
+    BSOS_SetLampState(LAMP_SAUCER_ARROW_3X, 1, 0, 150);
+    BSOS_SetLampState(LAMP_BONUS_SUPER_100K, 1);
   }
 }
 
@@ -2334,7 +2334,7 @@ void CheckHurryUpCompletion() {
 // ########## CHECK SAUCER DROP TARGET GOAL ##########
 void CheckSaucerDTargetGoal() {
   if (DTarget4Goal==true && DTarget3Goal==true && DTargetInlineGoal==true && WoodBeastXBallState[CurrentPlayer]==3 && SaucerXBallState[CurrentPlayer]==0) {
-    BSOS_SetLampState(LA_SAUCER_XBALL, 1);
+    BSOS_SetLampState(LAMP_SAUCER_XBALL, 1);
     SaucerXBallState[CurrentPlayer] = 1;
   }
 }
@@ -2358,14 +2358,14 @@ void AddToSuperBonus(byte bonusAddition) {
 // ########## SET MINI BONUS INDICATOR ##########
 void SetMiniBonusIndicator(byte number, byte state, byte dim, int flashPeriod=0) {
   if (number==0 || number>19) return;
-  BSOS_SetLampState(LA_BONUS_MINI_1K+(number-1), state, dim, flashPeriod);
+  BSOS_SetLampState(LAMP_BONUS_MINI_1K+(number-1), state, dim, flashPeriod);
 }
 
 
 // ########## SET SUPER BONUS INDICATOR ##########
 void SetSuperBonusIndicator(byte number, byte state, byte dim, int flashPeriod=0) {
   if (number==0 || number>19) return;
-  BSOS_SetLampState(LA_BONUS_SUPER_1K+(number-1), state, dim, flashPeriod);
+  BSOS_SetLampState(LAMP_BONUS_SUPER_1K+(number-1), state, dim, flashPeriod);
 }
 
 
@@ -2428,26 +2428,26 @@ void ShowSuperBonusOnLadder(byte bonus) {
 // ########## SHOW EXTRA BONUS LIGHTS ##########
 void ShowExtraBonusLights() {
   if (Mini50kCollected==true) {
-    BSOS_SetLampState(LA_BONUS_MINI_50K, 1);
+    BSOS_SetLampState(LAMP_BONUS_MINI_50K, 1);
   }
   if (Super100kCollected==true) {
-    BSOS_SetLampState(LA_BONUS_SUPER_100K, 1);
+    BSOS_SetLampState(LAMP_BONUS_SUPER_100K, 1);
   }
   if (BonusXState==2) {
-    BSOS_SetLampState(LA_BONUS_2X, 1);
+    BSOS_SetLampState(LAMP_BONUS_2X, 1);
   } else if (BonusXState==3) {
-    BSOS_SetLampState(LA_BONUS_2X, 0);
-    BSOS_SetLampState(LA_BONUS_3X, 1);
-    BSOS_SetLampState(LA_DTARGET_BONUS_4X, 1, 0, 200);
+    BSOS_SetLampState(LAMP_BONUS_2X, 0);
+    BSOS_SetLampState(LAMP_BONUS_3X, 1);
+    BSOS_SetLampState(LAMP_DTARGET_BONUS_4X, 1, 0, 200);
   } else if (BonusXState==4) {
-    BSOS_SetLampState(LA_DTARGET_BONUS_4X, 0);
-    BSOS_SetLampState(LA_BONUS_3X, 0);
-    BSOS_SetLampState(LA_BONUS_4X, 1);
-    BSOS_SetLampState(LA_DTARGET_BONUS_5X, 1, 0, 200);
+    BSOS_SetLampState(LAMP_DTARGET_BONUS_4X, 0);
+    BSOS_SetLampState(LAMP_BONUS_3X, 0);
+    BSOS_SetLampState(LAMP_BONUS_4X, 1);
+    BSOS_SetLampState(LAMP_DTARGET_BONUS_5X, 1, 0, 200);
   } else if (BonusXState==5) {
-    BSOS_SetLampState(LA_DTARGET_BONUS_5X, 0);
-    BSOS_SetLampState(LA_BONUS_4X, 0);
-    BSOS_SetLampState(LA_BONUS_5X, 1);
+    BSOS_SetLampState(LAMP_DTARGET_BONUS_5X, 0);
+    BSOS_SetLampState(LAMP_BONUS_4X, 0);
+    BSOS_SetLampState(LAMP_BONUS_5X, 1);
   }
 }
 
@@ -2457,7 +2457,7 @@ int CountdownBonus(boolean curStateChanged) {
 
   // If this is the first time through the countdown loop
   if (curStateChanged) {
-    BSOS_SetLampState(LA_BALL_IN_PLAY, 1, 0, 250);
+    BSOS_SetLampState(LAMP_BALL_IN_PLAY, 1, 0, 250);
 
     CountdownMini = MiniBonus;
     CountdownSuper = SuperBonus;
@@ -2469,11 +2469,11 @@ int CountdownBonus(boolean curStateChanged) {
 
     if (Super100kCollected==true) {
       CurrentScores[CurrentPlayer] += 100000;
-      BSOS_SetLampState(LA_BONUS_SUPER_100K, 0);
+      BSOS_SetLampState(LAMP_BONUS_SUPER_100K, 0);
     }
     if (Mini50kCollected==true) {
       CurrentScores[CurrentPlayer] += 50000;
-      BSOS_SetLampState(LA_BONUS_MINI_50K, 0);
+      BSOS_SetLampState(LAMP_BONUS_MINI_50K, 0);
     }
 
     LastCountdownReportTime = CountdownStartTime;
@@ -2505,8 +2505,8 @@ int CountdownBonus(boolean curStateChanged) {
       }
     } else if (BonusCountDownEndTime==0xFFFFFFFF) {
       BonusCountDownEndTime = CurrentTime+1000;
-      BSOS_SetLampState(LA_BONUS_MINI_1K, 0);
-      BSOS_SetLampState(LA_BONUS_SUPER_1K, 0);
+      BSOS_SetLampState(LAMP_BONUS_MINI_1K, 0);
+      BSOS_SetLampState(LAMP_BONUS_SUPER_1K, 0);
     }
     LastCountdownReportTime = CurrentTime;
     BSOS_SetDisplay(CurrentPlayer, CurrentScores[CurrentPlayer], true, 2);
@@ -2534,10 +2534,10 @@ int ShowMatchSequence(boolean curStateChanged) {
     MatchDelay = 1500;
     MatchDigit = random(0,10);
     NumMatchSpins = 0;
-    BSOS_SetLampState(LA_MATCH, 1, 0);
+    BSOS_SetLampState(LAMP_MATCH, 1, 0);
     BSOS_SetDisableFlippers();
     ScoreMatches = 0;
-    BSOS_SetLampState(LA_BALL_IN_PLAY, 0);
+    BSOS_SetLampState(LAMP_BALL_IN_PLAY, 0);
 
     unsigned long highestScore = 0;
     // int highScorePlayerNum = 0;
@@ -2575,10 +2575,10 @@ int ShowMatchSequence(boolean curStateChanged) {
       BSOS_SetDisplayBallInPlay((int)MatchDigit*10);
       MatchDelay += 200 + 4*NumMatchSpins;
       NumMatchSpins += 1;
-      BSOS_SetLampState(LA_MATCH, NumMatchSpins%2, 0);
+      BSOS_SetLampState(LAMP_MATCH, NumMatchSpins%2, 0);
 
       if (NumMatchSpins==10) {
-        BSOS_SetLampState(LA_MATCH, 0);
+        BSOS_SetLampState(LAMP_MATCH, 0);
         MatchDelay = CurrentTime - MatchSequenceStartTime;
       }
     }
@@ -2594,7 +2594,7 @@ int ShowMatchSequence(boolean curStateChanged) {
         BSOS_PushToTimedSolenoidStack(SO_KNOCKER, 3, CurrentTime, true);
         MatchDelay += 1000;
         NumMatchSpins += 1;
-        BSOS_SetLampState(LA_MATCH, 1);
+        BSOS_SetLampState(LAMP_MATCH, 1);
       } else {
         NumMatchSpins += 1;
       }
@@ -2642,16 +2642,16 @@ int WizardMode(boolean curStateChanged) {
     AddToScore(50000);
     BSOS_TurnOffAllLamps();
     BSOS_PushToTimedSolenoidStack(SO_DTARGET_1_DOWN, 15, CurrentTime);
-    BSOS_SetLampState(LA_OUTLANE_RIGHT_SPECIAL, 1);
-    BSOS_SetLampState(LA_OUTLANE_LEFT_SPECIAL, 1);
-    BSOS_SetLampState(LA_POP_TOP, 1);
-    BSOS_SetLampState(LA_SPINNER_LEFT, 1);
-    BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    BSOS_SetLampState(LAMP_OUTLANE_RIGHT_SPECIAL, 1);
+    BSOS_SetLampState(LAMP_OUTLANE_LEFT_SPECIAL, 1);
+    BSOS_SetLampState(LAMP_POP_TOP, 1);
+    BSOS_SetLampState(LAMP_SPINNER_LEFT, 1);
+    BSOS_SetLampState(LAMP_SPINNER_RIGHT, 1);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 200);
     if (PlayerShootsAgain==true) {
-      BSOS_SetLampState(LA_SAME_PLAYER_SHOOTS_AGAIN, 1);
-      BSOS_SetLampState(LA_SHOOT_AGAIN, 1);
+      BSOS_SetLampState(LAMP_SAME_PLAYER_SHOOTS_AGAIN, 1);
+      BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1);
     }
     BSOS_PushToTimedSolenoidStack(SO_DTARGET_4_RESET, 15, CurrentTime);
     BSOS_PushToTimedSolenoidStack(SO_DTARGET_3_RESET, 15, CurrentTime + 250);
@@ -2670,112 +2670,112 @@ int WizardMode(boolean curStateChanged) {
   // handle lamps // commented numbers based on 140 ming attack
   if (WizardState==5) {
     if (MingAttackProgress==0 || MingAttackProgress<=WIZARD_GOAL_ATTACK/4-1) { // 0-34
-      BSOS_SetLampState(LA_FLASH_GORDON_5, 0);
-      BSOS_SetLampState(LA_FLASH_GORDON_2, 0);
-      BSOS_SetLampState(LA_FLASH_GORDON_4, 0);
-      BSOS_SetLampState(LA_FLASH_GORDON_3, 0);
-      if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 0);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_5, 0);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_2, 0);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_4, 0);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_3, 0);
+      if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 0);
 
       if (MingAttackProgress==0 || MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)/3-1) { // 0-10 : 11
         if (MingHealth!=0) {
-          BSOS_SetLampState(LA_SAUCER_10K, 1, 0, 250);
-          BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 250);
-          BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 250);
+          BSOS_SetLampState(LAMP_SAUCER_10K, 1, 0, 250);
+          BSOS_SetLampState(LAMP_FLASH_GORDON_6, 1, 0, 250);
+          BSOS_SetLampState(LAMP_FLASH_GORDON_1, 1, 0, 250);
         }
       } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)/3 && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)/3)*2-1) { // 11-22 : 12
-        BSOS_SetLampState(LA_SAUCER_10K, 1, 0, 180);
-        BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 180);
-        BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 180);
+        BSOS_SetLampState(LAMP_SAUCER_10K, 1, 0, 180);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_6, 1, 0, 180);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_1, 1, 0, 180);
       } else if (MingAttackProgress>=((WIZARD_GOAL_ATTACK/4)/3)*2 && MingAttackProgress<=WIZARD_GOAL_ATTACK/4-1) { // 23-34 : 12
-        BSOS_SetLampState(LA_SAUCER_10K, 1, 0, 110);
-        BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 110);
-        BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 110);
+        BSOS_SetLampState(LAMP_SAUCER_10K, 1, 0, 110);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_6, 1, 0, 110);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_1, 1, 0, 110);
       }
 
     } else if (MingAttackProgress>=WIZARD_GOAL_ATTACK/4 && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)*2-1) { // 35-69
-      BSOS_SetLampState(LA_SAUCER_10K, 1);
-      BSOS_SetLampState(LA_FLASH_GORDON_6, 1);
-      BSOS_SetLampState(LA_FLASH_GORDON_1, 1);
+      BSOS_SetLampState(LAMP_SAUCER_10K, 1);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_6, 1);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_1, 1);
 
       if (MingAttackProgress>=WIZARD_GOAL_ATTACK/4 && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)+(((WIZARD_GOAL_ATTACK/4)/3)-1)) { // 35-45
-        BSOS_SetLampState(LA_SAUCER_20K, 1, 0, 250);
-        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 250);
-        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 250);
+        BSOS_SetLampState(LAMP_SAUCER_20K, 1, 0, 250);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_5, 1, 0, 250);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_2, 1, 0, 250);
       } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)+((WIZARD_GOAL_ATTACK/4)/3) && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)+((((WIZARD_GOAL_ATTACK/4)/3)*2)-1)) { // 46-57
-        BSOS_SetLampState(LA_SAUCER_20K, 1, 0, 180);
-        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 180);
-        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 180);
+        BSOS_SetLampState(LAMP_SAUCER_20K, 1, 0, 180);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_5, 1, 0, 180);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_2, 1, 0, 180);
       } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)+(((WIZARD_GOAL_ATTACK/4)/3)*2) && MingAttackProgress<=(((WIZARD_GOAL_ATTACK/4)*2)-1)) { // 58-69
-        BSOS_SetLampState(LA_SAUCER_20K, 1, 0, 110);
-        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 110);
-        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 110);
+        BSOS_SetLampState(LAMP_SAUCER_20K, 1, 0, 110);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_5, 1, 0, 110);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_2, 1, 0, 110);
       }
 
     } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)*2 && MingAttackProgress<=(WIZARD_GOAL_ATTACK/4)*3-1) { // 70-104
-      BSOS_SetLampState(LA_SAUCER_10K, 1);
-      BSOS_SetLampState(LA_SAUCER_20K, 1);
-      BSOS_SetLampState(LA_FLASH_GORDON_5, 1);
-      BSOS_SetLampState(LA_FLASH_GORDON_2, 1);
+      BSOS_SetLampState(LAMP_SAUCER_10K, 1);
+      BSOS_SetLampState(LAMP_SAUCER_20K, 1);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_5, 1);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_2, 1);
 
       if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)*2 && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*2)+((WIZARD_GOAL_ATTACK/4)/3-1)) { // 70-80
-        BSOS_SetLampState(LA_SAUCER_30K, 1, 0, 250);
-        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 250);
-        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 250);
+        BSOS_SetLampState(LAMP_SAUCER_30K, 1, 0, 250);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_4, 1, 0, 250);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_3, 1, 0, 250);
       } else if (MingAttackProgress>=((WIZARD_GOAL_ATTACK/4)*2)+((WIZARD_GOAL_ATTACK/4)/3) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*2)+(((WIZARD_GOAL_ATTACK/4)/3)*2-1)) { // 81-92
-        BSOS_SetLampState(LA_SAUCER_30K, 1, 0, 180);
-        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 180);
-        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 180);
+        BSOS_SetLampState(LAMP_SAUCER_30K, 1, 0, 180);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_4, 1, 0, 180);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_3, 1, 0, 180);
       } else if (MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*2)+(((WIZARD_GOAL_ATTACK/4)/3)*2) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3-1)) { // 91-104
-        BSOS_SetLampState(LA_SAUCER_30K, 1, 0, 110);
-        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 110);
-        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 110);
+        BSOS_SetLampState(LAMP_SAUCER_30K, 1, 0, 110);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_4, 1, 0, 110);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_3, 1, 0, 110);
       }
 
     } else if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4*3) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*4-1)) { // 105-139
-      BSOS_SetLampState(LA_SAUCER_10K, 1);
-      BSOS_SetLampState(LA_SAUCER_20K, 1);
-      BSOS_SetLampState(LA_SAUCER_30K, 1);
-      BSOS_SetLampState(LA_FLASH_GORDON_4, 1);
-      BSOS_SetLampState(LA_FLASH_GORDON_3, 1);
+      BSOS_SetLampState(LAMP_SAUCER_10K, 1);
+      BSOS_SetLampState(LAMP_SAUCER_20K, 1);
+      BSOS_SetLampState(LAMP_SAUCER_30K, 1);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_4, 1);
+      BSOS_SetLampState(LAMP_FLASH_GORDON_3, 1);
 
       if (MingAttackProgress>=(WIZARD_GOAL_ATTACK/4)*3 && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+((WIZARD_GOAL_ATTACK/4)/3-1)) { // 105-115
-        BSOS_SetLampState(LA_SAUCER_XBALL, 1, 0, 250);
-        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 250);
+        BSOS_SetLampState(LAMP_SAUCER_XBALL, 1, 0, 250);
+        if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 1, 0, 250);
       } else if (MingAttackProgress>=((WIZARD_GOAL_ATTACK/4)*3)+((WIZARD_GOAL_ATTACK/4)/3) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+(((WIZARD_GOAL_ATTACK/4)/3)*2-1)) { // 116-127
-        BSOS_SetLampState(LA_SAUCER_XBALL, 1, 0, 180);
-        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 180);
+        BSOS_SetLampState(LAMP_SAUCER_XBALL, 1, 0, 180);
+        if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 1, 0, 180);
       } else if (MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+(((WIZARD_GOAL_ATTACK/4)/3)*2) && MingAttackProgress<=((WIZARD_GOAL_ATTACK/4)*3)+((WIZARD_GOAL_ATTACK/4)-1)) { // 128-139
-        BSOS_SetLampState(LA_SAUCER_XBALL, 1, 0, 110);
-        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 110);
+        BSOS_SetLampState(LAMP_SAUCER_XBALL, 1, 0, 110);
+        if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 1, 0, 110);
       }
 
     } else if (MingAttackProgress>=WIZARD_GOAL_ATTACK && BallInSaucer==false) { // 140
       MingAttackProgress = WIZARD_GOAL_ATTACK;
       // MingAttackReady = true;
-      // BSOS_SetLampState(LA_SAUCER_XBALL, 1);
+      // BSOS_SetLampState(LAMP_SAUCER_XBALL, 1);
 
       byte lampPhaseSaucer = (CurrentTime/150)%4; // 250
-      BSOS_SetLampState(LA_SAUCER_XBALL, lampPhaseSaucer==3, lampPhaseSaucer==0, lampPhaseSaucer==0);
-      BSOS_SetLampState(LA_SAUCER_30K, lampPhaseSaucer==2||lampPhaseSaucer==3, lampPhaseSaucer==3);
-      BSOS_SetLampState(LA_SAUCER_20K, lampPhaseSaucer==1||lampPhaseSaucer==2, lampPhaseSaucer==2);
-      BSOS_SetLampState(LA_SAUCER_10K, lampPhaseSaucer<2, lampPhaseSaucer==1);
+      BSOS_SetLampState(LAMP_SAUCER_XBALL, lampPhaseSaucer==3, lampPhaseSaucer==0, lampPhaseSaucer==0);
+      BSOS_SetLampState(LAMP_SAUCER_30K, lampPhaseSaucer==2||lampPhaseSaucer==3, lampPhaseSaucer==3);
+      BSOS_SetLampState(LAMP_SAUCER_20K, lampPhaseSaucer==1||lampPhaseSaucer==2, lampPhaseSaucer==2);
+      BSOS_SetLampState(LAMP_SAUCER_10K, lampPhaseSaucer<2, lampPhaseSaucer==1);
       if (USE_STROBE) {
         byte lampPhaseFlash = (CurrentTime/150)%4; // 250
-        BSOS_SetLampState(LA_FLASH_STROBE, lampPhaseFlash==3, lampPhaseFlash==0, lampPhaseFlash==0);
-        BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
-        BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
-        BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
-        BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
-        BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhaseFlash<2, lampPhaseFlash==1);
-        BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhaseFlash<2, lampPhaseFlash==1);
+        BSOS_SetLampState(LAMP_FLASH_STROBE, lampPhaseFlash==3, lampPhaseFlash==0, lampPhaseFlash==0);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhaseFlash<2, lampPhaseFlash==1);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhaseFlash<2, lampPhaseFlash==1);
       } else {
         byte lampPhaseFlash = (CurrentTime/150)%3; // 250
-        BSOS_SetLampState(LA_FLASH_GORDON_4, lampPhaseFlash==2||lampPhaseFlash==0, lampPhaseFlash==0);
-        BSOS_SetLampState(LA_FLASH_GORDON_3, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
-        BSOS_SetLampState(LA_FLASH_GORDON_5, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
-        BSOS_SetLampState(LA_FLASH_GORDON_2, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
-        BSOS_SetLampState(LA_FLASH_GORDON_6, lampPhaseFlash<2, lampPhaseFlash==1);
-        BSOS_SetLampState(LA_FLASH_GORDON_1, lampPhaseFlash<2, lampPhaseFlash==1);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_4, lampPhaseFlash==2||lampPhaseFlash==0, lampPhaseFlash==0);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_3, lampPhaseFlash==2||lampPhaseFlash==3, lampPhaseFlash==3);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_5, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_2, lampPhaseFlash==1||lampPhaseFlash==2, lampPhaseFlash==2);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_6, lampPhaseFlash<2, lampPhaseFlash==1);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_1, lampPhaseFlash<2, lampPhaseFlash==1);
       }
     }
   }
@@ -2798,13 +2798,13 @@ int WizardMode(boolean curStateChanged) {
         BSOS_DisableSolenoidStack();
       }
     } else {
-      for (byte off=LA_BONUS_MINI_1K; off<=LA_TARGET_LRIGHT_TOP; off++) BSOS_SetLampState(off, 0);
-      for (byte off=LA_SAUCER_10K; off<=LA_DTARGET_BONUS_5X; off++) BSOS_SetLampState(off, 0);
-      for (byte off=LA_POP_TOP; off<=LA_STAR_SHOOTER_BOTTOM; off++) BSOS_SetLampState(off, 0);
-      for (byte off=LA_CLOCK_15_SECONDS_3X; off<=LA_SAUCER_ARROW_2X; off++) BSOS_SetLampState(off, 0);
-      BSOS_SetLampState(LA_SPINNER_RIGHT, 1);
-      BSOS_SetLampState(LA_SPINNER_LEFT, 1);
-      BSOS_SetLampState(LA_POP_TOP, 1);
+      for (byte off=LAMP_BONUS_MINI_1K; off<=LAMP_TARGET_LRIGHT_TOP; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LAMP_SAUCER_10K; off<=LAMP_DTARGET_BONUS_5X; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LAMP_POP_TOP; off<=LAMP_STAR_SHOOTER_BOTTOM; off++) BSOS_SetLampState(off, 0);
+      for (byte off=LAMP_CLOCK_15_SECONDS_3X; off<=LAMP_SAUCER_ARROW_2X; off++) BSOS_SetLampState(off, 0);
+      BSOS_SetLampState(LAMP_SPINNER_RIGHT, 1);
+      BSOS_SetLampState(LAMP_SPINNER_LEFT, 1);
+      BSOS_SetLampState(LAMP_POP_TOP, 1);
       if (MingHealth!=0) {
         AddToScore(50000);
         BSOS_PushToTimedSolenoidStack(SO_SAUCER_DOWN, 5, CurrentTime);
@@ -2815,22 +2815,22 @@ int WizardMode(boolean curStateChanged) {
         byte bonusFireworks;
         for (bonusFireworks=0; bonusFireworks<10; bonusFireworks++){
           if ( bonusFireworks % 2 == 0) { // even but odd on pf
-            BSOS_SetLampState(LA_BONUS_MINI_1K+bonusFireworks, 1, 0, 100);
-            BSOS_SetLampState(LA_BONUS_SUPER_1K+bonusFireworks, 1, 0, 100);
+            BSOS_SetLampState(LAMP_BONUS_MINI_1K+bonusFireworks, 1, 0, 100);
+            BSOS_SetLampState(LAMP_BONUS_SUPER_1K+bonusFireworks, 1, 0, 100);
           } else { // odd even on pf
-            BSOS_SetLampState(LA_BONUS_MINI_1K+bonusFireworks, 1, 0, 200);
-            BSOS_SetLampState(LA_BONUS_SUPER_1K+bonusFireworks, 1, 0, 200);
+            BSOS_SetLampState(LAMP_BONUS_MINI_1K+bonusFireworks, 1, 0, 200);
+            BSOS_SetLampState(LAMP_BONUS_SUPER_1K+bonusFireworks, 1, 0, 200);
           }
         }
-        BSOS_SetLampState(LA_BONUS_MINI_50K, 1, 0, 500);
-        BSOS_SetLampState(LA_BONUS_SUPER_100K, 1, 0, 500);
-        BSOS_SetLampState(LA_FLASH_GORDON_1, 1, 0, 200);
-        BSOS_SetLampState(LA_FLASH_GORDON_2, 1, 0, 100);
-        BSOS_SetLampState(LA_FLASH_GORDON_3, 1, 0, 200);
-        BSOS_SetLampState(LA_FLASH_GORDON_4, 1, 0, 200);
-        BSOS_SetLampState(LA_FLASH_GORDON_5, 1, 0, 100);
-        BSOS_SetLampState(LA_FLASH_GORDON_6, 1, 0, 200);
-        if (USE_STROBE) BSOS_SetLampState(LA_FLASH_STROBE, 1, 0, 500);
+        BSOS_SetLampState(LAMP_BONUS_MINI_50K, 1, 0, 500);
+        BSOS_SetLampState(LAMP_BONUS_SUPER_100K, 1, 0, 500);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_1, 1, 0, 200);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_2, 1, 0, 100);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_3, 1, 0, 200);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_4, 1, 0, 200);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_5, 1, 0, 100);
+        BSOS_SetLampState(LAMP_FLASH_GORDON_6, 1, 0, 200);
+        if (USE_STROBE) BSOS_SetLampState(LAMP_FLASH_STROBE, 1, 0, 500);
         TotalWizardModesBeat++;
         BSOS_WriteULToEEProm(BSOS_TOTAL_WIZ_BEAT_EEPROM_BYTE, TotalWizardModesBeat);
         MingDefeatCelebration = true;
@@ -2847,20 +2847,20 @@ int WizardMode(boolean curStateChanged) {
 
   // handle ming health animation
   if (MingHealth==3) {
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 100);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 200);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 100);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 200);
   } else if (MingHealth==2) {
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 200);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 300);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 200);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 300);
   } else if (MingHealth==1) {
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 300);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 400);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 300);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 400);
   } else if (MingHealth==0) {
-    BSOS_SetLampState(LA_MING_TOP, 1, 0, 400);
-    BSOS_SetLampState(LA_MING_BOTTOM, 1, 0, 500);
-    BSOS_SetLampState(LA_SPINNER_LEFT, 0);
-    BSOS_SetLampState(LA_SPINNER_RIGHT, 0);
-    BSOS_SetLampState(LA_POP_TOP, 0);
+    BSOS_SetLampState(LAMP_MING_TOP, 1, 0, 400);
+    BSOS_SetLampState(LAMP_MING_BOTTOM, 1, 0, 500);
+    BSOS_SetLampState(LAMP_SPINNER_LEFT, 0);
+    BSOS_SetLampState(LAMP_SPINNER_RIGHT, 0);
+    BSOS_SetLampState(LAMP_POP_TOP, 0);
     WizardState = 6;
   }
 
@@ -2889,8 +2889,8 @@ int WizardMode(boolean curStateChanged) {
     if (BallTimeInTrough==0) {
       BallTimeInTrough = CurrentTime;
     } else {
-      BSOS_SetLampState(LA_MING_TOP, 0);
-      BSOS_SetLampState(LA_MING_BOTTOM, 0);
+      BSOS_SetLampState(LAMP_MING_TOP, 0);
+      BSOS_SetLampState(LAMP_MING_BOTTOM, 0);
       // Make sure the ball stays on the sensor for at least
       // 0.5 seconds to be sure that it's not bouncing
       if ((CurrentTime-BallTimeInTrough)>3000) {
