@@ -20,34 +20,12 @@
 
 #ifndef BSOS_CONFIG_H
 
-/***
-
-  Use this file to set game-specific and hardware-specific parameters
-
-***/
-
-// Hardware Rev 1 generally uses an Arduino Nano & (option) 74125
-// Hardware Rev 2 uses an Arduino Nano, a 74155, and a 74240
 #define BALLY_STERN_OS_HARDWARE_REV   3
-
-
 #define BALLY_STERN_OS_USE_DIP_SWITCHES 
-//#define BALLY_STERN_OS_USE_SQUAWK_AND_TALK
-//#define BALLY_STERN_OS_USE_DASH51
-//#define BALLY_STERN_OS_USE_SB100
-//#define BALLY_STERN_OS_USE_SB300
-//#define USE_CHIMES
-//#define USE_WAV_TRIGGER
-//#define USE_WAV_TRIGGER_1p3
+#define BALLY_STERN_OS_USE_SQUAWK_AND_TALK
 #define BALLY_STERN_OS_USE_AUX_LAMPS
 #define BALLY_STERN_OS_USE_7_DIGIT_DISPLAYS
-//#define BALLY_STERN_OS_DIMMABLE_DISPLAYS
-#define BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT
-//#define BALLY_STERN_OS_ADJUSTABLE_DISPLAY_INTERRUPT
 #define BALLY_STERN_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
-
-// Fast boards might need a slower lamp strobe
-//#define BSOS_SLOW_DOWN_LAMP_STROBE
 
 // Depending on the number of digits, the BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT_INTERVAL
 // can be adjusted in order to change the refresh rate of the displays.
@@ -65,15 +43,8 @@
 //  40            381 Hz
 //  35            434 Hz     (This would probably be good for 7-digit displays)
 //  34            446.4 Hz      
+#define BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT
 #define BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT_INTERVAL  48  
-
-#ifdef BALLY_STERN_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
-#define BALLY_STERN_OS_MASK_SHIFT_1            0x60
-#define BALLY_STERN_OS_MASK_SHIFT_2            0x0C
-#else
-#define BALLY_STERN_OS_MASK_SHIFT_1            0x30
-#define BALLY_STERN_OS_MASK_SHIFT_2            0x06
-#endif
 
 #ifdef BALLY_STERN_OS_USE_7_DIGIT_DISPLAYS
 #define BALLY_STERN_OS_MAX_DISPLAY_SCORE  9999999
@@ -83,6 +54,14 @@
 #define BALLY_STERN_OS_MAX_DISPLAY_SCORE  999999
 #define BALLY_STERN_OS_NUM_DIGITS         6
 #define BALLY_STERN_OS_ALL_DIGITS_MASK    0x3F
+#endif
+
+#ifdef BALLY_STERN_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
+#define BALLY_STERN_OS_MASK_SHIFT_1            0x60
+#define BALLY_STERN_OS_MASK_SHIFT_2            0x0C
+#else
+#define BALLY_STERN_OS_MASK_SHIFT_1            0x30
+#define BALLY_STERN_OS_MASK_SHIFT_2            0x06
 #endif
 
 #ifdef BALLY_STERN_OS_USE_AUX_LAMPS
@@ -95,7 +74,6 @@
 
 #define CONTSOL_DISABLE_FLIPPERS      0x40
 #define CONTSOL_DISABLE_COIN_LOCKOUT  0x20
-
 
 #define BSOS_SWITCH_DELAY_IN_MICROSECONDS 200
 #define BSOS_TIMING_LOOP_PADDING_IN_MICROSECONDS  70

@@ -1,32 +1,14 @@
-/**************************************************************************
-    Stars2021 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    See <https://www.gnu.org/licenses/>.
-*/
-
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include <EEPROM.h>
 
-
-// Wav Trigger defines have been moved to BSOS_Config.h
-
 #define USE_SCORE_OVERRIDES
 
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-#include "SendOnlyWavTrigger.h"
-SendOnlyWavTrigger wTrig;             // Our WAV Trigger object
-#endif
-
-#define PINBALL_MACHINE_BASE_MAJOR_VERSION  2021
+#define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
 #define PINBALL_MACHINE_BASE_MINOR_VERSION  1
 #define DEBUG_MESSAGES  0
-
 
 
 /*********************************************************************
@@ -39,7 +21,7 @@ SendOnlyWavTrigger wTrig;             // Our WAV Trigger object
 //  0 - Attract Mode
 //  negative - self-test modes
 //  positive - game play
-char MachineState = -1;
+char MachineState = 0;
 boolean MachineStateChanged = true;
 #define MACHINE_STATE_ATTRACT         0
 #define MACHINE_STATE_INIT_GAMEPLAY   1
@@ -291,13 +273,6 @@ void setup() {
   CurrentScores[2] = BALLY_STERN_OS_MAJOR_VERSION;
   CurrentScores[3] = BALLY_STERN_OS_MINOR_VERSION;
 
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  // WAV Trigger startup at 57600
-  wTrig.start();
-  wTrig.stopAllTracks();
-  delayMicroseconds(10000);
-#endif
-
   StopAudio();
   CurrentTime = millis();
   PlaySoundEffect(SOUND_EFFECT_MACHINE_START);
@@ -329,30 +304,6 @@ byte CheckSequentialSwitches(byte startingSwitch, byte numSwitches) {
 //
 ////////////////////////////////////////////////////////////////////////////
 void ShowLampAnimation(byte animationNum, unsigned long divisor, unsigned long baseTime, byte subOffset, boolean dim, boolean reverse = false, byte keepLampOn = 99) {
-  byte currentStep = (baseTime / divisor) % LAMP_ANIMATION_STEPS;
-  if (reverse) currentStep = (LAMP_ANIMATION_STEPS - 1) - currentStep;
-
-  byte lampNum = 0;
-  for (int byteNum = 0; byteNum < 8; byteNum++) {
-    for (byte bitNum = 0; bitNum < 8; bitNum++) {
-
-      // if there's a subOffset, turn off lights at that offset
-      if (subOffset) {
-        byte lampOff = true;
-        lampOff = LampAnimations[animationNum][(currentStep + subOffset) % LAMP_ANIMATION_STEPS][byteNum] & (1 << bitNum);
-        if (lampOff && lampNum != keepLampOn) BSOS_SetLampState(lampNum, 0);
-      }
-
-      byte lampOn = false;
-      lampOn = LampAnimations[animationNum][currentStep][byteNum] & (1 << bitNum);
-      if (lampOn) BSOS_SetLampState(lampNum, 1, dim);
-
-      lampNum += 1;
-    }
-#if not defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-    if (byteNum % 2) BSOS_DataRead(0);
-#endif
-  }
 }
 
 
@@ -927,88 +878,36 @@ int RunSelfTest(int curState, boolean curStateChanged) {
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-byte CurrentBackgroundSong = SOUND_EFFECT_NONE;
-#endif
-
 void StopAudio() {
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  wTrig.stopAllTracks();
-  CurrentBackgroundSong = SOUND_EFFECT_NONE;
-#endif
 }
 
 void ResumeBackgroundSong() {
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  byte curSong = CurrentBackgroundSong;
-  CurrentBackgroundSong = SOUND_EFFECT_NONE;
-  PlayBackgroundSong(curSong);
-#endif
 }
 
 void PlayBackgroundSong(byte songNum) {
-
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  if (MusicLevel > 1) {
-    if (CurrentBackgroundSong != songNum) {
-      if (CurrentBackgroundSong != SOUND_EFFECT_NONE) wTrig.trackStop(CurrentBackgroundSong);
-      if (songNum != SOUND_EFFECT_NONE) {
-#ifdef USE_WAV_TRIGGER_1p3
-        wTrig.trackPlayPoly(songNum, true);
-#else
-        wTrig.trackPlayPoly(songNum);
-#endif
-        wTrig.trackLoop(songNum, true);
-        wTrig.trackGain(songNum, -4);
-      }
-      CurrentBackgroundSong = songNum;
-    }
-  }
-#else
   byte test = songNum;
   songNum = test;
-#endif
-
 }
-
 
 
 unsigned long NextSoundEffectTime = 0;
 
 void PlaySoundEffect(byte soundEffectNum) {
-
   if (MusicLevel == 0) return;
-
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-
-#ifndef USE_WAV_TRIGGER_1p3
-  if (  soundEffectNum == SOUND_EFFECT_THUMPER_BUMPER_HIT ||
-        SOUND_EFFECT_SPINNER ) wTrig.trackStop(soundEffectNum);
-#endif
-  wTrig.trackPlayPoly(soundEffectNum);
-  //  char buf[128];
-  //  sprintf(buf, "s=%d\n", soundEffectNum);
-  //  Serial.write(buf);
-#endif
 
   if (DEBUG_MESSAGES) {
     char buf[129];
     sprintf(buf, "Sound # %d\n", soundEffectNum);
     Serial.write(buf);
   }
-
 }
 
 inline void StopSoundEffect(byte soundEffectNum) {
-#if defined(USE_WAV_TRIGGER) || defined(USE_WAV_TRIGGER_1p3)
-  wTrig.trackStop(soundEffectNum);
-#else
   if (DEBUG_MESSAGES) {
     char buf[129];
     sprintf(buf, "Sound # %d\n", soundEffectNum);
     Serial.write(buf);
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1051,8 +950,8 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   } else if ((CurrentTime / 8000) % 2 == 0) {
 
     if (AttractLastHeadMode != 2) {
-      BSOS_SetLampState(LAMP_HEAD_HIGH_SCORE, 1, 0, 250);
-      BSOS_SetLampState(LAMP_HEAD_GAME_OVER, 0);
+      BSOS_SetLampState(LAMP_HIGH_SCORE_TO_DATE, 1, 0, 250);
+      BSOS_SetLampState(LAMP_GAME_OVER, 0);
       LastTimeScoreChanged = CurrentTime;
     }
     AttractLastHeadMode = 2;
@@ -1065,8 +964,8 @@ int RunAttractMode(int curState, boolean curStateChanged) {
         }
         CurrentNumPlayers = 0;
       }
-      BSOS_SetLampState(LAMP_HEAD_HIGH_SCORE, 0);
-      BSOS_SetLampState(LAMP_HEAD_GAME_OVER, 1);
+      BSOS_SetLampState(LAMP_HIGH_SCORE_TO_DATE, 0);
+      BSOS_SetLampState(LAMP_GAME_OVER, 1);
       LastTimeScoreChanged = CurrentTime;
     }
     ShowPlayerScores(0xFF, false, false);
@@ -1097,9 +996,6 @@ int RunAttractMode(int curState, boolean curStateChanged) {
       if (AttractLastLadderBonus > 20) AttractLastLadderBonus = 0;
       AttractLastLadderTime = CurrentTime;
     }
-#if not defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-    BSOS_DataRead(0);
-#endif
   } else {
     ShowLampAnimation(2, 40, CurrentTime, 14, false, false);
   }
@@ -1243,7 +1139,7 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
     SamePlayerShootsAgain = false;
 
     BSOS_SetDisplayBallInPlay(ballNum);
-    BSOS_SetLampState(LAMP_HEAD_TILT, 0);
+    BSOS_SetLampState(LAMP_TILT, 0);
 
     if (BallSaveNumSeconds > 0) {
       BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
@@ -1415,9 +1311,6 @@ int ManageGameMode() {
   if ( !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings ) {
     ShowBonusLamps();
     ShowBonusXLamps();
-#if not defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-    BSOS_DataRead(0);
-#endif
     ShowShootAgainLamps();
     ShowLaneAndRolloverLamps();
   }
@@ -1625,7 +1518,7 @@ int ShowMatchSequence(boolean curStateChanged) {
     MatchDelay = 1500;
     MatchDigit = CurrentTime % 10;
     NumMatchSpins = 0;
-    BSOS_SetLampState(LAMP_HEAD_MATCH, 1, 0);
+    BSOS_SetLampState(LAMP_MATCH, 1, 0);
     BSOS_SetDisableFlippers();
     ScoreMatches = 0;
   }
@@ -1639,10 +1532,10 @@ int ShowMatchSequence(boolean curStateChanged) {
       BSOS_SetDisplayBallInPlay((int)MatchDigit * 10);
       MatchDelay += 50 + 4 * NumMatchSpins;
       NumMatchSpins += 1;
-      BSOS_SetLampState(LAMP_HEAD_MATCH, NumMatchSpins % 2, 0);
+      BSOS_SetLampState(LAMP_MATCH, NumMatchSpins % 2, 0);
 
       if (NumMatchSpins == 40) {
-        BSOS_SetLampState(LAMP_HEAD_MATCH, 0);
+        BSOS_SetLampState(LAMP_MATCH, 0);
         MatchDelay = CurrentTime - MatchSequenceStartTime;
       }
     }
@@ -1655,7 +1548,7 @@ int ShowMatchSequence(boolean curStateChanged) {
         AddSpecialCredit();
         MatchDelay += 1000;
         NumMatchSpins += 1;
-        BSOS_SetLampState(LAMP_HEAD_MATCH, 1);
+        BSOS_SetLampState(LAMP_MATCH, 1);
       } else {
         NumMatchSpins += 1;
       }
@@ -1773,7 +1666,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               BSOS_TurnOffAllLamps();
               StopAudio();
               PlaySoundEffect(SOUND_EFFECT_TILT);
-              BSOS_SetLampState(LAMP_HEAD_TILT, 1);
+              BSOS_SetLampState(LAMP_TILT, 1);
             }
             PlaySoundEffect(SOUND_EFFECT_TILT_WARNING);
           }
@@ -1859,7 +1752,6 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
 
 
 void loop() {
-
   BSOS_DataRead(0);
 
   CurrentTime = millis();
@@ -1882,5 +1774,4 @@ void loop() {
 
   BSOS_ApplyFlashToLamps(CurrentTime);
   BSOS_UpdateTimedSolenoidStack(CurrentTime);
-
 }
