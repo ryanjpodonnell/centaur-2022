@@ -103,7 +103,7 @@ boolean MachineStateChanged = true;
 unsigned long HighScore = 0;
 unsigned long AwardScores[3];
 byte Credits = 0;
-boolean FreePlayMode = false;
+boolean FreePlayMode = true;
 byte MusicLevel = 3;
 byte BallSaveNumSeconds = 0;
 unsigned long ExtraBallValue = 0;
@@ -186,9 +186,6 @@ void ReadStoredParameters() {
   Credits = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
   if (Credits > MaximumCredits) Credits = MaximumCredits;
 
-  ReadSetting(EEPROM_FREE_PLAY_BYTE, 0);
-  FreePlayMode = (EEPROM.read(EEPROM_FREE_PLAY_BYTE)) ? true : false;
-
   BallSaveNumSeconds = ReadSetting(EEPROM_BALL_SAVE_BYTE, 15);
   if (BallSaveNumSeconds > 20) BallSaveNumSeconds = 20;
 
@@ -235,11 +232,18 @@ void setup() {
     Serial.begin(57600);
   }
 
+  struct PlayfieldAndCabinetSwitch solenoidAssociatedSwitches[] = {
+    { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
+    { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
+    { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
+    { SW_RIGHT_THUMPER_BUMPER, SOL_RIGHT_THUMPER_BUMPER, 3}
+  };
+
   // Tell the OS about game-specific lights and switches
   BSOS_SetupGameSwitches(
       NUM_SWITCHES_WITH_TRIGGERS,
       NUM_PRIORITY_SWITCHES_WITH_TRIGGERS,
-      SolenoidAssociatedSwitches
+      solenoidAssociatedSwitches
       );
 
   // Set up the chips and interrupts
@@ -685,8 +689,6 @@ int RunSelfTest(int curState, boolean curStateChanged) {
 
   return returnState;
 }
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////
