@@ -16,7 +16,7 @@ boolean FreePlay = true;            // false = coin drop, true = free play
 
 #define VERSION_NUMBER 2022
 
-int MachineState            = 0;
+int MachineState            = -1;
 boolean MachineStateChanged = true;
 
 #define MACHINE_STATE_ATTRACT         0
@@ -220,7 +220,7 @@ int RunSelfTest(int curState, boolean curStateChanged) {
   // Any state that's greater than CHUTE_3 is handled by the Base Self-test code
   // Any that's less, is machine specific, so we handle it here.
   if (curState>=MACHINE_STATE_TEST_SCORE_LEVEL_3) {
-    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON);
+    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_LEFT_FLIPPER_BUTTON);
   } else {
     returnState = MACHINE_STATE_ATTRACT;
   }

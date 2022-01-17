@@ -33,7 +33,6 @@ unsigned long NextSpeedyValueChange = 0;
 unsigned long NumSpeedyChanges      = 0;
 unsigned long LastResetPress        = 0;
 byte CurValue                       = 0;
-byte CurSound                       = 0x01;
 byte SoundPlaying                   = 0;
 boolean SolenoidCycle               = true;
 
@@ -43,6 +42,7 @@ int RunBaseSelfTest(
     boolean curStateChanged,
     unsigned long CurrentTime,
     byte resetSwitch,
+    byte leftFlipperSwitch,
     byte slamSwitch
     ) {
   byte curSwitch                     = BSOS_PullFirstFromSwitchStack();
@@ -192,15 +192,39 @@ int RunBaseSelfTest(
     }
 
   } else if (curState==MACHINE_STATE_TEST_SOUNDS) {
-    BSOS_SetDisplayCredits(0);
-    BSOS_SetDisplayBallInPlay(5);
+    /* BSOS_SetDisplayCredits(0); */
+    /* BSOS_SetDisplayBallInPlay(5); */
 
-    byte soundToPlay = ((CurrentTime-LastSelfTestChange)/2000)%256;
-    if (SoundPlaying!=soundToPlay) {
-      BSOS_PlaySoundSquawkAndTalk(soundToPlay);
-      SoundPlaying = soundToPlay;
-      BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
-      LastSolTestTime = CurrentTime; // Time the sound started to play
+    /* byte soundToPlay = ((CurrentTime-LastSelfTestChange)/2000)%256; */
+    /* if (SoundPlaying!=soundToPlay) { */
+    /*   BSOS_PlaySoundSquawkAndTalk(soundToPlay); */
+    /*   SoundPlaying = soundToPlay; */
+    /*   BSOS_SetDisplay(0, (unsigned long)soundToPlay, true); */
+    /*   LastSolTestTime = CurrentTime; // Time the sound started to play */
+    /* } */
+
+    if (curStateChanged) {
+      BSOS_TurnOffAllLamps();
+      BSOS_DisableSolenoidStack();
+      BSOS_SetDisableFlippers(true);
+      BSOS_SetDisplayCredits(0);
+      BSOS_SetDisplayBallInPlay(5);
+
+      CurValue = 255;
+      BSOS_SetDisplay(0, CurValue, true);
+    }
+    if (curSwitch==resetSwitch || resetDoubleClick) {
+      CurValue += 1;
+      if (CurValue>255) CurValue = 0;
+
+      BSOS_SetDisplay(0, CurValue, true);
+      BSOS_PlaySoundSquawkAndTalk(CurValue);
+    } else if (curSwitch==leftFlipperSwitch) {
+      CurValue -= 1;
+      if (CurValue<0) CurValue = 255;
+
+      BSOS_SetDisplay(0, CurValue, true);
+      BSOS_PlaySoundSquawkAndTalk(CurValue);
     }
   } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_1) {
     savedScoreStartByte = BSOS_AWARD_SCORE_1_EEPROM_START_BYTE;

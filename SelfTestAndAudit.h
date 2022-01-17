@@ -40,7 +40,7 @@
 
 unsigned long GetLastSelfTestChangedTime();
 void SetLastSelfTestChangedTime(unsigned long setSelfTestChange);
-int RunBaseSelfTest(int curState, boolean curStateChanged, unsigned long CurrentTime, byte resetSwitch, byte slamSwitch=0xFF);
+int RunBaseSelfTest(int curState, boolean curStateChanged, unsigned long CurrentTime, byte resetSwitch, byte leftFlipperSwitch, byte slamSwitch=0xFF);
 
 unsigned long GetAwardScore(byte level);
 
