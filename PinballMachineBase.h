@@ -143,3 +143,59 @@ struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
   { SW_RIGHT_THUMPER_BUMPER, SOL_RIGHT_THUMPER_BUMPER, 3}
 };
+
+// Squawk & Talk Timings
+byte SoundTimings[52] = { // byte or float
+   0,  // 0         off/strange
+   0,  // 1         off/strange
+   0,  // 2         off/strange
+   0,  // 3         off/strange
+   0,  // 4  ****** 2.060s humm low (same as 9 ???)
+   0,  // 5         sound off
+   1,  // 6         background sound 1
+   0,  // 7  ****** 0.173s rebound hit
+   0,  // 8  ****** 1.550s spinner humm medium
+   0,  // 9  ****** 1.971s spinner humm low (same as 4 ???)
+   1,  // 10 0.500s or 11.820s (multiply) timer sound
+   0,  // 11        background sound 2
+   0,  // 12 ****** 0.411s boink up high
+   0,  // 13 ****** 0.467s boink up low
+   0,  // 14        background sound 3
+   0,  // 15        background sound 4
+   2,  // 16 0.400s (multiply) alarm
+   6,  // 17 1.360s low grumble (new)
+   0,  // 18 3.240s saucer (repeat of 22 & 23)
+   0,  // 19        background sound 5
+   0,  // 20 ****** 0.844s drop target hit
+   0,  // 21 ****** 0.889s beep beep hit
+   13, // 22 3.240s saucer (repeat of 18 & 23)
+   13, // 23 3.240s saucer OR sound off (repeat of 18 & 22)
+   0,  // 24 ****** 0.643s bong bounce down
+   0,  // 25 ****** 1.260s bong bounce up
+   0,  // 26 ****** 1.760s crash bounce down
+   0,  // 27 ****** 1.760s crash bounce up
+   0,  // 28 3.638s outlanes
+   0,  // 29 ****** 1.497s crash
+   0,  // 30        background sound 6 OR sound off
+   0,  // 31        background sound 7
+   0,  // 32 ****** 0.463s ding 1
+   0,  // 33 ****** 0.463s ding 2
+   0,  // 34 ****** 0.463s ding 3
+   0,  // 35 ****** 0.463s ding 4
+   0,  // 36        background sound 8
+   0,  // 37        background sound 9
+   0,  // 38        background sound 10 OR sound off
+   0,  // 39        background sound 11
+   15, // 40 3.721s "ignite deathray, 15 seconds" ming
+   52, // 41 12.940s ming laugh five times
+   10, // 42 2.321s "lucky shot earthling" ming
+   8,  // 43 1.830s "miserable earthling" ming OR sound off
+   8,  // 44 2.058s "emperor ming awaits" ming
+   6,  // 45 1.500s "flash" ming
+   10, // 46 2.471s "try again earthling" ming
+   8,  // 47 1.856s "15 seconds" ming
+   7,  // 48 1.770s "miserable earthling" ming
+   6,  // 49 1.500s "flash" ming
+   10, // 50 2.527s ming laugh single OR ding ?
+   8   // 51 1.803s "15 seconds" ming
+};

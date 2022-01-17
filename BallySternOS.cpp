@@ -681,7 +681,6 @@ void InterruptService2() {
 
 
 #if defined (BALLY_STERN_OS_SOFTWARE_DISPLAY_INTERRUPT)
-
 ISR(TIMER1_COMPA_vect) {    //This is the interrupt request
   // Backup U10A
   byte backupU10A = BSOS_DataRead(ADDRESS_U10_A);
@@ -694,6 +693,7 @@ ISR(TIMER1_COMPA_vect) {    //This is the interrupt request
   // Also park the aux lamp board 
   BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) | 0x08);
   BSOS_DataWrite(ADDRESS_U11_A_CONTROL, BSOS_DataRead(ADDRESS_U11_A_CONTROL) & 0xF7);    
+#endif
 
   // Blank Displays
   BSOS_DataWrite(ADDRESS_U10_A_CONTROL, BSOS_DataRead(ADDRESS_U10_A_CONTROL) & 0xF7);
