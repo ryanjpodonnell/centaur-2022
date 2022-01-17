@@ -31,19 +31,6 @@ boolean MachineStateChanged = true;
 #define MACHINE_STATE_BALL_OVER       100
 #define MACHINE_STATE_MATCH_MODE      110
 
-#define MACHINE_STATE_ADJUST_FREEPLAY           -17
-#define MACHINE_STATE_ADJUST_BALL_SAVE          -18
-#define MACHINE_STATE_ADJUST_MUSIC_LEVEL        -19
-#define MACHINE_STATE_ADJUST_TOURNAMENT_SCORING -20
-#define MACHINE_STATE_ADJUST_TILT_WARNING       -21
-#define MACHINE_STATE_ADJUST_AWARD_OVERRIDE     -22
-#define MACHINE_STATE_ADJUST_BALLS_OVERRIDE     -23
-#define MACHINE_STATE_ADJUST_SCROLLING_SCORES   -24
-#define MACHINE_STATE_ADJUST_EXTRA_BALL_AWARD   -25
-#define MACHINE_STATE_ADJUST_SPECIAL_AWARD      -26
-#define MACHINE_STATE_ADJUST_DIM_LEVEL          -27
-#define MACHINE_STATE_ADJUST_DONE               -28
-
 // The lower 4 bits of the Game Mode are modes, the upper 4 are for frenzies
 // and other flags that carry through different modes
 #define GAME_MODE_SKILL_SHOT                        0
@@ -52,8 +39,6 @@ boolean MachineStateChanged = true;
 #define GAME_MODE_WIZARD                            13
 #define GAME_MODE_WIZARD_FINISHED                   14
 #define GAME_BASE_MODE                              0x0F
-
-
 
 #define EEPROM_BALL_SAVE_BYTE           100
 #define EEPROM_FREE_PLAY_BYTE           101
@@ -67,7 +52,6 @@ boolean MachineStateChanged = true;
 #define EEPROM_DIM_LEVEL_BYTE           113
 #define EEPROM_EXTRA_BALL_SCORE_BYTE    140
 #define EEPROM_SPECIAL_SCORE_BYTE       144
-
 
 #define SOUND_EFFECT_NONE               0
 #define SOUND_EFFECT_BONUS_COUNT        1
@@ -243,7 +227,6 @@ void ReadStoredParameters() {
   AwardScores[0] = BSOS_ReadULFromEEProm(BSOS_AWARD_SCORE_1_EEPROM_START_BYTE);
   AwardScores[1] = BSOS_ReadULFromEEProm(BSOS_AWARD_SCORE_2_EEPROM_START_BYTE);
   AwardScores[2] = BSOS_ReadULFromEEProm(BSOS_AWARD_SCORE_3_EEPROM_START_BYTE);
-
 }
 
 
@@ -275,7 +258,7 @@ void setup() {
 
   StopAudio();
   CurrentTime = millis();
-  PlaySoundEffect(SOUND_EFFECT_MACHINE_START);
+  PlaySound(SOUND_EFFECT_MACHINE_START);
 }
 
 byte ReadSetting(byte setting, byte defaultValue) {
@@ -599,7 +582,7 @@ boolean AddPlayer(boolean resetNumPlayers = false) {
     BSOS_SetDisplayCredits(Credits);
     BSOS_SetCoinLockout(false);
   }
-  PlaySoundEffect(SOUND_EFFECT_ADD_PLAYER_1 + (CurrentNumPlayers - 1));
+  PlaySound(SOUND_EFFECT_ADD_PLAYER_1 + (CurrentNumPlayers - 1));
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
@@ -628,7 +611,7 @@ void AddCredit(boolean playSound = false, byte numToAdd = 1) {
     Credits += numToAdd;
     if (Credits > MaximumCredits) Credits = MaximumCredits;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-    if (playSound) PlaySoundEffect(SOUND_EFFECT_ADD_CREDIT);
+    if (playSound) PlaySound(SOUND_EFFECT_ADD_CREDIT);
     BSOS_SetDisplayCredits(Credits);
     BSOS_SetCoinLockout(false);
   } else {
@@ -663,9 +646,7 @@ void AwardExtraBall() {
     SamePlayerShootsAgain = true;
     BSOS_SetLampState(LAMP_SHOOT_AGAIN, SamePlayerShootsAgain);
     StopAudio();
-    PlaySoundEffect(SOUND_EFFECT_EXTRA_BALL);
-    //    PlayBackgroundSongBasedOnLevel(StarLevel[CurrentPlayer]);
-    //ResumeBackgroundSong();
+    PlaySound(SOUND_EFFECT_EXTRA_BALL);
   }
 }
 
@@ -690,178 +671,14 @@ int RunSelfTest(int curState, boolean curStateChanged) {
   CurrentNumPlayers = 0;
 
   if (curStateChanged) {
-    // Send a stop-all command and reset the sample-rate offset, in case we have
-    //  reset while the WAV Trigger was already playing.
     StopAudio();
   }
 
-  // Any state that's greater than CHUTE_3 is handled by the Base Self-test code
-  // Any that's less, is machine specific, so we handle it here.
   if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
     returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
-  } else {
-    byte curSwitch = BSOS_PullFirstFromSwitchStack();
-
-    if (curSwitch == SW_SELF_TEST_SWITCH && (CurrentTime - GetLastSelfTestChangedTime()) > 250) {
-      SetLastSelfTestChangedTime(CurrentTime);
-      returnState -= 1;
-    }
-
-    if (curSwitch == SW_SLAM) {
-      returnState = MACHINE_STATE_ATTRACT;
-    }
-
-    if (curStateChanged) {
-      for (int count = 0; count < 4; count++) {
-        BSOS_SetDisplay(count, 0);
-        BSOS_SetDisplayBlank(count, 0x00);
-      }
-      BSOS_SetDisplayCredits(MACHINE_STATE_TEST_SOUNDS - curState);
-      BSOS_SetDisplayBallInPlay(0, false);
-      CurrentAdjustmentByte = NULL;
-      CurrentAdjustmentUL = NULL;
-      CurrentAdjustmentStorageByte = 0;
-
-      AdjustmentType = ADJ_TYPE_MIN_MAX;
-      AdjustmentValues[0] = 0;
-      AdjustmentValues[1] = 1;
-      TempValue = 0;
-
-      switch (curState) {
-        case MACHINE_STATE_ADJUST_FREEPLAY:
-          CurrentAdjustmentByte = (byte *)&FreePlayMode;
-          CurrentAdjustmentStorageByte = EEPROM_FREE_PLAY_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_BALL_SAVE:
-          AdjustmentType = ADJ_TYPE_LIST;
-          NumAdjustmentValues = 5;
-          AdjustmentValues[1] = 5;
-          AdjustmentValues[2] = 10;
-          AdjustmentValues[3] = 15;
-          AdjustmentValues[4] = 20;
-          CurrentAdjustmentByte = &BallSaveNumSeconds;
-          CurrentAdjustmentStorageByte = EEPROM_BALL_SAVE_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_MUSIC_LEVEL:
-          AdjustmentType = ADJ_TYPE_MIN_MAX_DEFAULT;
-          AdjustmentValues[1] = 3;
-          CurrentAdjustmentByte = &MusicLevel;
-          CurrentAdjustmentStorageByte = EEPROM_MUSIC_LEVEL_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_TOURNAMENT_SCORING:
-          CurrentAdjustmentByte = (byte *)&TournamentScoring;
-          CurrentAdjustmentStorageByte = EEPROM_TOURNAMENT_SCORING_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_TILT_WARNING:
-          AdjustmentValues[1] = 2;
-          CurrentAdjustmentByte = &MaxTiltWarnings;
-          CurrentAdjustmentStorageByte = EEPROM_TILT_WARNING_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_AWARD_OVERRIDE:
-          AdjustmentType = ADJ_TYPE_MIN_MAX_DEFAULT;
-          AdjustmentValues[1] = 7;
-          CurrentAdjustmentByte = &ScoreAwardReplay;
-          CurrentAdjustmentStorageByte = EEPROM_AWARD_OVERRIDE_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_BALLS_OVERRIDE:
-          AdjustmentType = ADJ_TYPE_LIST;
-          NumAdjustmentValues = 3;
-          AdjustmentValues[0] = 3;
-          AdjustmentValues[1] = 5;
-          AdjustmentValues[2] = 99;
-          CurrentAdjustmentByte = &BallsPerGame;
-          CurrentAdjustmentStorageByte = EEPROM_BALLS_OVERRIDE_BYTE;
-          break;
-        case MACHINE_STATE_ADJUST_SCROLLING_SCORES:
-          CurrentAdjustmentByte = (byte *)&ScrollingScores;
-          CurrentAdjustmentStorageByte = EEPROM_SCROLLING_SCORES_BYTE;
-          break;
-
-        case MACHINE_STATE_ADJUST_EXTRA_BALL_AWARD:
-          AdjustmentType = ADJ_TYPE_SCORE_WITH_DEFAULT;
-          CurrentAdjustmentUL = &ExtraBallValue;
-          CurrentAdjustmentStorageByte = EEPROM_EXTRA_BALL_SCORE_BYTE;
-          break;
-
-        case MACHINE_STATE_ADJUST_SPECIAL_AWARD:
-          AdjustmentType = ADJ_TYPE_SCORE_WITH_DEFAULT;
-          CurrentAdjustmentUL = &SpecialValue;
-          CurrentAdjustmentStorageByte = EEPROM_SPECIAL_SCORE_BYTE;
-          break;
-
-        case MACHINE_STATE_ADJUST_DIM_LEVEL:
-          AdjustmentType = ADJ_TYPE_LIST;
-          NumAdjustmentValues = 2;
-          AdjustmentValues[0] = 2;
-          AdjustmentValues[1] = 3;
-          CurrentAdjustmentByte = &DimLevel;
-          CurrentAdjustmentStorageByte = EEPROM_DIM_LEVEL_BYTE;
-          //          for (int count = 0; count < 7; count++) BSOS_SetLampState(MIDDLE_ROCKET_7K + count, 1, 1);
-          break;
-
-        case MACHINE_STATE_ADJUST_DONE:
-          returnState = MACHINE_STATE_ATTRACT;
-          break;
-      }
-
-    }
-
-    // Change value, if the switch is hit
-    if (curSwitch == SW_CREDIT_BUTTON) {
-
-      if (CurrentAdjustmentByte && (AdjustmentType == ADJ_TYPE_MIN_MAX || AdjustmentType == ADJ_TYPE_MIN_MAX_DEFAULT)) {
-        byte curVal = *CurrentAdjustmentByte;
-        curVal += 1;
-        if (curVal > AdjustmentValues[1]) {
-          if (AdjustmentType == ADJ_TYPE_MIN_MAX) curVal = AdjustmentValues[0];
-          else {
-            if (curVal > 99) curVal = AdjustmentValues[0];
-            else curVal = 99;
-          }
-        }
-        *CurrentAdjustmentByte = curVal;
-        if (CurrentAdjustmentStorageByte) EEPROM.write(CurrentAdjustmentStorageByte, curVal);
-      } else if (CurrentAdjustmentByte && AdjustmentType == ADJ_TYPE_LIST) {
-        byte valCount = 0;
-        byte curVal = *CurrentAdjustmentByte;
-        byte newIndex = 0;
-        for (valCount = 0; valCount < (NumAdjustmentValues - 1); valCount++) {
-          if (curVal == AdjustmentValues[valCount]) newIndex = valCount + 1;
-        }
-        *CurrentAdjustmentByte = AdjustmentValues[newIndex];
-        if (CurrentAdjustmentStorageByte) EEPROM.write(CurrentAdjustmentStorageByte, AdjustmentValues[newIndex]);
-      } else if (CurrentAdjustmentUL && (AdjustmentType == ADJ_TYPE_SCORE_WITH_DEFAULT || AdjustmentType == ADJ_TYPE_SCORE_NO_DEFAULT)) {
-        unsigned long curVal = *CurrentAdjustmentUL;
-        curVal += 5000;
-        if (curVal > 100000) curVal = 0;
-        if (AdjustmentType == ADJ_TYPE_SCORE_NO_DEFAULT && curVal == 0) curVal = 5000;
-        *CurrentAdjustmentUL = curVal;
-        if (CurrentAdjustmentStorageByte) BSOS_WriteULToEEProm(CurrentAdjustmentStorageByte, curVal);
-      }
-
-      if (curState == MACHINE_STATE_ADJUST_DIM_LEVEL) {
-        BSOS_SetDimDivisor(1, DimLevel);
-      }
-    }
-
-    // Show current value
-    if (CurrentAdjustmentByte != NULL) {
-      BSOS_SetDisplay(0, (unsigned long)(*CurrentAdjustmentByte), true);
-    } else if (CurrentAdjustmentUL != NULL) {
-      BSOS_SetDisplay(0, (*CurrentAdjustmentUL), true);
-    }
-
-  }
-
-  if (curState == MACHINE_STATE_ADJUST_DIM_LEVEL) {
-    //    for (int count = 0; count < 7; count++) BSOS_SetLampState(MIDDLE_ROCKET_7K + count, 1, (CurrentTime / 1000) % 2);
   }
 
   if (returnState == MACHINE_STATE_ATTRACT) {
-    // If any variables have been set to non-override (99), return
-    // them to dip switch settings
-    // Balls Per Game, Player Loses On Ties, Novelty Scoring, Award Score
-    //    DecodeDIPSwitchParameters();
     BSOS_SetDisplayCredits(Credits, true);
     ReadStoredParameters();
   }
@@ -877,37 +694,17 @@ int RunSelfTest(int curState, boolean curStateChanged) {
 //  Audio Output functions
 //
 ////////////////////////////////////////////////////////////////////////////
+void PlaySound(byte soundEffectNum) {
+  if (DEBUG_MESSAGES) {
+    char buf[129];
+    sprintf(buf, "Sound # %d\n", soundEffectNum);
+    Serial.write(buf);
+  }
+  BSOS_PlaySoundSquawkAndTalk(soundEffectNum);
+}
 
 void StopAudio() {
-}
-
-void ResumeBackgroundSong() {
-}
-
-void PlayBackgroundSong(byte songNum) {
-  byte test = songNum;
-  songNum = test;
-}
-
-
-unsigned long NextSoundEffectTime = 0;
-
-void PlaySoundEffect(byte soundEffectNum) {
-  if (MusicLevel == 0) return;
-
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Sound # %d\n", soundEffectNum);
-    Serial.write(buf);
-  }
-}
-
-inline void StopSoundEffect(byte soundEffectNum) {
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Sound # %d\n", soundEffectNum);
-    Serial.write(buf);
-  }
+  BSOS_PlaySoundSquawkAndTalk(5);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1082,11 +879,6 @@ void IncreaseBonusX() {
       BonusX[CurrentPlayer] += 1;
     }
   }
-
-  if (!soundPlayed) {
-    //    PlaySoundEffect(SOUND_EFFECT_BONUS_X_INCREASED);
-  }
-
 }
 
 
@@ -1135,7 +927,7 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
     BSOS_SetDisableFlippers(false);
     BSOS_EnableSolenoidStack();
     BSOS_SetDisplayCredits(Credits, true);
-    if (CurrentNumPlayers > 1 && (ballNum != 1 || playerNum != 0) && !SamePlayerShootsAgain) PlaySoundEffect(SOUND_EFFECT_PLAYER_1_UP + playerNum);
+    if (CurrentNumPlayers > 1 && (ballNum != 1 || playerNum != 0) && !SamePlayerShootsAgain) PlaySound(SOUND_EFFECT_PLAYER_1_UP + playerNum);
     SamePlayerShootsAgain = false;
 
     BSOS_SetDisplayBallInPlay(ballNum);
@@ -1193,17 +985,13 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
 
 void PlayBackgroundSongBasedOnBall(byte ballNum) {
   if (ballNum == 1) {
-    PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_1);
   } else if (ballNum == BallsPerGame) {
-    PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_3);
   } else {
-    PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_2);
   }
 }
 
 void PlayBackgroundSongBasedOnLevel(byte level) {
   if (level > 2) level = 2;
-  PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_1 + level);
 }
 
 
@@ -1248,7 +1036,7 @@ int ManageGameMode() {
         StopAudio();
         GameModeStartTime = CurrentTime;
         GameModeEndTime = CurrentTime + WIZARD_START_DURATION;
-        PlaySoundEffect(SOUND_EFFECT_WIZARD_MODE_START);
+        PlaySound(SOUND_EFFECT_WIZARD_MODE_START);
         StartScoreAnimation(WIZARD_MODE_REWARD_SCORE);
         WizardScoring = true;
       }
@@ -1264,7 +1052,6 @@ int ManageGameMode() {
 
     case GAME_MODE_WIZARD:
       if (GameModeStartTime == 0) {
-        PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_WIZ);
         GameModeStartTime = CurrentTime;
         GameModeEndTime = CurrentTime + WIZARD_DURATION;
       }
@@ -1275,7 +1062,7 @@ int ManageGameMode() {
         for (byte count = 0; count < 4; count++) {
           if (count != CurrentPlayer) OverrideScoreDisplay(count, WIZARD_DURATION_SECONDS - LastWizardTimer, true);
         }
-        PlaySoundEffect(SOUND_EFFECT_SLING_SHOT);
+        PlaySound(SOUND_EFFECT_SLING_SHOT);
       }
 
       specialAnimationRunning = true;
@@ -1292,7 +1079,7 @@ int ManageGameMode() {
         StopAudio();
         GameModeStartTime = CurrentTime;
         GameModeEndTime = CurrentTime + WIZARD_FINISHED_DURATION;
-        PlaySoundEffect(SOUND_EFFECT_WIZARD_MODE_FINISHED);
+        PlaySound(SOUND_EFFECT_WIZARD_MODE_FINISHED);
         ShowPlayerScores(0xFF, false, false);
       }
 
@@ -1344,7 +1131,7 @@ int ManageGameMode() {
         remainingScore = (((CurrentTime - ScoreAdditionAnimationStartTime) - 2000) * ScoreAdditionAnimation) / 3000;
         if ((remainingScore / 1000) != (LastRemainingAnimatedScoreShown / 1000)) {
           LastRemainingAnimatedScoreShown = remainingScore;
-          PlaySoundEffect(SOUND_EFFECT_SLING_SHOT);
+          PlaySound(SOUND_EFFECT_SLING_SHOT);
         }
       } else {
         CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
@@ -1398,16 +1185,14 @@ int ManageGameMode() {
           if (!BallSaveUsed && ((CurrentTime - BallFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
             BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 100);
             BallSaveUsed = true;
-            //            PlaySoundEffect(SOUND_EFFECT_SHOOT_AGAIN);
             BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
             BallTimeInTrough = CurrentTime;
             returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
           } else {
             ShowPlayerScores(0xFF, false, false);
-            PlayBackgroundSong(SOUND_EFFECT_NONE);
             StopAudio();
 
-            if (CurrentBallInPlay < BallsPerGame) PlaySoundEffect(SOUND_EFFECT_BALL_OVER);
+            if (CurrentBallInPlay < BallsPerGame) PlaySound(SOUND_EFFECT_BALL_OVER);
             returnState = MACHINE_STATE_COUNTDOWN_BONUS;
           }
         }
@@ -1447,7 +1232,7 @@ int CountdownBonus(boolean curStateChanged) {
 
       // Only give sound & score if this isn't a tilt
       if (NumTiltWarnings <= MaxTiltWarnings) {
-        PlaySoundEffect(SOUND_EFFECT_BONUS_COUNT);
+        PlaySound(SOUND_EFFECT_BONUS_COUNT);
         CurrentScores[CurrentPlayer] += 1000 * ((unsigned long)BonusX[CurrentPlayer]);
       }
 
@@ -1527,8 +1312,7 @@ int ShowMatchSequence(boolean curStateChanged) {
     if (CurrentTime > (MatchSequenceStartTime + MatchDelay)) {
       MatchDigit += 1;
       if (MatchDigit > 9) MatchDigit = 0;
-      //PlaySoundEffect(10+(MatchDigit%2));
-      PlaySoundEffect(SOUND_EFFECT_MATCH_SPIN);
+      PlaySound(SOUND_EFFECT_MATCH_SPIN);
       BSOS_SetDisplayBallInPlay((int)MatchDigit * 10);
       MatchDelay += 50 + 4 * NumMatchSpins;
       NumMatchSpins += 1;
@@ -1600,7 +1384,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
     BSOS_SetDisplayCredits(Credits);
 
     if (SamePlayerShootsAgain) {
-      PlaySoundEffect(SOUND_EFFECT_SHOOT_AGAIN);
+      PlaySound(SOUND_EFFECT_SHOOT_AGAIN);
       returnState = MACHINE_STATE_INIT_NEW_BALL;
     } else {
 
@@ -1614,7 +1398,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
 
       if (CurrentBallInPlay > BallsPerGame) {
         CheckHighScores();
-        PlaySoundEffect(SOUND_EFFECT_GAME_OVER);
+        PlaySound(SOUND_EFFECT_GAME_OVER);
         for (int count = 0; count < CurrentNumPlayers; count++) {
           BSOS_SetDisplay(count, CurrentScores[count], true, 2);
         }
@@ -1641,7 +1425,6 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
 
       if (WizardScoring) {
         if (switchHit != SW_SLAM && switchHit != SW_TILT) {
-          //          PlaySoundEffect(SOUND_EFFECT_WIZARD_SCORE);
           CurrentScores[CurrentPlayer] += WIZARD_SWITCH_SCORE;
         }
       }
@@ -1665,10 +1448,10 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
               BSOS_SetDisableFlippers(true);
               BSOS_TurnOffAllLamps();
               StopAudio();
-              PlaySoundEffect(SOUND_EFFECT_TILT);
+              PlaySound(SOUND_EFFECT_TILT);
               BSOS_SetLampState(LAMP_TILT, 1);
             }
-            PlaySoundEffect(SOUND_EFFECT_TILT_WARNING);
+            PlaySound(SOUND_EFFECT_TILT_WARNING);
           }
           break;
         case SW_SELF_TEST_SWITCH:
@@ -1678,7 +1461,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
           CurrentScores[CurrentPlayer] += 10;
-          PlaySoundEffect(SOUND_EFFECT_SLING_SHOT);
+          PlaySound(SOUND_EFFECT_SLING_SHOT);
           if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime;
           break;
         case SW_COIN_1:

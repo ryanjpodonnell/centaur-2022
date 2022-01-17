@@ -36,7 +36,7 @@
 #define MACHINE_STATE_TEST_CHUTE_2_COINS  -14
 #define MACHINE_STATE_TEST_CHUTE_1_COINS  -15
 #define MACHINE_STATE_TEST_CHUTE_3_COINS  -16
-#define MACHINE_STATE_TEST_DONE           -50
+#define MACHINE_STATE_TEST_DONE           -17
 
 unsigned long GetLastSelfTestChangedTime();
 void SetLastSelfTestChangedTime(unsigned long setSelfTestChange);
