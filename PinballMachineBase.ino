@@ -571,10 +571,13 @@ int InitGamePlay() {
     Serial.write("Starting game\n\r");
   }
 
-  // The start button has been hit only once to get
-  // us into this mode, so we assume a 1-player game
-  // BSOS_EnableSolenoidStack();
+  BSOS_SetDisableFlippers(false);
+  BSOS_EnableSolenoidStack();
   BSOS_TurnOffAllLamps();
+
+  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, CurrentTime + 500);
+  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, CurrentTime + 500);
+  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, CurrentTime + 500);
 
   for (int count = 0; count < 4; count++) {
     BonusX[count] = 1;
@@ -599,8 +602,6 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
 
     BallFirstSwitchHitTime = 0;
 
-    BSOS_SetDisableFlippers(false);
-    // BSOS_EnableSolenoidStack();
     BSOS_SetDisplayCredits(Credits, true);
     SamePlayerShootsAgain = false;
 
