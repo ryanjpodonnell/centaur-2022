@@ -1787,7 +1787,6 @@ void BSOS_SetDisableFlippers(boolean disableFlippers, byte solbit) {
 }
 
 void BSOS_SetContinuousSolenoidBit(boolean bitOn, byte solbit) {
-
   if (bitOn) {
     CurrentSolenoidByte = CurrentSolenoidByte | solbit;
   } else {
