@@ -1389,14 +1389,6 @@ void BSOS_SetDisplayRefreshConstant(int intervalConstant) {
 #endif
 
 
-/*
-void BSOS_SetDisplayBlankForCreditMatch(boolean creditsOn, boolean matchOn) {
-  DisplayDigitEnable[4] = 0;
-  if (creditsOn) DisplayDigitEnable[4] |= 0x03;
-  if (matchOn) DisplayDigitEnable[4] |= 0x18;
-}
-*/
-
 void BSOS_SetDisplayFlash(int displayNumber, unsigned long value, unsigned long curTime, int period, byte minDigits) {
   // A period of zero toggles display every other time
   if (period) {

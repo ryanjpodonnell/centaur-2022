@@ -1,3 +1,4 @@
+#define LAMP_TERMINATOR                 -1
 #define LAMP_PLAYFIELD_GI               0
 #define LAMP_RIGHT_LANE_RELEASE_ORBS    2
 #define LAMP_COLLECT_BONUS_ARROW        3

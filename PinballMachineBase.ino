@@ -1,5 +1,6 @@
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
+#include "LightShow.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include <EEPROM.h>
@@ -211,15 +212,6 @@ void setup() {
   CurrentTime = millis();
 }
 
-byte ReadSetting(byte setting, byte defaultValue) {
-  byte value = EEPROM.read(setting);
-  if (value == 0xFF) {
-    EEPROM.write(setting, defaultValue);
-    return defaultValue;
-  }
-  return value;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -227,23 +219,11 @@ byte ReadSetting(byte setting, byte defaultValue) {
 //
 ////////////////////////////////////////////////////////////////////////////
 void ShowLampsTest() {
-  BSOS_SetLampState(LAMP_1K_BONUS, 1);
-  BSOS_SetLampState(LAMP_2K_BONUS, 1);
-  BSOS_SetLampState(LAMP_3K_BONUS, 1);
-  BSOS_SetLampState(LAMP_4K_BONUS, 1);
-  BSOS_SetLampState(LAMP_5K_BONUS, 1);
-  BSOS_SetLampState(LAMP_6K_BONUS, 1);
-  BSOS_SetLampState(LAMP_7K_BONUS, 1);
-  BSOS_SetLampState(LAMP_8K_BONUS, 1);
-  BSOS_SetLampState(LAMP_9K_BONUS, 1);
-  BSOS_SetLampState(LAMP_10K_BONUS, 1);
-  BSOS_SetLampState(LAMP_20K_BONUS, 1);
-  BSOS_SetLampState(LAMP_40K_BONUS, 1);
-  BSOS_SetLampState(LAMP_60K_BONUS, 1);
-  BSOS_SetLampState(LAMP_2X_BONUS, 1, 0, 1000);
-  BSOS_SetLampState(LAMP_3X_BONUS, 1, 0, 1000);
-  BSOS_SetLampState(LAMP_4X_BONUS, 1, 0, 1000);
-  BSOS_SetLampState(LAMP_5X_BONUS, 1, 0, 1000);
+  int* lampsPointer = allBonusLights();
+
+  for(int i = 0; lampsPointer[i] != LAMP_TERMINATOR; i++) {
+    BSOS_SetLampState(lampsPointer[i], 1);
+  }
 }
 
 
