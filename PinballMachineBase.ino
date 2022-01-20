@@ -400,9 +400,6 @@ int RunSelfTest(int curState, boolean curStateChanged) {
   int returnState = curState;
   CurrentNumPlayers = 0;
 
-  if (curStateChanged) {
-  }
-
   if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
     returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
   }
@@ -491,18 +488,6 @@ int RunAttractMode(int curState, boolean curStateChanged) {
 //  Game Play functions
 //
 ////////////////////////////////////////////////////////////////////////////
-byte CountBits(byte byteToBeCounted) {
-  byte numBits = 0;
-
-  for (byte count = 0; count < 8; count++) {
-    numBits += (byteToBeCounted & 0x01);
-    byteToBeCounted = byteToBeCounted >> 1;
-  }
-
-  return numBits;
-}
-
-
 void AddToBonus(byte amountToAdd = 1) {
   CurrentBonus += amountToAdd;
   if (CurrentBonus >= MAX_DISPLAY_BONUS) {
