@@ -175,24 +175,24 @@ void ReadStoredParameters() {
   if (Credits > MaximumCredits) Credits = MaximumCredits;
 }
 
+struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
+  { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
+  { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
+  { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
+  { SW_RIGHT_THUMPER_BUMPER, SOL_RIGHT_THUMPER_BUMPER, 3}
+};
 
 void setup() {
   if (DEBUG_MESSAGES) {
     Serial.begin(57600);
   }
 
-  struct PlayfieldAndCabinetSwitch solenoidAssociatedSwitches[] = {
-    { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
-    { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
-    { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
-    { SW_RIGHT_THUMPER_BUMPER, SOL_RIGHT_THUMPER_BUMPER, 3}
-  };
 
   // Tell the OS about game-specific lights and switches
   BSOS_SetupGameSwitches(
       NUM_SWITCHES_WITH_TRIGGERS,
       NUM_PRIORITY_SWITCHES_WITH_TRIGGERS,
-      solenoidAssociatedSwitches
+      SolenoidAssociatedSwitches
       );
 
   // Set up the chips and interrupts
@@ -785,75 +785,75 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
         Serial.write(buf);
       }
 
-      switch (switchHit) {
-        case SW_TILT:
-          // This should be debounced
-          if ((CurrentTime - LastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) {
-            LastTiltWarningTime = CurrentTime;
-            NumTiltWarnings += 1;
-            if (NumTiltWarnings > MaxTiltWarnings) {
-              BSOS_DisableSolenoidStack();
-              BSOS_SetDisableFlippers(true);
-              BSOS_TurnOffAllLamps();
-              BSOS_SetLampState(LAMP_TILT, 1);
-            }
-          }
-          break;
-        case SW_SELF_TEST_SWITCH:
-          returnState = MACHINE_STATE_TEST_LIGHTS;
-          SetLastSelfTestChangedTime(CurrentTime);
-          break;
-        case SW_LEFT_SLINGSHOT:
-        case SW_RIGHT_SLINGSHOT:
-          CurrentScores[CurrentPlayer] += 10;
-          if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime;
-          break;
-        case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          AddCoinToAudit(switchHit);
-          AddCredit(true, 1);
-          break;
-        case SW_CREDIT_BUTTON:
-          if (CurrentBallInPlay < 2) {
-            // If we haven't finished the first ball, we can add players
-            AddPlayer();
-          } else {
-            // If the first ball is over, pressing start again resets the game
-            if (Credits >= 1 || FreePlayMode) {
-              if (!FreePlayMode) {
-                Credits -= 1;
-                BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-                BSOS_SetDisplayCredits(Credits);
-              }
-              returnState = MACHINE_STATE_INIT_GAMEPLAY;
-            }
-          }
-          if (DEBUG_MESSAGES) {
-            Serial.write("Start game button pressed\n\r");
-          }
-          break;
-      }
-    }
-  } else {
-    // We're tilted, so just wait for outhole
-    switchHit = BSOS_PullFirstFromSwitchStack();
+      /* switch (switchHit) { */
+      /*   case SW_TILT: */
+      /*     // This should be debounced */
+      /*     if ((CurrentTime - LastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) { */
+      /*       LastTiltWarningTime = CurrentTime; */
+      /*       NumTiltWarnings += 1; */
+      /*       if (NumTiltWarnings > MaxTiltWarnings) { */
+      /*         BSOS_DisableSolenoidStack(); */
+      /*         BSOS_SetDisableFlippers(true); */
+      /*         BSOS_TurnOffAllLamps(); */
+      /*         BSOS_SetLampState(LAMP_TILT, 1); */
+      /*       } */
+      /*     } */
+      /*     break; */
+      /*   case SW_SELF_TEST_SWITCH: */
+      /*     returnState = MACHINE_STATE_TEST_LIGHTS; */
+      /*     SetLastSelfTestChangedTime(CurrentTime); */
+      /*     break; */
+      /*   case SW_LEFT_SLINGSHOT: */
+      /*   case SW_RIGHT_SLINGSHOT: */
+      /*     CurrentScores[CurrentPlayer] += 10; */
+      /*     if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime; */
+      /*     break; */
+      /*   case SW_COIN_1: */
+      /*   case SW_COIN_2: */
+      /*   case SW_COIN_3: */
+      /*     AddCoinToAudit(switchHit); */
+      /*     AddCredit(true, 1); */
+      /*     break; */
+      /*   case SW_CREDIT_BUTTON: */
+      /*     if (CurrentBallInPlay < 2) { */
+      /*       // If we haven't finished the first ball, we can add players */
+      /*       AddPlayer(); */
+      /*     } else { */
+      /*       // If the first ball is over, pressing start again resets the game */
+      /*       if (Credits >= 1 || FreePlayMode) { */
+      /*         if (!FreePlayMode) { */
+      /*           Credits -= 1; */
+      /*           BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits); */
+      /*           BSOS_SetDisplayCredits(Credits); */
+      /*         } */
+      /*         returnState = MACHINE_STATE_INIT_GAMEPLAY; */
+      /*       } */
+      /*     } */
+      /*     if (DEBUG_MESSAGES) { */
+      /*       Serial.write("Start game button pressed\n\r"); */
+      /*     } */
+      /*     break; */
+      /* } */
+    /* } */
+  /* } else { */
+    /* // We're tilted, so just wait for outhole */
+    /* switchHit = BSOS_PullFirstFromSwitchStack(); */
 
-    while (switchHit != SWITCH_STACK_EMPTY) {
-      switch (switchHit) {
-        case SW_SELF_TEST_SWITCH:
-          returnState = MACHINE_STATE_TEST_LIGHTS;
-          SetLastSelfTestChangedTime(CurrentTime);
-          break;
-        case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          AddCoinToAudit(switchHit);
-          AddCredit(true, 1);
-          break;
-      }
+    /* while (switchHit != SWITCH_STACK_EMPTY) { */
+      /* switch (switchHit) { */
+      /*   case SW_SELF_TEST_SWITCH: */
+      /*     returnState = MACHINE_STATE_TEST_LIGHTS; */
+      /*     SetLastSelfTestChangedTime(CurrentTime); */
+      /*     break; */
+      /*   case SW_COIN_1: */
+      /*   case SW_COIN_2: */
+      /*   case SW_COIN_3: */
+      /*     AddCoinToAudit(switchHit); */
+      /*     AddCredit(true, 1); */
+      /*     break; */
+      /* } */
 
-      switchHit = BSOS_PullFirstFromSwitchStack();
+      /* switchHit = BSOS_PullFirstFromSwitchStack(); */
     }
   }
 

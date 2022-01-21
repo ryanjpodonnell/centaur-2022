@@ -92,7 +92,7 @@
 #define SW_LEFT_FLIPPER_BUTTON                20
 #define SW_RIGHT_FLIPPER_BUTTON               20
 #define SW_RESET_1_THROUGH_4_TARGETS_TARGET   21
-#define SW_TOP_STOP_1_THROUGH_4_TARGET        23
+#define SW_TOP_SPOT_1_THROUGH_4_TARGET        23
 #define SW_RIGHT_4_DROP_TARGET_4              24
 #define SW_RIGHT_4_DROP_TARGET_3              25
 #define SW_RIGHT_4_DROP_TARGET_2              26
