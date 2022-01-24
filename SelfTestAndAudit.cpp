@@ -19,12 +19,14 @@
  */
 
 #include <Arduino.h>
-#include "SelfTestAndAudit.h"
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
+#include "PinballMachineBase.h"
+#include "SelfTestAndAudit.h"
+#include "SharedVariables.h"
+#include "StoredParameters.h"
 
-#define MACHINE_STATE_ATTRACT         0
-//#define USE_SB100
+#define MACHINE_STATE_ATTRACT 0
 
 unsigned long LastSolTestTime = 0; 
 unsigned long LastSelfTestChange = 0;
@@ -38,6 +40,21 @@ byte CurSound = 0x01;
 byte SoundPlaying = 0;
 boolean SolenoidCycle = true;
 
+int RunSelfTest(int curState, boolean curStateChanged) {
+  int returnState = curState;
+  CurrentNumPlayers = 0;
+
+  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
+    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
+  }
+
+  if (returnState == MACHINE_STATE_ATTRACT) {
+    BSOS_SetDisplayCredits(Credits, true);
+    ReadStoredParameters();
+  }
+
+  return returnState;
+}
 
 int RunBaseSelfTest(
     int curState,

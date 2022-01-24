@@ -7,6 +7,7 @@
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
+#include "StoredParameters.h"
 #include <EEPROM.h>
 
 #define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
@@ -165,12 +166,6 @@ unsigned long LastSpinnerHit;
 
 #define SPINNER_MAX_GOAL                  100
 
-void ReadStoredParameters() {
-  HighScore = BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, 10000);
-  Credits = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
-  if (Credits > MaximumCredits) Credits = MaximumCredits;
-}
-
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
   { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
@@ -220,44 +215,6 @@ void ShowLampsTest() {
   for(int i = 0; lampsPointer[i] != LAMP_TERMINATOR; i++) {
     BSOS_SetLampState(lampsPointer[i], 1);
   }
-}
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Test functions
-//
-////////////////////////////////////////////////////////////////////////////
-#define ADJ_TYPE_LIST                 1
-#define ADJ_TYPE_MIN_MAX              2
-#define ADJ_TYPE_MIN_MAX_DEFAULT      3
-#define ADJ_TYPE_SCORE                4
-#define ADJ_TYPE_SCORE_WITH_DEFAULT   5
-#define ADJ_TYPE_SCORE_NO_DEFAULT     6
-byte AdjustmentType = 0;
-byte NumAdjustmentValues = 0;
-byte AdjustmentValues[8];
-unsigned long AdjustmentScore;
-byte *CurrentAdjustmentByte = NULL;
-unsigned long *CurrentAdjustmentUL = NULL;
-byte CurrentAdjustmentStorageByte = 0;
-byte TempValue = 0;
-
-
-int RunSelfTest(int curState, boolean curStateChanged) {
-  int returnState = curState;
-  CurrentNumPlayers = 0;
-
-  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
-    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
-  }
-
-  if (returnState == MACHINE_STATE_ATTRACT) {
-    BSOS_SetDisplayCredits(Credits, true);
-    ReadStoredParameters();
-  }
-
-  return returnState;
 }
 
 

@@ -38,10 +38,10 @@
 #define MACHINE_STATE_TEST_CHUTE_3_COINS  -16
 #define MACHINE_STATE_TEST_DONE           -17
 
+int RunBaseSelfTest(int curState, boolean curStateChanged, unsigned long CurrentTime, byte resetSwitch, byte slamSwitch=0xFF);
+int RunSelfTest(int curState, boolean curStateChanged);
+unsigned long GetAwardScore(byte level);
 unsigned long GetLastSelfTestChangedTime();
 void SetLastSelfTestChangedTime(unsigned long setSelfTestChange);
-int RunBaseSelfTest(int curState, boolean curStateChanged, unsigned long CurrentTime, byte resetSwitch, byte slamSwitch=0xFF);
-
-unsigned long GetAwardScore(byte level);
 
 #endif

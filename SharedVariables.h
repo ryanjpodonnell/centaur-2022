@@ -10,6 +10,7 @@ extern byte CurrentNumPlayers;
 extern byte MaximumCredits;
 extern unsigned long CurrentScores[4];
 extern unsigned long CurrentTime;
+extern unsigned long HighScore;
 
 #define SHARED_VARIABLES_H
 #endif
