@@ -8,7 +8,6 @@
 #include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
 #include "StoredParameters.h"
-#include <EEPROM.h>
 
 #define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
 #define PINBALL_MACHINE_BASE_MINOR_VERSION  1
