@@ -1,27 +1,18 @@
+#include <Arduino.h>
+#include "BallySternOS.h"
 #include "Lights.h"
 #include "PinballMachineBase.h"
 
-int* allBonusLights() {
-  static int test[] = {
-    LAMP_1K_BONUS,
-    LAMP_2K_BONUS,
-    LAMP_3K_BONUS,
-    LAMP_4K_BONUS,
-    LAMP_5K_BONUS,
-    LAMP_6K_BONUS,
-    LAMP_7K_BONUS,
-    LAMP_8K_BONUS,
-    LAMP_9K_BONUS,
-    LAMP_10K_BONUS,
-    LAMP_20K_BONUS,
-    LAMP_40K_BONUS,
-    LAMP_60K_BONUS,
-    LAMP_2X_BONUS,
-    LAMP_3X_BONUS,
-    LAMP_4X_BONUS,
-    LAMP_5X_BONUS,
-    LAMP_TERMINATOR
-  };
+void ShowLamps(int lampCollection) {
+  int* lampsPointer;
 
-  return test;
+  switch(lampCollection) {
+    case LAMP_COLLECTION_BONUS_ALL:
+      lampsPointer = allBonusLights;
+      break;
+  }
+
+  for(int i = 0; lampsPointer[i] != LAMP_TERMINATOR; i++) {
+    BSOS_SetLampState(lampsPointer[i], 1);
+  }
 }

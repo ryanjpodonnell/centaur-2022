@@ -26,11 +26,8 @@
 char MachineState = 0;
 boolean MachineStateChanged = true;
 
-// The lower 4 bits of the Game Mode are modes, the upper 4 are for frenzies
-// and other flags that carry through different modes
 #define GAME_MODE_SKILL_SHOT        0
 #define GAME_MODE_UNSTRUCTURED_PLAY 4
-#define GAME_BASE_MODE              0x0F
 
 #define MAX_DISPLAY_BONUS          175
 #define TILT_WARNING_DEBOUNCE_TIME 1000
@@ -41,14 +38,13 @@ boolean MachineStateChanged = true;
     Machine state and options
 
 *********************************************************************/
-unsigned long HighScore = 0;
-byte Credits = 0;
 boolean FreePlayMode = true;
 byte BallSaveNumSeconds = 5;
-unsigned long CurrentTime = 0;
-byte MaximumCredits = 99;
 byte BallsPerGame = 3;
-boolean ScrollingScores = true;
+byte Credits = 0;
+byte MaximumCredits = 99;
+unsigned long CurrentTime = 0;
+unsigned long HighScore = 0;
 
 
 /*********************************************************************
@@ -142,20 +138,6 @@ void setup() {
 
 ////////////////////////////////////////////////////////////////////////////
 //
-//  Lamp Management functions
-//
-////////////////////////////////////////////////////////////////////////////
-void ShowLampsTest() {
-  int* lampsPointer = allBonusLights();
-
-  for(int i = 0; lampsPointer[i] != LAMP_TERMINATOR; i++) {
-    BSOS_SetLampState(lampsPointer[i], 1);
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////////////
-//
 //  Audio Output functions
 //
 ////////////////////////////////////////////////////////////////////////////
@@ -188,7 +170,7 @@ void AddToBonus(byte amountToAdd = 1) {
 
 
 void SetGameMode(byte newGameMode) {
-  GameMode = newGameMode | (GameMode & ~GAME_BASE_MODE);
+  GameMode = newGameMode;
   GameModeStartTime = 0;
   GameModeEndTime = 0;
   if (DEBUG_MESSAGES) {
@@ -254,7 +236,7 @@ int InitGamePlay() {
 int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
   if (curStateChanged) {
     BSOS_TurnOffAllLamps();
-    ShowLampsTest();
+    ShowLamps(LAMP_COLLECTION_BONUS_ALL);
 
     BallFirstSwitchHitTime = 0;
 
@@ -317,7 +299,7 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
 int ManageGameMode() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  switch ( (GameMode & GAME_BASE_MODE) ) {
+  switch (GameMode) {
     case GAME_MODE_SKILL_SHOT:
       if (GameModeStartTime == 0) {
         GameModeStartTime = CurrentTime;
