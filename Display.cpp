@@ -16,7 +16,6 @@ byte MagnitudeOfScore(unsigned long score) {
   return retval;
 }
 
-
 byte GetDisplayMask(byte numDigits) {
   byte displayMask = 0;
   for (byte digitCount = 0; digitCount < numDigits; digitCount++) {
@@ -24,7 +23,6 @@ byte GetDisplayMask(byte numDigits) {
   }
   return displayMask;
 }
-
 
 void ShowPlayerScores(byte displayToUpdate, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
   byte displayMask = 0x3F;

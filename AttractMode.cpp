@@ -1,10 +1,13 @@
 #include <Arduino.h>
 #include "AttractMode.h"
 #include "BallySternOS.h"
+#include "Lights.h"
 #include "MachineState.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
+
+unsigned long LastFlash = 0;
 
 int RunAttractMode(int curState, boolean curStateChanged) {
   int returnState = curState;
@@ -20,6 +23,14 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   }
 
   byte switchHit;
+
+  unsigned long seed = CurrentTime / 250;
+  if (seed != LastFlash) {
+    LastFlash = seed;
+    if (((CurrentTime / 250) % 3) == 0) ShowLamps(LAMP_COLLECTION_BONUS_CENTER);
+    if (((CurrentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING);
+    if (((CurrentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING);
+  }
 
   switchHit = BSOS_PullFirstFromSwitchStack();
   while (switchHit != SWITCH_STACK_EMPTY) {

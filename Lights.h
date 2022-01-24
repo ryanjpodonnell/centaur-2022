@@ -64,9 +64,12 @@
 #define LAMP_QUEENS_CHAMBER_GI_3        70
 #define LAMP_QUEENS_CHAMBER_GI_4        71
 
-#define LAMP_COLLECTION_BONUS_ALL 0
+#define LAMP_COLLECTION_BONUS_ALL         0
+#define LAMP_COLLECTION_BONUS_CENTER      1
+#define LAMP_COLLECTION_BONUS_MIDDLE_RING 2
+#define LAMP_COLLECTION_BONUS_OUTER_RING  3
 
-static int allBonusLights[] = {
+static int bonusAllLights[] = {
   LAMP_1K_BONUS,
   LAMP_2K_BONUS,
   LAMP_3K_BONUS,
@@ -84,6 +87,35 @@ static int allBonusLights[] = {
   LAMP_3X_BONUS,
   LAMP_4X_BONUS,
   LAMP_5X_BONUS,
+  LAMP_TERMINATOR
+};
+
+static int bonusCenterLights[] = {
+  LAMP_40K_BONUS,
+  LAMP_TERMINATOR
+};
+
+static int bonusMiddleRingLights[] = {
+  LAMP_20K_BONUS,
+  LAMP_60K_BONUS,
+  LAMP_2X_BONUS,
+  LAMP_3X_BONUS,
+  LAMP_4X_BONUS,
+  LAMP_5X_BONUS,
+  LAMP_TERMINATOR
+};
+
+static int bonusOuterRingLights[] = {
+  LAMP_1K_BONUS,
+  LAMP_2K_BONUS,
+  LAMP_3K_BONUS,
+  LAMP_4K_BONUS,
+  LAMP_5K_BONUS,
+  LAMP_6K_BONUS,
+  LAMP_7K_BONUS,
+  LAMP_8K_BONUS,
+  LAMP_9K_BONUS,
+  LAMP_10K_BONUS,
   LAMP_TERMINATOR
 };
 

@@ -235,7 +235,6 @@ int InitGamePlay() {
 
 int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
   if (curStateChanged) {
-    BSOS_TurnOffAllLamps();
     ShowLamps(LAMP_COLLECTION_BONUS_ALL);
 
     BallFirstSwitchHitTime = 0;
