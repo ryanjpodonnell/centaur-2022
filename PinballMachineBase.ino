@@ -30,63 +30,9 @@ boolean MachineStateChanged = true;
 // and other flags that carry through different modes
 #define GAME_MODE_SKILL_SHOT        0
 #define GAME_MODE_UNSTRUCTURED_PLAY 4
-#define GAME_MODE_WIZARD_START      12
-#define GAME_MODE_WIZARD            13
-#define GAME_MODE_WIZARD_FINISHED   14
 #define GAME_BASE_MODE              0x0F
 
-#define EEPROM_BALL_SAVE_BYTE           100
-#define EEPROM_FREE_PLAY_BYTE           101
-#define EEPROM_MUSIC_LEVEL_BYTE         102
-#define EEPROM_SKILL_SHOT_BYTE          103
-#define EEPROM_TILT_WARNING_BYTE        104
-#define EEPROM_AWARD_OVERRIDE_BYTE      105
-#define EEPROM_BALLS_OVERRIDE_BYTE      106
-#define EEPROM_TOURNAMENT_SCORING_BYTE  107
-#define EEPROM_SCROLLING_SCORES_BYTE    110
-#define EEPROM_DIM_LEVEL_BYTE           113
-#define EEPROM_EXTRA_BALL_SCORE_BYTE    140
-#define EEPROM_SPECIAL_SCORE_BYTE       144
-
-#define SOUND_EFFECT_NONE                 0
-#define SOUND_EFFECT_BONUS_COUNT          1
-#define SOUND_EFFECT_INLANE_UNLIT         3
-#define SOUND_EFFECT_OUTLANE_UNLIT        4
-#define SOUND_EFFECT_INLANE_LIT           5
-#define SOUND_EFFECT_OUTLANE_LIT          6
-#define SOUND_EFFECT_BUMPER_HIT           7
-#define SOUND_EFFECT_ADD_CREDIT           10
-#define SOUND_EFFECT_BALL_OVER            19
-#define SOUND_EFFECT_GAME_OVER            20
-#define SOUND_EFFECT_EXTRA_BALL           23
-#define SOUND_EFFECT_MACHINE_START        24
-#define SOUND_EFFECT_SKILL_SHOT           25
-#define SOUND_EFFECT_TILT_WARNING         28
-#define SOUND_EFFECT_MATCH_SPIN           30
-#define SOUND_EFFECT_SPINNER_HIGH         32
-#define SOUND_EFFECT_SPINNER_LOW          33
-#define SOUND_EFFECT_SLING_SHOT           34
-#define SOUND_EFFECT_ROLLOVER             35
-#define SOUND_EFFECT_10PT_SWITCH          36
-#define SOUND_EFFECT_ADD_PLAYER_1         50
-#define SOUND_EFFECT_ADD_PLAYER_2         51
-#define SOUND_EFFECT_ADD_PLAYER_3         52
-#define SOUND_EFFECT_ADD_PLAYER_4         53
-#define SOUND_EFFECT_PLAYER_1_UP          54
-#define SOUND_EFFECT_PLAYER_2_UP          55
-#define SOUND_EFFECT_PLAYER_3_UP          56
-#define SOUND_EFFECT_PLAYER_4_UP          56
-#define SOUND_EFFECT_SHOOT_AGAIN          60
-#define SOUND_EFFECT_TILT                 61
-#define SOUND_EFFECT_VOICE_EXTRA_BALL     81
-#define SOUND_EFFECT_WIZARD_MODE_START    88
-#define SOUND_EFFECT_WIZARD_MODE_FINISHED 89
-#define SOUND_EFFECT_BACKGROUND_1         90
-#define SOUND_EFFECT_BACKGROUND_2         91
-#define SOUND_EFFECT_BACKGROUND_3         92
-#define SOUND_EFFECT_BACKGROUND_WIZ       93
-
-#define MAX_DISPLAY_BONUS          55
+#define MAX_DISPLAY_BONUS          175
 #define TILT_WARNING_DEBOUNCE_TIME 1000
 
 
@@ -155,15 +101,6 @@ boolean WizardScoring;
 unsigned long LastInlaneHitTime;
 unsigned long BonusXAnimationStart;
 unsigned long LastSpinnerHit;
-
-#define WIZARD_START_DURATION             5000
-#define WIZARD_DURATION                   39000
-#define WIZARD_DURATION_SECONDS           39
-#define WIZARD_FINISHED_DURATION          5000
-#define WIZARD_SWITCH_SCORE               5000
-#define WIZARD_MODE_REWARD_SCORE          250000
-
-#define SPINNER_MAX_GOAL                  100
 
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
