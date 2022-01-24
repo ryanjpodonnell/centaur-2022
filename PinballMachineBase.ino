@@ -1,7 +1,9 @@
+#include "AttractMode.h"
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "Display.h"
 #include "Lights.h"
+#include "MachineState.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
@@ -9,7 +11,6 @@
 
 #define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
 #define PINBALL_MACHINE_BASE_MINOR_VERSION  1
-#define DEBUG_MESSAGES  1
 
 
 /*********************************************************************
@@ -24,13 +25,6 @@
 //  positive - game play
 char MachineState = 0;
 boolean MachineStateChanged = true;
-#define MACHINE_STATE_ATTRACT         0
-#define MACHINE_STATE_INIT_GAMEPLAY   1
-#define MACHINE_STATE_INIT_NEW_BALL   2
-#define MACHINE_STATE_NORMAL_GAMEPLAY 4
-#define MACHINE_STATE_COUNTDOWN_BONUS 99
-#define MACHINE_STATE_BALL_OVER       100
-#define MACHINE_STATE_MATCH_MODE      110
 
 // The lower 4 bits of the Game Mode are modes, the upper 4 are for frenzies
 // and other flags that carry through different modes
@@ -229,68 +223,6 @@ void ShowLampsTest() {
 }
 
 
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Machine State Helper functions
-//
-////////////////////////////////////////////////////////////////////////////
-boolean AddPlayer(boolean resetNumPlayers = false) {
-  if (Credits < 1 && !FreePlayMode) return false;
-  if (resetNumPlayers) CurrentNumPlayers = 0;
-  if (CurrentNumPlayers >= 4) return false;
-
-  CurrentNumPlayers += 1;
-  BSOS_SetDisplay(CurrentNumPlayers - 1, 0);
-  BSOS_SetDisplayBlank(CurrentNumPlayers - 1, 0x30);
-
-  BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
-
-  return true;
-}
-
-
-void AddCoinToAudit(byte switchHit) {
-  unsigned short coinAuditStartByte = 0;
-
-  switch (switchHit) {
-    case SW_COIN_3: coinAuditStartByte = BSOS_CHUTE_3_COINS_START_BYTE; break;
-    case SW_COIN_2: coinAuditStartByte = BSOS_CHUTE_2_COINS_START_BYTE; break;
-    case SW_COIN_1: coinAuditStartByte = BSOS_CHUTE_1_COINS_START_BYTE; break;
-  }
-
-  if (coinAuditStartByte) {
-    BSOS_WriteULToEEProm(coinAuditStartByte, BSOS_ReadULFromEEProm(coinAuditStartByte) + 1);
-  }
-
-}
-
-
-void AddCredit(boolean playSound = false, byte numToAdd = 1) {
-  if (Credits < MaximumCredits) {
-    Credits += numToAdd;
-    if (Credits > MaximumCredits) Credits = MaximumCredits;
-    BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-    BSOS_SetDisplayCredits(Credits);
-    BSOS_SetCoinLockout(false);
-  } else {
-    BSOS_SetDisplayCredits(Credits);
-    BSOS_SetCoinLockout(true);
-  }
-
-}
-
-
-void AwardExtraBall() {
-  if (ExtraBallCollected) return;
-
-  ExtraBallCollected = true;
-  SamePlayerShootsAgain = true;
-  BSOS_SetLampState(LAMP_SHOOT_AGAIN, SamePlayerShootsAgain);
-}
-
-
 ////////////////////////////////////////////////////////////////////////////
 //
 //  Test functions
@@ -347,56 +279,6 @@ void PlaySound(byte soundEffectNum) {
 void StopAudio() {
   BSOS_PlaySoundSquawkAndTalk(5);
 }
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Attract Mode
-//
-////////////////////////////////////////////////////////////////////////////
-int RunAttractMode(int curState, boolean curStateChanged) {
-  int returnState = curState;
-
-  if (curStateChanged) {
-    BSOS_DisableSolenoidStack();
-    BSOS_TurnOffAllLamps();
-    BSOS_SetDisableFlippers(true);
-    if (DEBUG_MESSAGES) {
-      Serial.write("Entering Attract Mode\n\r");
-    }
-    BSOS_SetDisplayCredits(Credits, true);
-  }
-
-  byte switchHit;
-
-  switchHit = BSOS_PullFirstFromSwitchStack();
-  while (switchHit != SWITCH_STACK_EMPTY) {
-    switch(switchHit) {
-    case(SW_CREDIT_BUTTON):
-      if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
-      break;
-    case SW_COIN_1:
-    case SW_COIN_2:
-    case SW_COIN_3:
-      AddCoinToAudit(switchHit);
-      AddCredit(true, 1);
-      break;
-    case SW_SELF_TEST_SWITCH:
-      if (CurrentTime - GetLastSelfTestChangedTime() > 250) {
-        returnState = MACHINE_STATE_TEST_LIGHTS;
-        SetLastSelfTestChangedTime(CurrentTime);
-      }
-      break;
-    }
-
-    switchHit = BSOS_PullFirstFromSwitchStack();
-  }
-
-  return returnState;
-}
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////
