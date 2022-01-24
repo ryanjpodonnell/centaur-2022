@@ -21,8 +21,8 @@
 #ifndef BALLY_STERN_OS_H
 
 
-#define BALLY_STERN_OS_MAJOR_VERSION  2
-#define BALLY_STERN_OS_MINOR_VERSION  1
+#define BALLY_STERN_OS_MAJOR_VERSION  3
+#define BALLY_STERN_OS_MINOR_VERSION  0
 
 struct PlayfieldAndCabinetSwitch {
   byte switchNum;
@@ -64,7 +64,7 @@ boolean BSOS_ReadSingleSwitchState(byte switchNum);
 
 //   Solenoids
 void BSOS_PushToSolenoidStack(byte solenoidNumber, byte numPushes, boolean disableOverride = false);
-void BSOS_SetCoinLockout(boolean lockoutOn = false, byte solbit = CONTSOL_DISABLE_COIN_LOCKOUT);
+void BSOS_SetCoinLockout(boolean lockoutOff = false, byte solbit = CONTSOL_DISABLE_COIN_LOCKOUT);
 void BSOS_SetDisableFlippers(boolean disableFlippers = true, byte solbit = CONTSOL_DISABLE_FLIPPERS);
 void BSOS_SetContinuousSolenoidBit(boolean bitOn, byte solBit = 0x10);
 byte BSOS_ReadContinuousSolenoids();
