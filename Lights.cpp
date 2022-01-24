@@ -1,4 +1,4 @@
-#include "LightShow.h"
+#include "Lights.h"
 #include "PinballMachineBase.h"
 
 int* allBonusLights() {
