@@ -1,6 +1,7 @@
-#include "AttractMode.h"
+#include "AttractState.h"
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
+#include "CountdownBonusState.h"
 #include "Display.h"
 #include "Lamps.h"
 #include "MachineState.h"
@@ -92,7 +93,24 @@ byte TenPointPhase;
 byte LastAwardShotCalloutPlayed;
 byte LastWizardTimer;
 
-boolean WizardScoring;
+
+/*********************************************************************
+
+    Attract State Variables
+
+*********************************************************************/
+unsigned long LastFlash = 0;
+
+
+/*********************************************************************
+
+    Attract State Variables
+
+*********************************************************************/
+unsigned long CountdownStartTime = 0;
+unsigned long LastCountdownReportTime = 0;
+unsigned long BonusCountDownEndTime = 0;
+
 
 unsigned long LastInlaneHitTime;
 unsigned long BonusXAnimationStart;
@@ -280,7 +298,6 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
     LastSpinnerHit = 0;
     //    PlayBackgroundSongBasedOnLevel(StarLevel[CurrentPlayer]);
     TenPointPhase = 0;
-    WizardScoring = false;
   }
 
   // We should only consider the ball initialized when
@@ -355,60 +372,11 @@ int ManageGameMode() {
 }
 
 
-unsigned long CountdownStartTime = 0;
-unsigned long LastCountdownReportTime = 0;
-unsigned long BonusCountDownEndTime = 0;
-
-int CountdownBonus(boolean curStateChanged) {
-
-  // If this is the first time through the countdown loop
-  if (curStateChanged) {
-
-    Bonus[CurrentPlayer] = CurrentBonus;
-    CountdownStartTime = CurrentTime;
-
-    LastCountdownReportTime = CountdownStartTime;
-    BonusCountDownEndTime = 0xFFFFFFFF;
-  }
-
-  unsigned long countdownDelayTime = 250 - (CurrentBonus * 3);
-
-  if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime) {
-
-    if (CurrentBonus) {
-
-      // Only give sound & score if this isn't a tilt
-      if (NumTiltWarnings <= MaxTiltWarnings) {
-        CurrentScores[CurrentPlayer] += 1000 * ((unsigned long)BonusX[CurrentPlayer]);
-      }
-
-      CurrentBonus -= 1;
-
-    } else if (BonusCountDownEndTime == 0xFFFFFFFF) {
-      BonusCountDownEndTime = CurrentTime + 1000;
-    }
-    LastCountdownReportTime = CurrentTime;
-  }
-
-  if (CurrentTime > BonusCountDownEndTime) {
-
-    // Reset any lights & variables of goals that weren't completed
-    BonusCountDownEndTime = 0xFFFFFFFF;
-    return MACHINE_STATE_BALL_OVER;
-  }
-
-  return MACHINE_STATE_COUNTDOWN_BONUS;
-}
-
-
-
 unsigned long MatchSequenceStartTime = 0;
 unsigned long MatchDelay = 150;
 byte MatchDigit = 0;
 byte NumMatchSpins = 0;
 byte ScoreMatches = 0;
-
-
 
 int RunGamePlayMode(int curState, boolean curStateChanged) {
   int returnState = curState;
@@ -457,75 +425,75 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
         Serial.write(buf);
       }
 
-      /* switch (switchHit) { */
-      /*   case SW_TILT: */
-      /*     // This should be debounced */
-      /*     if ((CurrentTime - LastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) { */
-      /*       LastTiltWarningTime = CurrentTime; */
-      /*       NumTiltWarnings += 1; */
-      /*       if (NumTiltWarnings > MaxTiltWarnings) { */
-      /*         BSOS_DisableSolenoidStack(); */
-      /*         BSOS_SetDisableFlippers(true); */
-      /*         BSOS_TurnOffAllLamps(); */
-      /*         BSOS_SetLampState(LAMP_TILT, 1); */
-      /*       } */
-      /*     } */
-      /*     break; */
-      /*   case SW_SELF_TEST_SWITCH: */
-      /*     returnState = MACHINE_STATE_TEST_LIGHTS; */
-      /*     SetLastSelfTestChangedTime(CurrentTime); */
-      /*     break; */
-      /*   case SW_LEFT_SLINGSHOT: */
-      /*   case SW_RIGHT_SLINGSHOT: */
-      /*     CurrentScores[CurrentPlayer] += 10; */
-      /*     if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime; */
-      /*     break; */
-      /*   case SW_COIN_1: */
-      /*   case SW_COIN_2: */
-      /*   case SW_COIN_3: */
-      /*     AddCoinToAudit(switchHit); */
-      /*     AddCredit(true, 1); */
-      /*     break; */
-      /*   case SW_CREDIT_BUTTON: */
-      /*     if (CurrentBallInPlay < 2) { */
-      /*       // If we haven't finished the first ball, we can add players */
-      /*       AddPlayer(); */
-      /*     } else { */
-      /*       // If the first ball is over, pressing start again resets the game */
-      /*       if (Credits >= 1 || FreePlayMode) { */
-      /*         if (!FreePlayMode) { */
-      /*           Credits -= 1; */
-      /*           BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits); */
-      /*           BSOS_SetDisplayCredits(Credits); */
-      /*         } */
-      /*         returnState = MACHINE_STATE_INIT_GAMEPLAY; */
-      /*       } */
-      /*     } */
-      /*     if (DEBUG_MESSAGES) { */
-      /*       Serial.write("Start game button pressed\n\r"); */
-      /*     } */
-      /*     break; */
-      /* } */
-    /* } */
-  /* } else { */
-    /* // We're tilted, so just wait for outhole */
-    /* switchHit = BSOS_PullFirstFromSwitchStack(); */
+      switch (switchHit) {
+        case SW_TILT:
+          // This should be debounced
+          if ((CurrentTime - LastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) {
+            LastTiltWarningTime = CurrentTime;
+            NumTiltWarnings += 1;
+            if (NumTiltWarnings > MaxTiltWarnings) {
+              BSOS_DisableSolenoidStack();
+              BSOS_SetDisableFlippers(true);
+              BSOS_TurnOffAllLamps();
+              BSOS_SetLampState(LAMP_TILT, 1);
+            }
+          }
+          break;
+        case SW_SELF_TEST_SWITCH:
+          returnState = MACHINE_STATE_TEST_LIGHTS;
+          SetLastSelfTestChangedTime(CurrentTime);
+          break;
+        case SW_LEFT_SLINGSHOT:
+        case SW_RIGHT_SLINGSHOT:
+          CurrentScores[CurrentPlayer] += 10;
+          if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime;
+          break;
+        case SW_COIN_1:
+        case SW_COIN_2:
+        case SW_COIN_3:
+          AddCoinToAudit(switchHit);
+          AddCredit(true, 1);
+          break;
+        case SW_CREDIT_BUTTON:
+          if (CurrentBallInPlay < 2) {
+            // If we haven't finished the first ball, we can add players
+            AddPlayer();
+          } else {
+            // If the first ball is over, pressing start again resets the game
+            if (Credits >= 1 || FreePlayMode) {
+              if (!FreePlayMode) {
+                Credits -= 1;
+                BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
+                BSOS_SetDisplayCredits(Credits);
+              }
+              returnState = MACHINE_STATE_INIT_GAMEPLAY;
+            }
+          }
+          if (DEBUG_MESSAGES) {
+            Serial.write("Start game button pressed\n\r");
+          }
+          break;
+      }
+    }
+  } else {
+    // We're tilted, so just wait for outhole
+    switchHit = BSOS_PullFirstFromSwitchStack();
 
-    /* while (switchHit != SWITCH_STACK_EMPTY) { */
-      /* switch (switchHit) { */
-      /*   case SW_SELF_TEST_SWITCH: */
-      /*     returnState = MACHINE_STATE_TEST_LIGHTS; */
-      /*     SetLastSelfTestChangedTime(CurrentTime); */
-      /*     break; */
-      /*   case SW_COIN_1: */
-      /*   case SW_COIN_2: */
-      /*   case SW_COIN_3: */
-      /*     AddCoinToAudit(switchHit); */
-      /*     AddCredit(true, 1); */
-      /*     break; */
-      /* } */
+    while (switchHit != SWITCH_STACK_EMPTY) {
+      switch (switchHit) {
+        case SW_SELF_TEST_SWITCH:
+          returnState = MACHINE_STATE_TEST_LIGHTS;
+          SetLastSelfTestChangedTime(CurrentTime);
+          break;
+        case SW_COIN_1:
+        case SW_COIN_2:
+        case SW_COIN_3:
+          AddCoinToAudit(switchHit);
+          AddCredit(true, 1);
+          break;
+      }
 
-      /* switchHit = BSOS_PullFirstFromSwitchStack(); */
+      switchHit = BSOS_PullFirstFromSwitchStack();
     }
   }
 
@@ -542,7 +510,7 @@ void loop() {
   if (MachineState < 0) {
     newMachineState = RunSelfTest(MachineState, MachineStateChanged);
   } else if (MachineState == MACHINE_STATE_ATTRACT) {
-    newMachineState = RunAttractMode(MachineState, MachineStateChanged);
+    newMachineState = RunAttractState(MachineState, MachineStateChanged);
   } else {
     newMachineState = RunGamePlayMode(MachineState, MachineStateChanged);
   }

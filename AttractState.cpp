@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "AttractMode.h"
+#include "AttractState.h"
 #include "BallySternOS.h"
 #include "Lamps.h"
 #include "MachineState.h"
@@ -7,9 +7,7 @@
 #include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
 
-unsigned long LastFlash = 0;
-
-int RunAttractMode(int curState, boolean curStateChanged) {
+int RunAttractState(int curState, boolean curStateChanged) {
   int returnState = curState;
 
   if (curStateChanged) {
