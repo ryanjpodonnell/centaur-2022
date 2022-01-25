@@ -1,6 +1,3 @@
-#include <Arduino.h>
-#include "CountdownBonusState.h"
-#include "MachineState.h"
 #include "SharedVariables.h"
 
 int CountdownBonus(boolean curStateChanged) {

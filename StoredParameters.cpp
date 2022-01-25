@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
+#include "GameMode.h"
 #include "SharedVariables.h"
 #include "StoredParameters.h"
 

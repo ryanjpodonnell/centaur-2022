@@ -9,6 +9,8 @@
 #define MACHINE_STATE_MATCH_MODE      110
 
 boolean AddPlayer(boolean resetNumPlayers = false);
+int InitGamePlay();
+int InitNewBall(bool curStateChanged, byte playerNum, int ballNum);
 void AddCoinToAudit(byte switchHit);
 void AddCredit(boolean playSound = false, byte numToAdd = 1);
 void AwardExtraBall();

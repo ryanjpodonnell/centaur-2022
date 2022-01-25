@@ -1,126 +1,56 @@
-#include <Arduino.h>
-#include "BSOS_Config.h"
-#include "BallySternOS.h"
-#include "CountdownBonusState.h"
-#include "Display.h"
-#include "GameMode.h"
-#include "Lamps.h"
-#include "MachineState.h"
-#include "PinballMachineBase.h"
-#include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
 
-int InitGamePlay() {
+GameMode::GameMode(byte id) {
+  SetGameMode(id);
+}
+
+void GameMode::SetGameMode(byte id) {
+  gameModeId = id;
+
+  gameModeStartTime = 0;
+  gameModeEndTime = 0;
+
+  ballFirstSwitchHitTime = 0;
+  ballTimeInTrough = 0;
+
   if (DEBUG_MESSAGES) {
-    Serial.write("Starting game\n\r");
-  }
-
-  BSOS_SetDisableFlippers(false);
-  BSOS_EnableSolenoidStack();
-  BSOS_TurnOffAllLamps();
-
-  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, CurrentTime + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, CurrentTime + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, CurrentTime + 500);
-
-  for (int count = 0; count < 4; count++) {
-    BonusX[count] = 1;
-    Bonus[count] = 0;
-  }
-  memset(CurrentScores, 0, 4 * sizeof(unsigned long));
-
-  SamePlayerShootsAgain = false;
-  CurrentBallInPlay = 1;
-  CurrentNumPlayers = 1;
-  CurrentPlayer = 0;
-  ShowPlayerScores(0xFF, false, false);
-
-  return MACHINE_STATE_INIT_NEW_BALL;
-}
-
-int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
-  if (curStateChanged) {
-    ShowLamps(LAMP_COLLECTION_BONUS_ALL, true);
-
-    BallFirstSwitchHitTime = 0;
-
-    BSOS_SetDisplayCredits(Credits, true);
-    SamePlayerShootsAgain = false;
-
-    BSOS_SetDisplayBallInPlay(ballNum);
-    BSOS_SetLampState(LAMP_TILT, 0);
-
-    if (BallSaveNumSeconds > 0) {
-      BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
-    }
-
-    BallSaveUsed = false;
-    BallTimeInTrough = 0;
-    NumTiltWarnings = 0;
-    LastTiltWarningTime = 0;
-
-    // Initialize game-specific start-of-ball lights & variables
-    GameModeStartTime = 0;
-    GameModeEndTime = 0;
-    GameMode = GAME_MODE_SKILL_SHOT;
-
-    ExtraBallCollected = false;
-
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 600);
-    }
-
-    // Reset progress unless holdover awards
-    Bonus[CurrentPlayer] = 0;
-    BonusX[CurrentPlayer] = 1;
-
-    ScoreMultiplier = 1;
-    CurrentBonus = Bonus[CurrentPlayer];
-    ScoreAdditionAnimation = 0;
-    ScoreAdditionAnimationStartTime = 0;
-    BonusXAnimationStart = 0;
-  }
-
-  // We should only consider the ball initialized when
-  // the ball is no longer triggering the SW_OUTHOLE
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    return MACHINE_STATE_INIT_NEW_BALL;
-  } else {
-    return MACHINE_STATE_NORMAL_GAMEPLAY;
+    char buf[129];
+    sprintf(buf, "Game mode set to %d\n", gameModeId);
+    Serial.write(buf);
   }
 }
 
-int ManageGameMode() {
+int GameMode::ManageGameMode() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  switch (GameMode) {
+  switch (gameModeId) {
     case GAME_MODE_SKILL_SHOT:
-      if (GameModeStartTime == 0) {
-        GameModeStartTime = CurrentTime;
-        GameModeEndTime = 0;
+      if (gameModeStartTime == 0) {
+        gameModeStartTime = CurrentTime;
+        gameModeEndTime = 0;
       }
 
-      if (BallFirstSwitchHitTime != 0) {
+      if (ballFirstSwitchHitTime != 0) {
         SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
       }
 
-      if (GameModeEndTime != 0 && CurrentTime > GameModeEndTime) {
+      if (gameModeEndTime != 0 && CurrentTime > gameModeEndTime) {
         ShowPlayerScores(0xFF, false, false);
       }
       break;
   }
 
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    if (BallTimeInTrough == 0) {
-      BallTimeInTrough = CurrentTime;
+    if (ballTimeInTrough == 0) {
+      ballTimeInTrough = CurrentTime;
     } else {
       // Make sure the ball stays on the sensor for at least
       // 0.5 seconds to be sure that it's not bouncing
-      if ((CurrentTime - BallTimeInTrough) > 500) {
-        if (BallFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings) {
+      if ((CurrentTime - ballTimeInTrough) > 500) {
+        if (ballFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings) {
           // Nothing hit yet, so return the ball to the player
           BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime);
-          BallTimeInTrough = 0;
+          ballTimeInTrough = 0;
           returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
         } else {
           CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
@@ -128,11 +58,11 @@ int ManageGameMode() {
           ScoreAdditionAnimation = 0;
           ShowPlayerScores(0xFF, false, false);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
-          if (!BallSaveUsed && ((CurrentTime - BallFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
+          if (!BallSaveUsed && ((CurrentTime - ballFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
             BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 100);
             BallSaveUsed = true;
             BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
-            BallTimeInTrough = CurrentTime;
+            ballTimeInTrough = CurrentTime;
             returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
           } else {
             ShowPlayerScores(0xFF, false, false);
@@ -143,13 +73,13 @@ int ManageGameMode() {
       }
     }
   } else {
-    BallTimeInTrough = 0;
+    ballTimeInTrough = 0;
   }
 
   return returnState;
 }
 
-int RunGamePlayMode(int curState, boolean curStateChanged) {
+int GameMode::RunGamePlayMode(int curState, boolean curStateChanged) {
   int returnState = curState;
 
   // Very first time into gameplay loop
@@ -217,7 +147,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
           CurrentScores[CurrentPlayer] += 10;
-          if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime;
+          if (ballFirstSwitchHitTime == 0) ballFirstSwitchHitTime = CurrentTime;
           break;
         case SW_COIN_1:
         case SW_COIN_2:
@@ -269,15 +199,4 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
   }
 
   return returnState;
-}
-
-void SetGameMode(byte newGameMode) {
-  GameMode = newGameMode;
-  GameModeStartTime = 0;
-  GameModeEndTime = 0;
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Game mode set to %d\n", newGameMode);
-    Serial.write(buf);
-  }
 }

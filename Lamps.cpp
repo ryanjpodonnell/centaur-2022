@@ -1,8 +1,4 @@
-#include <Arduino.h>
-#include "BSOS_Config.h"
-#include "BallySternOS.h"
-#include "Lamps.h"
-#include "PinballMachineBase.h"
+#include "SharedVariables.h"
 
 void ShowLamps(int lampCollection, bool clearAllLamps) {
   if (clearAllLamps) BSOS_TurnOffAllLamps();

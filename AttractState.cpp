@@ -1,11 +1,3 @@
-#include <Arduino.h>
-#include "AttractState.h"
-#include "BSOS_Config.h"
-#include "BallySternOS.h"
-#include "Lamps.h"
-#include "MachineState.h"
-#include "PinballMachineBase.h"
-#include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
 
 int RunAttractState(int curState, boolean curStateChanged) {

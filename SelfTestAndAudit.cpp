@@ -1,12 +1,4 @@
-#include <Arduino.h>
-#include "BSOS_Config.h"
-#include "BallySternOS.h"
-#include "PinballMachineBase.h"
-#include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
-#include "StoredParameters.h"
-
-#define MACHINE_STATE_ATTRACT 0
 
 unsigned long LastSolTestTime = 0; 
 unsigned long LastSelfTestChange = 0;

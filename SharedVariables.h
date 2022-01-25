@@ -1,3 +1,18 @@
+#include <Arduino.h>
+#include "AttractState.h"
+#include "BSOS_Config.h"
+#include "BallySternOS.h"
+#include "Bonus.h"
+#include "CountdownBonusState.h"
+#include "Display.h"
+#include "GameMode.h"
+#include "Lamps.h"
+#include "MachineState.h"
+#include "PinballMachineBase.h"
+#include "SelfTestAndAudit.h"
+#include "Sound.h"
+#include "StoredParameters.h"
+
 #ifndef SHARED_VARIABLES_H
 
 #define DEBUG_MESSAGES  1
@@ -15,15 +30,13 @@ extern unsigned long HighScore;
 
 
 /*********************************************************************
-    Game State Variables
+    Machine State Variables
 *********************************************************************/
 extern boolean MachineStateChanged;
 extern boolean SamePlayerShootsAgain;
 extern byte CurrentBallInPlay;
 extern byte CurrentNumPlayers;
 extern byte CurrentPlayer;
-extern byte MaxTiltWarnings;
-extern byte NumTiltWarnings;
 extern char MachineState;
 extern unsigned long CurrentScores[4];
 extern unsigned long CurrentTime;
@@ -36,6 +49,8 @@ extern unsigned long ScoreMultiplier;
 *********************************************************************/
 extern boolean BallSaveUsed;
 extern boolean ExtraBallCollected;
+extern byte MaxTiltWarnings;
+extern byte NumTiltWarnings;
 
 
 /*********************************************************************
@@ -68,11 +83,7 @@ extern unsigned long ScoreAdditionAnimationStartTime;
 /*********************************************************************
     Game Mode Variables
 *********************************************************************/
-extern byte GameMode;
-extern unsigned long BallFirstSwitchHitTime;
-extern unsigned long BallTimeInTrough;
-extern unsigned long GameModeStartTime;
-extern unsigned long GameModeEndTime;
+extern GameMode GlobalGameMode;
 
 #define SHARED_VARIABLES_H
 #endif

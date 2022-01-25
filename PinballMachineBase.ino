@@ -1,16 +1,4 @@
-#include "AttractState.h"
-#include "BSOS_Config.h"
-#include "BallySternOS.h"
-#include "Bonus.h"
-#include "CountdownBonusState.h"
-#include "Display.h"
-#include "GameMode.h"
-#include "Lamps.h"
-#include "MachineState.h"
-#include "PinballMachineBase.h"
-#include "SelfTestAndAudit.h"
 #include "SharedVariables.h"
-#include "StoredParameters.h"
 
 #define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
 #define PINBALL_MACHINE_BASE_MINOR_VERSION  1
@@ -28,15 +16,13 @@ unsigned long HighScore = 0;
 
 
 /*********************************************************************
-    Game State Variables
+    Machine State Variables
 *********************************************************************/
 boolean MachineStateChanged = true;
-boolean SamePlayerShootsAgain = false;
-byte CurrentBallInPlay = 0;
-byte CurrentNumPlayers = 0;
-byte CurrentPlayer = 0;
-byte MaxTiltWarnings = 2;
-byte NumTiltWarnings = 0;
+boolean SamePlayerShootsAgain;
+byte CurrentBallInPlay;
+byte CurrentNumPlayers;
+byte CurrentPlayer;
 char MachineState = 0;
 unsigned long CurrentScores[4];
 unsigned long CurrentTime = 0;
@@ -49,6 +35,8 @@ unsigned long ScoreMultiplier = 1;
 *********************************************************************/
 boolean BallSaveUsed = false;
 boolean ExtraBallCollected = false;
+byte MaxTiltWarnings = 2;
+byte NumTiltWarnings = 0;
 
 
 /*********************************************************************
@@ -81,11 +69,7 @@ unsigned long ScoreAdditionAnimationStartTime;
 /*********************************************************************
     Game Mode Variables
 *********************************************************************/
-byte GameMode = GAME_MODE_SKILL_SHOT;
-unsigned long BallFirstSwitchHitTime = 0;
-unsigned long BallTimeInTrough = 0;
-unsigned long GameModeEndTime = 0;
-unsigned long GameModeStartTime = 0;
+GameMode GlobalGameMode(GAME_MODE_INITIALIZE);
 
 
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
@@ -134,7 +118,7 @@ void loop() {
   } else if (MachineState == MACHINE_STATE_ATTRACT) {
     newMachineState = RunAttractState(MachineState, MachineStateChanged);
   } else {
-    newMachineState = RunGamePlayMode(MachineState, MachineStateChanged);
+    newMachineState = GlobalGameMode.RunGamePlayMode(MachineState, MachineStateChanged);
   }
 
   if (newMachineState != MachineState) {

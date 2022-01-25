@@ -1,5 +1,3 @@
-#include <Arduino.h>
-#include "Bonus.h"
 #include "SharedVariables.h"
 
 void AddToBonus(byte amountToAdd) {
