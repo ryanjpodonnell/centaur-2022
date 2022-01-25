@@ -1,4 +1,4 @@
-#ifndef LIGHTS_H
+#ifndef LAMPS_H
 
 #define LAMP_TERMINATOR                 -1
 #define LAMP_PLAYFIELD_GI               0
@@ -65,11 +65,10 @@
 #define LAMP_QUEENS_CHAMBER_GI_4        71
 
 #define LAMP_COLLECTION_BONUS_ALL         0
-#define LAMP_COLLECTION_BONUS_CENTER      1
-#define LAMP_COLLECTION_BONUS_MIDDLE_RING 2
-#define LAMP_COLLECTION_BONUS_OUTER_RING  3
+#define LAMP_COLLECTION_BONUS_MIDDLE_RING 1
+#define LAMP_COLLECTION_BONUS_OUTER_RING  2
 
-static int bonusAllLights[] = {
+static int bonusAllLamps[] = {
   LAMP_1K_BONUS,
   LAMP_2K_BONUS,
   LAMP_3K_BONUS,
@@ -90,12 +89,12 @@ static int bonusAllLights[] = {
   LAMP_TERMINATOR
 };
 
-static int bonusCenterLights[] = {
+static int bonusCenterLamps[] = {
   LAMP_40K_BONUS,
   LAMP_TERMINATOR
 };
 
-static int bonusMiddleRingLights[] = {
+static int bonusMiddleRingLamps[] = {
   LAMP_20K_BONUS,
   LAMP_60K_BONUS,
   LAMP_2X_BONUS,
@@ -105,7 +104,7 @@ static int bonusMiddleRingLights[] = {
   LAMP_TERMINATOR
 };
 
-static int bonusOuterRingLights[] = {
+static int bonusOuterRingLamps[] = {
   LAMP_1K_BONUS,
   LAMP_2K_BONUS,
   LAMP_3K_BONUS,
@@ -119,7 +118,8 @@ static int bonusOuterRingLights[] = {
   LAMP_TERMINATOR
 };
 
-void ShowLamps(int lampCollection);
+void ShowLamps(int lampCollection, bool clearAllLamps = false);
+void ShowLamp(int lamp, bool clearAllLamps = false);
 
-#define LIGHTS_H
+#define LAMPS_H
 #endif

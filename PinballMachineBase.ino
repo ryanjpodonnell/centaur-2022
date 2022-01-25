@@ -2,7 +2,7 @@
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "Display.h"
-#include "Lights.h"
+#include "Lamps.h"
 #include "MachineState.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"

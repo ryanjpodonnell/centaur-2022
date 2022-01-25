@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "AttractMode.h"
 #include "BallySternOS.h"
-#include "Lights.h"
+#include "Lamps.h"
 #include "MachineState.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
@@ -27,9 +27,9 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   unsigned long seed = CurrentTime / 250;
   if (seed != LastFlash) {
     LastFlash = seed;
-    if (((CurrentTime / 250) % 3) == 0) ShowLamps(LAMP_COLLECTION_BONUS_CENTER);
-    if (((CurrentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING);
-    if (((CurrentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING);
+    if (((CurrentTime / 250) % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
+    if (((CurrentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
+    if (((CurrentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
   }
 
   switchHit = BSOS_PullFirstFromSwitchStack();
