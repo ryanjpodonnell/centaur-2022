@@ -1,6 +1,7 @@
 #include "AttractState.h"
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
+#include "Bonus.h"
 #include "CountdownBonusState.h"
 #include "Display.h"
 #include "Lamps.h"
@@ -13,52 +14,37 @@
 #define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
 #define PINBALL_MACHINE_BASE_MINOR_VERSION  1
 
-
-/*********************************************************************
-
-    Game specific code
-
-*********************************************************************/
-
-// MachineState
-//  0 - Attract Mode
-//  negative - self-test modes
-//  positive - game play
-char MachineState = 0;
-boolean MachineStateChanged = true;
-
 #define GAME_MODE_SKILL_SHOT        0
 #define GAME_MODE_UNSTRUCTURED_PLAY 4
 
-#define MAX_DISPLAY_BONUS          175
 #define TILT_WARNING_DEBOUNCE_TIME 1000
 
 
 /*********************************************************************
+    Machine State Variables
+*********************************************************************/
+boolean MachineStateChanged = true;
+char MachineState = 0;
+unsigned long CurrentTime = 0;
 
-    Machine state and options
 
+/*********************************************************************
+    Machine Options Variables
 *********************************************************************/
 boolean FreePlayMode = true;
 byte BallSaveNumSeconds = 5;
 byte BallsPerGame = 3;
 byte Credits = 0;
 byte MaximumCredits = 99;
-unsigned long CurrentTime = 0;
 unsigned long HighScore = 0;
 
 
 /*********************************************************************
-
     Game State
-
 *********************************************************************/
 byte CurrentPlayer = 0;
 byte CurrentBallInPlay = 1;
 byte CurrentNumPlayers = 0;
-byte Bonus[4];
-byte CurrentBonus;
-byte BonusX[4];
 byte GameMode = GAME_MODE_SKILL_SHOT;
 byte MaxTiltWarnings = 2;
 byte NumTiltWarnings = 0;
@@ -66,8 +52,6 @@ byte NumTiltWarnings = 0;
 boolean SamePlayerShootsAgain = false;
 boolean BallSaveUsed = false;
 boolean CurrentlyShowingBallSave = false;
-boolean ExtraBallCollected = false;
-boolean SpecialCollected = false;
 boolean ShowingModeStats = false;
 
 unsigned long CurrentScores[4];
@@ -83,9 +67,7 @@ unsigned long ScoreMultiplier;
 
 
 /*********************************************************************
-
     Game Specific State Variables
-
 *********************************************************************/
 byte LanePhase;
 byte RolloverPhase;
@@ -95,25 +77,30 @@ byte LastWizardTimer;
 
 
 /*********************************************************************
-
-    Attract State Variables
-
+    Ball State Variables
 *********************************************************************/
+boolean ExtraBallCollected = false;
+
+
+/*********************************************************************
+    Attract State Variables
+*********************************************************************/
+unsigned long BonusCountDownEndTime = 0;
+unsigned long CountdownStartTime = 0;
+unsigned long LastCountdownReportTime = 0;
 unsigned long LastFlash = 0;
 
 
 /*********************************************************************
-
-    Attract State Variables
-
+    Bonus Variables
 *********************************************************************/
-unsigned long CountdownStartTime = 0;
-unsigned long LastCountdownReportTime = 0;
-unsigned long BonusCountDownEndTime = 0;
+byte BonusX[4];
+byte Bonus[4];
+byte CurrentBonus;
+unsigned long BonusXAnimationStart;
 
 
 unsigned long LastInlaneHitTime;
-unsigned long BonusXAnimationStart;
 unsigned long LastSpinnerHit;
 
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
@@ -128,8 +115,6 @@ void setup() {
     Serial.begin(57600);
   }
 
-
-  // Tell the OS about game-specific lights and switches
   BSOS_SetupGameSwitches(
       NUM_SWITCHES_WITH_TRIGGERS,
       NUM_PRIORITY_SWITCHES_WITH_TRIGGERS,
@@ -179,14 +164,6 @@ void StopAudio() {
 //  Game Play functions
 //
 ////////////////////////////////////////////////////////////////////////////
-void AddToBonus(byte amountToAdd = 1) {
-  CurrentBonus += amountToAdd;
-  if (CurrentBonus >= MAX_DISPLAY_BONUS) {
-    CurrentBonus = MAX_DISPLAY_BONUS;
-  }
-}
-
-
 void SetGameMode(byte newGameMode) {
   GameMode = newGameMode;
   GameModeStartTime = 0;
@@ -206,19 +183,6 @@ void StartScoreAnimation(unsigned long scoreToAnimate) {
   ScoreAdditionAnimation = scoreToAnimate;
   ScoreAdditionAnimationStartTime = CurrentTime;
   LastRemainingAnimatedScoreShown = 0;
-}
-
-
-void IncreaseBonusX() {
-  boolean soundPlayed = false;
-  if (BonusX[CurrentPlayer] < 5) {
-    BonusX[CurrentPlayer] += 1;
-    BonusXAnimationStart = CurrentTime;
-
-    if (BonusX[CurrentPlayer] == 4) {
-      BonusX[CurrentPlayer] += 1;
-    }
-  }
 }
 
 
@@ -253,7 +217,7 @@ int InitGamePlay() {
 
 int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
   if (curStateChanged) {
-    ShowLamps(LAMP_COLLECTION_BONUS_ALL);
+    ShowLamps(LAMP_COLLECTION_BONUS_ALL, true);
 
     BallFirstSwitchHitTime = 0;
 
@@ -278,7 +242,6 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
     GameMode = GAME_MODE_SKILL_SHOT;
 
     ExtraBallCollected = false;
-    SpecialCollected = false;
 
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
       BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 600);

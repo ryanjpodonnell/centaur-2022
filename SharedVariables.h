@@ -2,39 +2,51 @@
 
 #define DEBUG_MESSAGES  1
 
-extern boolean ExtraBallCollected;
-extern boolean FreePlayMode;
 extern boolean SamePlayerShootsAgain;
-extern byte BonusX[4];
-extern byte Bonus[4];
-extern byte Credits;
-extern byte CurrentBonus;
 extern byte CurrentNumPlayers;
 extern byte CurrentPlayer;
 extern byte MaxTiltWarnings;
-extern byte MaximumCredits;
 extern byte NumTiltWarnings;
 extern unsigned long CurrentScores[4];
-extern unsigned long CurrentTime;
 extern unsigned long HighScore;
 
 
 /*********************************************************************
-
-    Attract State Variables
-
+    Machine State Variables
 *********************************************************************/
-extern unsigned long LastFlash;
+extern unsigned long CurrentTime;
 
 
 /*********************************************************************
+    Machine Options Variables
+*********************************************************************/
+extern boolean FreePlayMode;
+extern byte Credits;
+extern byte MaximumCredits;
 
+
+/*********************************************************************
+    Ball State Variables
+*********************************************************************/
+extern boolean ExtraBallCollected;
+
+
+/*********************************************************************
     Attract State Variables
-
 *********************************************************************/
 extern unsigned long CountdownStartTime;
 extern unsigned long LastCountdownReportTime;
 extern unsigned long BonusCountDownEndTime;
+extern unsigned long LastFlash;
+
+
+/*********************************************************************
+    Bonus Variables
+*********************************************************************/
+extern byte BonusX[4];
+extern byte Bonus[4];
+extern byte CurrentBonus;
+extern unsigned long BonusXAnimationStart;
 
 #define SHARED_VARIABLES_H
 #endif
