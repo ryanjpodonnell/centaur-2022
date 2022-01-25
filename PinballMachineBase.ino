@@ -4,6 +4,7 @@
 #include "Bonus.h"
 #include "CountdownBonusState.h"
 #include "Display.h"
+#include "GameMode.h"
 #include "Lamps.h"
 #include "MachineState.h"
 #include "PinballMachineBase.h"
@@ -14,18 +15,7 @@
 #define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
 #define PINBALL_MACHINE_BASE_MINOR_VERSION  1
 
-#define GAME_MODE_SKILL_SHOT        0
-#define GAME_MODE_UNSTRUCTURED_PLAY 4
-
 #define TILT_WARNING_DEBOUNCE_TIME 1000
-
-
-/*********************************************************************
-    Machine State Variables
-*********************************************************************/
-boolean MachineStateChanged = true;
-char MachineState = 0;
-unsigned long CurrentTime = 0;
 
 
 /*********************************************************************
@@ -40,25 +30,23 @@ unsigned long HighScore = 0;
 
 
 /*********************************************************************
-    Game State
+    Game State Variables
 *********************************************************************/
+boolean MachineStateChanged = true;
+char MachineState = 0;
+unsigned long CurrentTime = 0;
+
 byte CurrentPlayer = 0;
 byte CurrentBallInPlay = 1;
 byte CurrentNumPlayers = 0;
-byte GameMode = GAME_MODE_SKILL_SHOT;
 byte MaxTiltWarnings = 2;
 byte NumTiltWarnings = 0;
 
 boolean SamePlayerShootsAgain = false;
-boolean BallSaveUsed = false;
 boolean CurrentlyShowingBallSave = false;
 boolean ShowingModeStats = false;
 
 unsigned long CurrentScores[4];
-unsigned long BallFirstSwitchHitTime = 0;
-unsigned long BallTimeInTrough = 0;
-unsigned long GameModeStartTime = 0;
-unsigned long GameModeEndTime = 0;
 unsigned long LastTiltWarningTime = 0;
 unsigned long ScoreMultiplier;
 
@@ -76,6 +64,7 @@ byte LastWizardTimer;
 /*********************************************************************
     Ball State Variables
 *********************************************************************/
+boolean BallSaveUsed = false;
 boolean ExtraBallCollected = false;
 
 
@@ -106,8 +95,15 @@ unsigned long ScoreAdditionAnimation;
 unsigned long ScoreAdditionAnimationStartTime;
 
 
-unsigned long LastInlaneHitTime;
-unsigned long LastSpinnerHit;
+/*********************************************************************
+    Game Mode Variables
+*********************************************************************/
+byte GameMode = GAME_MODE_SKILL_SHOT;
+unsigned long BallFirstSwitchHitTime = 0;
+unsigned long BallTimeInTrough = 0;
+unsigned long GameModeEndTime = 0;
+unsigned long GameModeStartTime = 0;
+
 
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
@@ -142,23 +138,6 @@ void setup() {
   CurrentScores[3] = BALLY_STERN_OS_MINOR_VERSION;
 
   CurrentTime = millis();
-}
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//  Game Play functions
-//
-////////////////////////////////////////////////////////////////////////////
-void SetGameMode(byte newGameMode) {
-  GameMode = newGameMode;
-  GameModeStartTime = 0;
-  GameModeEndTime = 0;
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Game mode set to %d\n", newGameMode);
-    Serial.write(buf);
-  }
 }
 
 
@@ -229,13 +208,10 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
 
     ScoreMultiplier = 1;
     LanePhase = 0;
-    LastInlaneHitTime = 0;
     CurrentBonus = Bonus[CurrentPlayer];
     ScoreAdditionAnimation = 0;
     ScoreAdditionAnimationStartTime = 0;
     BonusXAnimationStart = 0;
-    LastSpinnerHit = 0;
-    //    PlayBackgroundSongBasedOnLevel(StarLevel[CurrentPlayer]);
     TenPointPhase = 0;
   }
 
@@ -247,67 +223,6 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
 
-}
-
-
-// This function manages all timers, flags, and lights
-int ManageGameMode() {
-  int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-
-  switch (GameMode) {
-    case GAME_MODE_SKILL_SHOT:
-      if (GameModeStartTime == 0) {
-        GameModeStartTime = CurrentTime;
-        GameModeEndTime = 0;
-      }
-
-      if (BallFirstSwitchHitTime != 0) {
-        SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
-      }
-
-      if (GameModeEndTime != 0 && CurrentTime > GameModeEndTime) {
-        ShowPlayerScores(0xFF, false, false);
-      }
-      break;
-  }
-
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    if (BallTimeInTrough == 0) {
-      BallTimeInTrough = CurrentTime;
-    } else {
-      // Make sure the ball stays on the sensor for at least
-      // 0.5 seconds to be sure that it's not bouncing
-      if ((CurrentTime - BallTimeInTrough) > 500) {
-        if (BallFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings) {
-          // Nothing hit yet, so return the ball to the player
-          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime);
-          BallTimeInTrough = 0;
-          returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-        } else {
-          CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
-          ScoreAdditionAnimationStartTime = 0;
-          ScoreAdditionAnimation = 0;
-          ShowPlayerScores(0xFF, false, false);
-          // if we haven't used the ball save, and we're under the time limit, then save the ball
-          if (!BallSaveUsed && ((CurrentTime - BallFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
-            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 100);
-            BallSaveUsed = true;
-            BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
-            BallTimeInTrough = CurrentTime;
-            returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-          } else {
-            ShowPlayerScores(0xFF, false, false);
-
-            returnState = MACHINE_STATE_COUNTDOWN_BONUS;
-          }
-        }
-      }
-    }
-  } else {
-    BallTimeInTrough = 0;
-  }
-
-  return returnState;
 }
 
 

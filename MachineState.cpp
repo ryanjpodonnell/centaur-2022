@@ -19,7 +19,6 @@ boolean AddPlayer(boolean resetNumPlayers) {
   return true;
 }
 
-
 void AddCoinToAudit(byte switchHit) {
   unsigned short coinAuditStartByte = 0;
 
@@ -35,7 +34,6 @@ void AddCoinToAudit(byte switchHit) {
 
 }
 
-
 void AddCredit(boolean playSound, byte numToAdd) {
   if (Credits < MaximumCredits) {
     Credits += numToAdd;
@@ -49,7 +47,6 @@ void AddCredit(boolean playSound, byte numToAdd) {
   }
 
 }
-
 
 void AwardExtraBall() {
   if (ExtraBallCollected) return;
