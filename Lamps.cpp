@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "Lamps.h"
 #include "PinballMachineBase.h"

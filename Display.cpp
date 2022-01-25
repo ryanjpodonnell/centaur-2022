@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "Display.h"
 #include "SharedVariables.h"
