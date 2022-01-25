@@ -33,32 +33,17 @@ unsigned long HighScore = 0;
     Game State Variables
 *********************************************************************/
 boolean MachineStateChanged = true;
-char MachineState = 0;
-unsigned long CurrentTime = 0;
-
-byte CurrentPlayer = 0;
-byte CurrentBallInPlay = 1;
+boolean SamePlayerShootsAgain = false;
+byte CurrentBallInPlay = 0;
 byte CurrentNumPlayers = 0;
+byte CurrentPlayer = 0;
 byte MaxTiltWarnings = 2;
 byte NumTiltWarnings = 0;
-
-boolean SamePlayerShootsAgain = false;
-boolean CurrentlyShowingBallSave = false;
-boolean ShowingModeStats = false;
-
+char MachineState = 0;
 unsigned long CurrentScores[4];
+unsigned long CurrentTime = 0;
 unsigned long LastTiltWarningTime = 0;
-unsigned long ScoreMultiplier;
-
-
-/*********************************************************************
-    Game Specific State Variables
-*********************************************************************/
-byte LanePhase;
-byte RolloverPhase;
-byte TenPointPhase;
-byte LastAwardShotCalloutPlayed;
-byte LastWizardTimer;
+unsigned long ScoreMultiplier = 1;
 
 
 /*********************************************************************
@@ -207,12 +192,10 @@ int InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
     BonusX[CurrentPlayer] = 1;
 
     ScoreMultiplier = 1;
-    LanePhase = 0;
     CurrentBonus = Bonus[CurrentPlayer];
     ScoreAdditionAnimation = 0;
     ScoreAdditionAnimationStartTime = 0;
     BonusXAnimationStart = 0;
-    TenPointPhase = 0;
   }
 
   // We should only consider the ball initialized when

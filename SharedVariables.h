@@ -4,25 +4,31 @@
 
 
 /*********************************************************************
-    Game State Variables
-*********************************************************************/
-extern boolean SamePlayerShootsAgain;
-extern byte CurrentNumPlayers;
-extern byte CurrentPlayer;
-extern byte MaxTiltWarnings;
-extern byte NumTiltWarnings;
-extern unsigned long CurrentScores[4];
-extern unsigned long CurrentTime;
-extern unsigned long HighScore;
-
-
-/*********************************************************************
     Machine Options Variables
 *********************************************************************/
 extern boolean FreePlayMode;
 extern byte BallSaveNumSeconds;
+extern byte BallsPerGame;
 extern byte Credits;
 extern byte MaximumCredits;
+extern unsigned long HighScore;
+
+
+/*********************************************************************
+    Game State Variables
+*********************************************************************/
+extern boolean MachineStateChanged;
+extern boolean SamePlayerShootsAgain;
+extern byte CurrentBallInPlay;
+extern byte CurrentNumPlayers;
+extern byte CurrentPlayer;
+extern byte MaxTiltWarnings;
+extern byte NumTiltWarnings;
+extern char MachineState;
+extern unsigned long CurrentScores[4];
+extern unsigned long CurrentTime;
+extern unsigned long LastTiltWarningTime;
+extern unsigned long ScoreMultiplier;
 
 
 /*********************************************************************
