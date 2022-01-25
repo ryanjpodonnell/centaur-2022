@@ -60,9 +60,6 @@ unsigned long BallTimeInTrough = 0;
 unsigned long GameModeStartTime = 0;
 unsigned long GameModeEndTime = 0;
 unsigned long LastTiltWarningTime = 0;
-unsigned long ScoreAdditionAnimation;
-unsigned long ScoreAdditionAnimationStartTime;
-unsigned long LastRemainingAnimatedScoreShown;
 unsigned long ScoreMultiplier;
 
 
@@ -98,6 +95,15 @@ byte BonusX[4];
 byte Bonus[4];
 byte CurrentBonus;
 unsigned long BonusXAnimationStart;
+
+
+/*********************************************************************
+    Display Variables
+*********************************************************************/
+unsigned long LastFlashOrDash = 0;
+unsigned long LastRemainingAnimatedScoreShown;
+unsigned long ScoreAdditionAnimation;
+unsigned long ScoreAdditionAnimationStartTime;
 
 
 unsigned long LastInlaneHitTime;
@@ -173,16 +179,6 @@ void SetGameMode(byte newGameMode) {
     sprintf(buf, "Game mode set to %d\n", newGameMode);
     Serial.write(buf);
   }
-}
-
-
-void StartScoreAnimation(unsigned long scoreToAnimate) {
-  if (ScoreAdditionAnimation != 0) {
-    CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
-  }
-  ScoreAdditionAnimation = scoreToAnimate;
-  ScoreAdditionAnimationStartTime = CurrentTime;
-  LastRemainingAnimatedScoreShown = 0;
 }
 
 

@@ -48,5 +48,14 @@ extern byte Bonus[4];
 extern byte CurrentBonus;
 extern unsigned long BonusXAnimationStart;
 
+
+/*********************************************************************
+    Display Variables
+*********************************************************************/
+extern unsigned long LastFlashOrDash;
+extern unsigned long LastRemainingAnimatedScoreShown;
+extern unsigned long ScoreAdditionAnimation;
+extern unsigned long ScoreAdditionAnimationStartTime;
+
 #define SHARED_VARIABLES_H
 #endif

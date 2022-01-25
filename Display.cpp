@@ -3,7 +3,13 @@
 #include "Display.h"
 #include "SharedVariables.h"
 
-unsigned long LastFlashOrDash = 0;
+byte GetDisplayMask(byte numDigits) {
+  byte displayMask = 0;
+  for (byte digitCount = 0; digitCount < numDigits; digitCount++) {
+    displayMask |= (0x20 >> digitCount);
+  }
+  return displayMask;
+}
 
 byte MagnitudeOfScore(unsigned long score) {
   if (score == 0) return 0;
@@ -16,12 +22,13 @@ byte MagnitudeOfScore(unsigned long score) {
   return retval;
 }
 
-byte GetDisplayMask(byte numDigits) {
-  byte displayMask = 0;
-  for (byte digitCount = 0; digitCount < numDigits; digitCount++) {
-    displayMask |= (0x20 >> digitCount);
+void StartScoreAnimation(unsigned long scoreToAnimate) {
+  if (ScoreAdditionAnimation != 0) {
+    CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
   }
-  return displayMask;
+  ScoreAdditionAnimation = scoreToAnimate;
+  ScoreAdditionAnimationStartTime = CurrentTime;
+  LastRemainingAnimatedScoreShown = 0;
 }
 
 void ShowPlayerScores(byte displayToUpdate, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
