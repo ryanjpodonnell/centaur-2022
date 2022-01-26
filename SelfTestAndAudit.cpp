@@ -14,10 +14,10 @@ boolean SolenoidCycle = true;
 
 int RunSelfTest(int curState, boolean curStateChanged) {
   int returnState = curState;
-  CurrentNumPlayers = 0;
+  GlobalMachineState.SetNumberOfPlayers(0);
 
   if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
-    returnState = RunBaseSelfTest(returnState, curStateChanged, CurrentTime, SW_CREDIT_BUTTON, SW_SLAM);
+    returnState = RunBaseSelfTest(returnState, curStateChanged, SW_CREDIT_BUTTON, SW_SLAM);
   }
 
   if (returnState == MACHINE_STATE_ATTRACT) {
@@ -31,7 +31,6 @@ int RunSelfTest(int curState, boolean curStateChanged) {
 int RunBaseSelfTest(
     int curState,
     boolean curStateChanged,
-    unsigned long CurrentTime,
     byte resetSwitch,
     byte slamSwitch
     ) {
@@ -40,14 +39,15 @@ int RunBaseSelfTest(
   boolean resetDoubleClick = false;
   unsigned short savedScoreStartByte = 0;
   unsigned short auditNumStartByte = 0;
+  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
 
   if (curSwitch==resetSwitch) {
-    ResetHold = CurrentTime;
-    if ((CurrentTime-LastResetPress)<400) {
+    ResetHold = currentTime;
+    if ((currentTime-LastResetPress)<400) {
       resetDoubleClick = true;
       curSwitch = SWITCH_STACK_EMPTY;
     }
-    LastResetPress = CurrentTime;
+    LastResetPress = currentTime;
   }
 
   if (ResetHold!=0 && !BSOS_ReadSingleSwitchState(resetSwitch)) {
@@ -56,10 +56,10 @@ int RunBaseSelfTest(
   }
 
   boolean resetBeingHeld = false;
-  if (ResetHold!=0 && (CurrentTime-ResetHold)>1300) {
+  if (ResetHold!=0 && (currentTime-ResetHold)>1300) {
     resetBeingHeld = true;
     if (NextSpeedyValueChange==0) {
-      NextSpeedyValueChange = CurrentTime;
+      NextSpeedyValueChange = currentTime;
       NumSpeedyChanges = 0;
     }
   }
@@ -68,10 +68,10 @@ int RunBaseSelfTest(
     returnState = MACHINE_STATE_ATTRACT;
   }
   
-  if (curSwitch==SW_SELF_TEST_SWITCH && (CurrentTime-LastSelfTestChange)>250) {
+  if (curSwitch==SW_SELF_TEST_SWITCH && (currentTime-LastSelfTestChange)>250) {
     returnState -= 1;
     if (returnState==MACHINE_STATE_TEST_DONE) returnState = MACHINE_STATE_ATTRACT;
-    LastSelfTestChange = CurrentTime;
+    LastSelfTestChange = currentTime;
   }
 
   if (curStateChanged) {
@@ -130,11 +130,11 @@ int RunBaseSelfTest(
       CurValue += 1;
       if (CurValue>30) CurValue = 0;
     }    
-    BSOS_CycleAllDisplays(CurrentTime, CurValue);
+    BSOS_CycleAllDisplays(currentTime, CurValue);
   } else if (curState==MACHINE_STATE_TEST_SOLENOIDS) {
     if (curStateChanged) {
       BSOS_TurnOffAllLamps();
-      LastSolTestTime = CurrentTime;
+      LastSolTestTime = currentTime;
       BSOS_EnableSolenoidStack(); 
       BSOS_SetDisableFlippers(false);
       BSOS_SetDisplayBlank(4, 0);
@@ -148,14 +148,14 @@ int RunBaseSelfTest(
       SolenoidCycle = (SolenoidCycle) ? false : true;
     }
 
-    if ((CurrentTime-LastSolTestTime)>1000) {
+    if ((currentTime-LastSolTestTime)>1000) {
       if (SolenoidCycle) {
         SavedValue += 1;
         if (SavedValue>14) SavedValue = 0;
       }
       BSOS_PushToSolenoidStack(SavedValue, 3);
       BSOS_SetDisplay(0, SavedValue, true);
-      LastSolTestTime = CurrentTime;
+      LastSolTestTime = currentTime;
     }
     
   } else if (curState==MACHINE_STATE_TEST_SWITCHES) {
@@ -184,12 +184,12 @@ int RunBaseSelfTest(
   } else if (curState==MACHINE_STATE_TEST_SOUNDS) {
     BSOS_SetDisplayCredits(0);
     BSOS_SetDisplayBallInPlay(5);
-    byte soundToPlay = ((CurrentTime-LastSelfTestChange)/2000)%256;
+    byte soundToPlay = ((currentTime-LastSelfTestChange)/2000)%256;
     if (SoundPlaying!=soundToPlay) {
       BSOS_PlaySoundSquawkAndTalk(soundToPlay);
       SoundPlaying = soundToPlay;
       BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
-      LastSolTestTime = CurrentTime; // Time the sound started to play
+      LastSolTestTime = currentTime; // Time the sound started to play
     }
   } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_1) {
     savedScoreStartByte = BSOS_AWARD_SCORE_1_EEPROM_START_BYTE;
@@ -236,12 +236,12 @@ int RunBaseSelfTest(
       BSOS_WriteULToEEProm(savedScoreStartByte, SavedValue);
     }
 
-    if (resetBeingHeld && (CurrentTime>=NextSpeedyValueChange)) {
+    if (resetBeingHeld && (currentTime>=NextSpeedyValueChange)) {
       SavedValue += 1000;
       BSOS_SetDisplay(0, SavedValue, true);  
-      if (NumSpeedyChanges<6) NextSpeedyValueChange = CurrentTime + 400;
-      else if (NumSpeedyChanges<50) NextSpeedyValueChange = CurrentTime + 50;
-      else NextSpeedyValueChange = CurrentTime + 10;
+      if (NumSpeedyChanges<6) NextSpeedyValueChange = currentTime + 400;
+      else if (NumSpeedyChanges<50) NextSpeedyValueChange = currentTime + 50;
+      else NextSpeedyValueChange = currentTime + 10;
       NumSpeedyChanges += 1;
     }
 

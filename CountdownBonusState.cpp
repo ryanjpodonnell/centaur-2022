@@ -1,34 +1,36 @@
 #include "SharedVariables.h"
 
 int CountdownBonus(boolean curStateChanged) {
+  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
+  byte currentBonus = GlobalMachineState.GetBonus();
+
   if (curStateChanged) {
+    GlobalMachineState.SetBonus(currentBonus);
 
-    Bonus[CurrentPlayer] = CurrentBonus;
-    CountdownStartTime = CurrentTime;
-
+    CountdownStartTime = currentTime;
     LastCountdownReportTime = CountdownStartTime;
     BonusCountDownEndTime = 0xFFFFFFFF;
   }
 
-  unsigned long countdownDelayTime = 250 - (CurrentBonus * 3);
-
-  if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime) {
-    if (CurrentBonus) {
-
-      // Only give sound & score if this isn't a tilt
+  unsigned long countdownDelayTime = 250 - (currentBonus * 3);
+  if ((currentTime - LastCountdownReportTime) > countdownDelayTime) {
+    if (currentBonus) {
       if (NumTiltWarnings <= MaxTiltWarnings) {
-        CurrentScores[CurrentPlayer] += 1000 * ((unsigned long)BonusX[CurrentPlayer]);
+        unsigned long bonusMultiplier = (unsigned long)GlobalMachineState.GetBonusMultiplier();
+        unsigned long bonusValue = bonusMultiplier * 1000;
+        GlobalMachineState.IncreaseScore(bonusValue);
       }
 
-      CurrentBonus -= 1;
+      GlobalMachineState.DecreaseBonus(1);
 
     } else if (BonusCountDownEndTime == 0xFFFFFFFF) {
-      BonusCountDownEndTime = CurrentTime + 1000;
+      BonusCountDownEndTime = currentTime + 1000;
     }
-    LastCountdownReportTime = CurrentTime;
+
+    LastCountdownReportTime = currentTime;
   }
 
-  if (CurrentTime > BonusCountDownEndTime) {
+  if (currentTime > BonusCountDownEndTime) {
     BonusCountDownEndTime = 0xFFFFFFFF;
     return MACHINE_STATE_BALL_OVER;
   }

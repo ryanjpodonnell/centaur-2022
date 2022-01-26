@@ -1,8 +1,9 @@
 #ifndef GAME_MODE_H
+#define GAME_MODE_H
 
-#define GAME_MODE_INITIALIZE       -1
 #define GAME_MODE_SKILL_SHOT        0
 #define GAME_MODE_UNSTRUCTURED_PLAY 1
+#define GAME_MODE_INITIALIZE        255
 
 #define TILT_WARNING_DEBOUNCE_TIME  1000
 
@@ -20,8 +21,7 @@ class GameMode {
     void SetGameMode(byte id);
 
     int ManageGameMode();
-    int RunGamePlayMode(int curState, boolean curStateChanged);
+    int RunGamePlayState(int curState, boolean curStateChanged);
 };
 
-#define GAME_MODE_H
 #endif

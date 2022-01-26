@@ -2,7 +2,6 @@
 #include "AttractState.h"
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
-#include "Bonus.h"
 #include "CountdownBonusState.h"
 #include "Display.h"
 #include "GameMode.h"
@@ -14,7 +13,7 @@
 #include "StoredParameters.h"
 
 #ifndef SHARED_VARIABLES_H
-
+#define SHARED_VARIABLES_H
 #define DEBUG_MESSAGES  1
 
 
@@ -32,16 +31,7 @@ extern unsigned long HighScore;
 /*********************************************************************
     Machine State Variables
 *********************************************************************/
-extern boolean MachineStateChanged;
-extern boolean SamePlayerShootsAgain;
-extern byte CurrentBallInPlay;
-extern byte CurrentNumPlayers;
-extern byte CurrentPlayer;
-extern char MachineState;
-extern unsigned long CurrentScores[4];
-extern unsigned long CurrentTime;
-extern unsigned long LastTiltWarningTime;
-extern unsigned long ScoreMultiplier;
+extern MachineState GlobalMachineState;
 
 
 /*********************************************************************
@@ -65,9 +55,6 @@ extern unsigned long LastFlash;
 /*********************************************************************
     Bonus Variables
 *********************************************************************/
-extern byte BonusX[4];
-extern byte Bonus[4];
-extern byte CurrentBonus;
 extern unsigned long BonusXAnimationStart;
 
 
@@ -85,5 +72,4 @@ extern unsigned long ScoreAdditionAnimationStartTime;
 *********************************************************************/
 extern GameMode GlobalGameMode;
 
-#define SHARED_VARIABLES_H
 #endif

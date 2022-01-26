@@ -16,21 +16,6 @@ unsigned long HighScore = 0;
 
 
 /*********************************************************************
-    Machine State Variables
-*********************************************************************/
-boolean MachineStateChanged = true;
-boolean SamePlayerShootsAgain;
-byte CurrentBallInPlay;
-byte CurrentNumPlayers;
-byte CurrentPlayer;
-char MachineState = 0;
-unsigned long CurrentScores[4];
-unsigned long CurrentTime = 0;
-unsigned long LastTiltWarningTime = 0;
-unsigned long ScoreMultiplier = 1;
-
-
-/*********************************************************************
     Ball State Variables
 *********************************************************************/
 boolean BallSaveUsed = false;
@@ -51,9 +36,6 @@ unsigned long LastFlash = 0;
 /*********************************************************************
     Bonus Variables
 *********************************************************************/
-byte BonusX[4];
-byte Bonus[4];
-byte CurrentBonus;
 unsigned long BonusXAnimationStart;
 
 
@@ -64,6 +46,12 @@ unsigned long LastFlashOrDash = 0;
 unsigned long LastRemainingAnimatedScoreShown;
 unsigned long ScoreAdditionAnimation;
 unsigned long ScoreAdditionAnimationStartTime;
+
+
+/*********************************************************************
+    Machine State Variables
+*********************************************************************/
+MachineState GlobalMachineState(MACHINE_STATE_ATTRACT);
 
 
 /*********************************************************************
@@ -99,35 +87,32 @@ void setup() {
   ReadStoredParameters();
   BSOS_SetCoinLockout((Credits >= MaximumCredits) ? true : false);
 
-  CurrentScores[0] = PINBALL_MACHINE_BASE_MAJOR_VERSION;
-  CurrentScores[1] = PINBALL_MACHINE_BASE_MINOR_VERSION;
-  CurrentScores[2] = BALLY_STERN_OS_MAJOR_VERSION;
-  CurrentScores[3] = BALLY_STERN_OS_MINOR_VERSION;
-
-  CurrentTime = millis();
+  GlobalMachineState.SetScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
+  GlobalMachineState.SetScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);
+  GlobalMachineState.SetScore(BALLY_STERN_OS_MAJOR_VERSION, 2);
+  GlobalMachineState.SetScore(BALLY_STERN_OS_MINOR_VERSION, 3);
 }
 
 void loop() {
   BSOS_DataRead(0);
 
-  CurrentTime = millis();
-  int newMachineState = MachineState;
+  unsigned long currentTime = millis();
+  GlobalMachineState.SetCurrentTime(currentTime);
 
-  if (MachineState < 0) {
-    newMachineState = RunSelfTest(MachineState, MachineStateChanged);
-  } else if (MachineState == MACHINE_STATE_ATTRACT) {
-    newMachineState = RunAttractState(MachineState, MachineStateChanged);
+  byte machineState = GlobalMachineState.GetMachineState();
+  byte newMachineState = machineState;
+  boolean machineStateChanged = GlobalMachineState.GetMachineStateChanged();
+
+  if (machineState < 0) {
+    newMachineState = RunSelfTest(machineState, machineStateChanged);
+  } else if (machineState == MACHINE_STATE_ATTRACT) {
+    newMachineState = RunAttractState(machineState, machineStateChanged);
   } else {
-    newMachineState = GlobalGameMode.RunGamePlayMode(MachineState, MachineStateChanged);
+    newMachineState = GlobalGameMode.RunGamePlayState(machineState, machineStateChanged);
   }
 
-  if (newMachineState != MachineState) {
-    MachineState = newMachineState;
-    MachineStateChanged = true;
-  } else {
-    MachineStateChanged = false;
-  }
+  GlobalMachineState.SetMachineState(newMachineState);
 
-  BSOS_ApplyFlashToLamps(CurrentTime);
-  BSOS_UpdateTimedSolenoidStack(CurrentTime);
+  BSOS_ApplyFlashToLamps(currentTime);
+  BSOS_UpdateTimedSolenoidStack(currentTime);
 }

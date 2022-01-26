@@ -22,11 +22,12 @@ void GameMode::SetGameMode(byte id) {
 
 int GameMode::ManageGameMode() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
 
   switch (gameModeId) {
     case GAME_MODE_SKILL_SHOT:
       if (gameModeStartTime == 0) {
-        gameModeStartTime = CurrentTime;
+        gameModeStartTime = currentTime;
         gameModeEndTime = 0;
       }
 
@@ -34,7 +35,7 @@ int GameMode::ManageGameMode() {
         SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
       }
 
-      if (gameModeEndTime != 0 && CurrentTime > gameModeEndTime) {
+      if (gameModeEndTime != 0 && currentTime > gameModeEndTime) {
         ShowPlayerScores(0xFF, false, false);
       }
       break;
@@ -42,27 +43,27 @@ int GameMode::ManageGameMode() {
 
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
     if (ballTimeInTrough == 0) {
-      ballTimeInTrough = CurrentTime;
+      ballTimeInTrough = currentTime;
     } else {
       // Make sure the ball stays on the sensor for at least
       // 0.5 seconds to be sure that it's not bouncing
-      if ((CurrentTime - ballTimeInTrough) > 500) {
+      if ((currentTime - ballTimeInTrough) > 500) {
         if (ballFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings) {
           // Nothing hit yet, so return the ball to the player
-          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime);
+          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime);
           ballTimeInTrough = 0;
           returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
         } else {
-          CurrentScores[CurrentPlayer] += ScoreAdditionAnimation;
+          GlobalMachineState.IncreaseScore(ScoreAdditionAnimation);
           ScoreAdditionAnimationStartTime = 0;
           ScoreAdditionAnimation = 0;
           ShowPlayerScores(0xFF, false, false);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
-          if (!BallSaveUsed && ((CurrentTime - ballFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
-            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, CurrentTime + 100);
+          if (!BallSaveUsed && ((currentTime - ballFirstSwitchHitTime)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
+            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
             BallSaveUsed = true;
             BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
-            ballTimeInTrough = CurrentTime;
+            ballTimeInTrough = currentTime;
             returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
           } else {
             ShowPlayerScores(0xFF, false, false);
@@ -79,14 +80,17 @@ int GameMode::ManageGameMode() {
   return returnState;
 }
 
-int GameMode::RunGamePlayMode(int curState, boolean curStateChanged) {
+int GameMode::RunGamePlayState(int curState, boolean curStateChanged) {
   int returnState = curState;
+  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
+  byte currentPlayer = GlobalMachineState.GetCurrentPlayer();
+  byte currentBallInPlay = GlobalMachineState.GetCurrentBallInPlay();
 
   // Very first time into gameplay loop
   if (curState == MACHINE_STATE_INIT_GAMEPLAY) {
-    returnState = InitGamePlay();
+    returnState = GlobalMachineState.InitGamePlay();
   } else if (curState == MACHINE_STATE_INIT_NEW_BALL) {
-    returnState = InitNewBall(curStateChanged, CurrentPlayer, CurrentBallInPlay);
+    returnState = GlobalMachineState.InitNewBall(curStateChanged, currentPlayer, currentBallInPlay);
   } else if (curState == MACHINE_STATE_NORMAL_GAMEPLAY) {
     returnState = ManageGameMode();
   } else if (curState == MACHINE_STATE_COUNTDOWN_BONUS) {
@@ -95,23 +99,10 @@ int GameMode::RunGamePlayMode(int curState, boolean curStateChanged) {
   } else if (curState == MACHINE_STATE_BALL_OVER) {
     BSOS_SetDisplayCredits(Credits);
 
-    if (SamePlayerShootsAgain) {
+    if (GlobalMachineState.GetSamePlayerShootsAgain()) {
       returnState = MACHINE_STATE_INIT_NEW_BALL;
     } else {
-      CurrentPlayer += 1;
-      if (CurrentPlayer >= CurrentNumPlayers) {
-        CurrentPlayer = 0;
-        CurrentBallInPlay += 1;
-      }
-
-      if (CurrentBallInPlay > BallsPerGame) {
-        for (int count = 0; count < CurrentNumPlayers; count++) {
-          BSOS_SetDisplay(count, CurrentScores[count], true, 2);
-        }
-
-        returnState = MACHINE_STATE_INIT_GAMEPLAY;
-      }
-      else returnState = MACHINE_STATE_INIT_NEW_BALL;
+      returnState = GlobalMachineState.IncrementCurrentPlayer();
     }
   } else if (curState == MACHINE_STATE_MATCH_MODE) {
   }
@@ -126,11 +117,12 @@ int GameMode::RunGamePlayMode(int curState, boolean curStateChanged) {
         Serial.write(buf);
       }
 
+      unsigned long lastTiltWarningTime = GlobalMachineState.GetLastTiltWarningTime();
+
       switch (switchHit) {
         case SW_TILT:
-          // This should be debounced
-          if ((CurrentTime - LastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) {
-            LastTiltWarningTime = CurrentTime;
+          if ((currentTime - lastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) {
+            GlobalMachineState.SetLastTiltWarningTime(currentTime);
             NumTiltWarnings += 1;
             if (NumTiltWarnings > MaxTiltWarnings) {
               BSOS_DisableSolenoidStack();
@@ -142,36 +134,28 @@ int GameMode::RunGamePlayMode(int curState, boolean curStateChanged) {
           break;
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
-          SetLastSelfTestChangedTime(CurrentTime);
+          SetLastSelfTestChangedTime(currentTime);
           break;
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
-          CurrentScores[CurrentPlayer] += 10;
-          if (ballFirstSwitchHitTime == 0) ballFirstSwitchHitTime = CurrentTime;
+          GlobalMachineState.IncreaseScore(10);
+          if (ballFirstSwitchHitTime == 0) ballFirstSwitchHitTime = currentTime;
           break;
         case SW_COIN_1:
         case SW_COIN_2:
         case SW_COIN_3:
-          AddCoinToAudit(switchHit);
-          AddCredit(true, 1);
+          GlobalMachineState.WriteCoinToAudit(switchHit);
+          GlobalMachineState.IncreaseCredits(true, 1);
           break;
         case SW_CREDIT_BUTTON:
-          if (CurrentBallInPlay < 2) {
-            // If we haven't finished the first ball, we can add players
-            AddPlayer();
-          } else {
-            // If the first ball is over, pressing start again resets the game
-            if (Credits >= 1 || FreePlayMode) {
-              if (!FreePlayMode) {
-                Credits -= 1;
-                BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
-                BSOS_SetDisplayCredits(Credits);
-              }
-              returnState = MACHINE_STATE_INIT_GAMEPLAY;
-            }
-          }
           if (DEBUG_MESSAGES) {
             Serial.write("Start game button pressed\n\r");
+          }
+
+          if (GlobalMachineState.GetCurrentBallInPlay() == 1) {
+            GlobalMachineState.IncrementNumberOfPlayers();
+          } else {
+            returnState = GlobalMachineState.ResetGame();
           }
           break;
       }
@@ -184,13 +168,13 @@ int GameMode::RunGamePlayMode(int curState, boolean curStateChanged) {
       switch (switchHit) {
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
-          SetLastSelfTestChangedTime(CurrentTime);
+          SetLastSelfTestChangedTime(currentTime);
           break;
         case SW_COIN_1:
         case SW_COIN_2:
         case SW_COIN_3:
-          AddCoinToAudit(switchHit);
-          AddCredit(true, 1);
+          GlobalMachineState.WriteCoinToAudit(switchHit);
+          GlobalMachineState.IncreaseCredits(true, 1);
           break;
       }
 

@@ -15,30 +15,31 @@ int RunAttractState(int curState, boolean curStateChanged) {
 
   byte switchHit;
 
-  unsigned long seed = CurrentTime / 250;
+  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
+  unsigned long seed = currentTime / 250;
   if (seed != LastFlash) {
     LastFlash = seed;
-    if (((CurrentTime / 250) % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
-    if (((CurrentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
-    if (((CurrentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+    if (((currentTime / 250) % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
+    if (((currentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
+    if (((currentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
   }
 
   switchHit = BSOS_PullFirstFromSwitchStack();
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
     case(SW_CREDIT_BUTTON):
-      if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      if (GlobalMachineState.ResetNumberOfPlayers()) returnState = MACHINE_STATE_INIT_GAMEPLAY;
       break;
     case SW_COIN_1:
     case SW_COIN_2:
     case SW_COIN_3:
-      AddCoinToAudit(switchHit);
-      AddCredit(true, 1);
+      GlobalMachineState.WriteCoinToAudit(switchHit);
+      GlobalMachineState.IncreaseCredits(true, 1);
       break;
     case SW_SELF_TEST_SWITCH:
-      if (CurrentTime - GetLastSelfTestChangedTime() > 250) {
+      if (currentTime - GetLastSelfTestChangedTime() > 250) {
         returnState = MACHINE_STATE_TEST_LIGHTS;
-        SetLastSelfTestChangedTime(CurrentTime);
+        SetLastSelfTestChangedTime(currentTime);
       }
       break;
     }
