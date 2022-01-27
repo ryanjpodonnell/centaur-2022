@@ -36,7 +36,7 @@ int GameMode::manageGameMode() {
       }
 
       if (gameModeEndTime_ != 0 && currentTime > gameModeEndTime_) {
-        ShowPlayerScores(0xFF, false, false);
+        g_displayHelper.showPlayerScores(0xFF, false, false);
       }
       break;
   }
@@ -57,7 +57,7 @@ int GameMode::manageGameMode() {
           g_machineState.increaseScore(ScoreAdditionAnimation);
           ScoreAdditionAnimationStartTime = 0;
           ScoreAdditionAnimation = 0;
-          ShowPlayerScores(0xFF, false, false);
+          g_displayHelper.showPlayerScores(0xFF, false, false);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
           if (!BallSaveUsed && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
             BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
@@ -66,7 +66,7 @@ int GameMode::manageGameMode() {
             ballTimeInTrough_ = currentTime;
             returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
           } else {
-            ShowPlayerScores(0xFF, false, false);
+            g_displayHelper.showPlayerScores(0xFF, false, false);
 
             returnState = MACHINE_STATE_COUNTDOWN_BONUS;
           }
@@ -95,7 +95,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
     returnState = manageGameMode();
   } else if (curState == MACHINE_STATE_COUNTDOWN_BONUS) {
     returnState = CountdownBonus(curStateChanged);
-    ShowPlayerScores(0xFF, false, false);
+    g_displayHelper.showPlayerScores(0xFF, false, false);
   } else if (curState == MACHINE_STATE_BALL_OVER) {
     BSOS_SetDisplayCredits(Credits);
 

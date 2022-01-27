@@ -120,7 +120,7 @@ int MachineState::initGamePlay() {
   currentBallInPlay_ = 1;
   currentNumPlayers_ = 1;
   currentPlayer_ = 0;
-  ShowPlayerScores(0xFF, false, false);
+  g_displayHelper.showPlayerScores(0xFF, false, false);
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }

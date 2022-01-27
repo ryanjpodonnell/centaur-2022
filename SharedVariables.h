@@ -60,7 +60,8 @@ extern unsigned long LastRemainingAnimatedScoreShown;
 extern unsigned long ScoreAdditionAnimation;
 extern unsigned long ScoreAdditionAnimationStartTime;
 
-extern MachineState g_machineState;
+extern DisplayHelper g_displayHelper;
 extern GameMode g_gameMode;
+extern MachineState g_machineState;
 
 #endif

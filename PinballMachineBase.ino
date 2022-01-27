@@ -48,16 +48,9 @@ unsigned long ScoreAdditionAnimation;
 unsigned long ScoreAdditionAnimationStartTime;
 
 
-/*********************************************************************
-    Machine State Variables
-*********************************************************************/
-MachineState g_machineState(MACHINE_STATE_ATTRACT);
-
-
-/*********************************************************************
-    Game Mode Variables
-*********************************************************************/
+DisplayHelper g_displayHelper;
 GameMode g_gameMode(GAME_MODE_INITIALIZE);
+MachineState g_machineState(MACHINE_STATE_ATTRACT);
 
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
