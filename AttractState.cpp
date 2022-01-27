@@ -15,7 +15,7 @@ int RunAttractState(int curState, boolean curStateChanged) {
 
   byte switchHit;
 
-  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
+  unsigned long currentTime = g_machineState.currentTime();
   unsigned long seed = currentTime / 250;
   if (seed != LastFlash) {
     LastFlash = seed;
@@ -28,13 +28,13 @@ int RunAttractState(int curState, boolean curStateChanged) {
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
     case(SW_CREDIT_BUTTON):
-      if (GlobalMachineState.ResetNumberOfPlayers()) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      if (g_machineState.resetNumberOfPlayers()) returnState = MACHINE_STATE_INIT_GAMEPLAY;
       break;
     case SW_COIN_1:
     case SW_COIN_2:
     case SW_COIN_3:
-      GlobalMachineState.WriteCoinToAudit(switchHit);
-      GlobalMachineState.IncreaseCredits(true, 1);
+      g_machineState.writeCoinToAudit(switchHit);
+      g_machineState.increaseCredits(true, 1);
       break;
     case SW_SELF_TEST_SWITCH:
       if (currentTime - GetLastSelfTestChangedTime() > 250) {

@@ -51,16 +51,16 @@ unsigned long ScoreAdditionAnimationStartTime;
 /*********************************************************************
     Machine State Variables
 *********************************************************************/
-MachineState GlobalMachineState(MACHINE_STATE_ATTRACT);
+MachineState g_machineState(MACHINE_STATE_ATTRACT);
 
 
 /*********************************************************************
     Game Mode Variables
 *********************************************************************/
-GameMode GlobalGameMode(GAME_MODE_INITIALIZE);
+GameMode g_gameMode(GAME_MODE_INITIALIZE);
 
 
-struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
+struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
   { SW_LEFT_SLINGSHOT, SOL_LEFT_SLINGSHOT, 4},
   { SW_LEFT_THUMPER_BUMPER, SOL_LEFT_THUMPER_BUMPER, 3},
@@ -75,7 +75,7 @@ void setup() {
   BSOS_SetupGameSwitches(
       NUM_SWITCHES_WITH_TRIGGERS,
       NUM_PRIORITY_SWITCHES_WITH_TRIGGERS,
-      SolenoidAssociatedSwitches
+      g_solenoidAssociatedSwitches
       );
 
   // Set up the chips and interrupts
@@ -87,31 +87,31 @@ void setup() {
   ReadStoredParameters();
   BSOS_SetCoinLockout((Credits >= MaximumCredits) ? true : false);
 
-  GlobalMachineState.SetScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
-  GlobalMachineState.SetScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);
-  GlobalMachineState.SetScore(BALLY_STERN_OS_MAJOR_VERSION, 2);
-  GlobalMachineState.SetScore(BALLY_STERN_OS_MINOR_VERSION, 3);
+  g_machineState.setScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
+  g_machineState.setScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);
+  g_machineState.setScore(BALLY_STERN_OS_MAJOR_VERSION, 2);
+  g_machineState.setScore(BALLY_STERN_OS_MINOR_VERSION, 3);
 }
 
 void loop() {
   BSOS_DataRead(0);
 
   unsigned long currentTime = millis();
-  GlobalMachineState.SetCurrentTime(currentTime);
+  g_machineState.setCurrentTime(currentTime);
 
-  byte machineState = GlobalMachineState.GetMachineState();
+  byte machineState = g_machineState.GetmachineState();
   byte newMachineState = machineState;
-  boolean machineStateChanged = GlobalMachineState.GetMachineStateChanged();
+  boolean machineStateChanged = g_machineState.machineStateChanged();
 
   if (machineState < 0) {
     newMachineState = RunSelfTest(machineState, machineStateChanged);
   } else if (machineState == MACHINE_STATE_ATTRACT) {
     newMachineState = RunAttractState(machineState, machineStateChanged);
   } else {
-    newMachineState = GlobalGameMode.RunGamePlayState(machineState, machineStateChanged);
+    newMachineState = g_gameMode.runGamePlayState(machineState, machineStateChanged);
   }
 
-  GlobalMachineState.SetMachineState(newMachineState);
+  g_machineState.SetmachineState(newMachineState);
 
   BSOS_ApplyFlashToLamps(currentTime);
   BSOS_UpdateTimedSolenoidStack(currentTime);

@@ -1,37 +1,37 @@
 #include "SharedVariables.h"
 
 MachineState::MachineState(byte id) {
-  currentPlayer = 0;
-  machineStateChanged = true;
-  machineStateId = id;
+  currentPlayer_ = 0;
+  machineStateChanged_ = true;
+  machineStateId_ = id;
 }
 
-boolean MachineState::GetMachineStateChanged() {
-  return machineStateChanged;
+boolean MachineState::machineStateChanged() {
+  return machineStateChanged_;
 }
 
-boolean MachineState::GetSamePlayerShootsAgain() {
-  return samePlayerShootsAgain;
+boolean MachineState::samePlayerShootsAgain() {
+  return samePlayerShootsAgain_;
 }
 
-boolean MachineState::IncrementNumberOfPlayers() {
+boolean MachineState::incrementNumberOfPlayers() {
   if (Credits < 1 && !FreePlayMode) return false;
-  if (currentNumPlayers >= 4) return false;
+  if (currentNumPlayers_ >= 4) return false;
 
-  currentNumPlayers += 1;
+  currentNumPlayers_ += 1;
 
-  BSOS_SetDisplay(currentNumPlayers - 1, 0);
-  BSOS_SetDisplayBlank(currentNumPlayers - 1, 0x30);
+  BSOS_SetDisplay(currentNumPlayers_ - 1, 0);
+  BSOS_SetDisplayBlank(currentNumPlayers_ - 1, 0x30);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
 }
 
-boolean MachineState::ResetNumberOfPlayers() {
+boolean MachineState::resetNumberOfPlayers() {
   if (Credits < 1 && !FreePlayMode) return false;
 
-  currentNumPlayers = 1;
+  currentNumPlayers_ = 1;
 
   BSOS_SetDisplay(0, 0);
   BSOS_SetDisplayBlank(0, 0x30);
@@ -41,41 +41,41 @@ boolean MachineState::ResetNumberOfPlayers() {
   return true;
 }
 
-byte MachineState::GetBonus() {
-  return bonuses[currentPlayer];
+byte MachineState::bonus() {
+  return bonuses_[currentPlayer_];
 }
 
-byte MachineState::GetBonusMultiplier() {
-  return bonusMultipliers[currentPlayer];
+byte MachineState::bonusMultiplier() {
+  return bonusMultipliers_[currentPlayer_];
 }
 
-byte MachineState::GetCurrentBallInPlay() {
-  return currentBallInPlay;
+byte MachineState::currentBallInPlay() {
+  return currentBallInPlay_;
 }
 
-byte MachineState::GetCurrentPlayer() {
-  return currentPlayer;
+byte MachineState::currentPlayer() {
+  return currentPlayer_;
 }
 
-byte MachineState::GetMachineState() {
-  return machineStateId;
+byte MachineState::GetmachineState() {
+  return machineStateId_;
 }
 
-byte MachineState::GetNumberOfPlayers() {
-  return currentNumPlayers;
+byte MachineState::numberOfPlayers() {
+  return currentNumPlayers_;
 }
 
-byte MachineState::IncrementCurrentPlayer() {
-  currentPlayer += 1;
+byte MachineState::incrementCurrentPlayer() {
+  currentPlayer_ += 1;
 
-  if (currentPlayer >= currentNumPlayers) {
-    currentPlayer = 0;
-    currentBallInPlay += 1;
+  if (currentPlayer_ >= currentNumPlayers_) {
+    currentPlayer_ = 0;
+    currentBallInPlay_ += 1;
   }
 
-  if (currentBallInPlay > BALLS_PER_GAME) {
-    for (int count = 0; count < currentNumPlayers; count++) {
-      BSOS_SetDisplay(count, scores[count], true, 2);
+  if (currentBallInPlay_ > BALLS_PER_GAME) {
+    for (int count = 0; count < currentNumPlayers_; count++) {
+      BSOS_SetDisplay(count, scores_[count], true, 2);
     }
 
     return MACHINE_STATE_INIT_GAMEPLAY;
@@ -84,7 +84,7 @@ byte MachineState::IncrementCurrentPlayer() {
   }
 }
 
-byte MachineState::ResetGame() {
+byte MachineState::resetGame() {
   if (FreePlayMode) {
     return MACHINE_STATE_INIT_GAMEPLAY;
   } else if (Credits >= 1 && !FreePlayMode) {
@@ -93,11 +93,11 @@ byte MachineState::ResetGame() {
     BSOS_SetDisplayCredits(Credits);
     return MACHINE_STATE_INIT_GAMEPLAY;
   } else {
-    return machineStateId;
+    return machineStateId_;
   }
 }
 
-int MachineState::InitGamePlay() {
+int MachineState::initGamePlay() {
   if (DEBUG_MESSAGES) {
     Serial.write("Starting game\n\r");
   }
@@ -106,31 +106,31 @@ int MachineState::InitGamePlay() {
   BSOS_EnableSolenoidStack();
   BSOS_TurnOffAllLamps();
 
-  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, currentTime + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime + 500);
+  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, currentTime_ + 500);
+  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
+  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
 
   for (int count = 0; count < 4; count++) {
-    bonusMultipliers[count] = 1;
-    bonuses[count] = 0;
+    bonusMultipliers_[count] = 1;
+    bonuses_[count] = 0;
   }
-  memset(scores, 0, 4 * sizeof(unsigned long));
+  memset(scores_, 0, 4 * sizeof(unsigned long));
 
-  samePlayerShootsAgain = false;
-  currentBallInPlay = 1;
-  currentNumPlayers = 1;
-  currentPlayer = 0;
+  samePlayerShootsAgain_ = false;
+  currentBallInPlay_ = 1;
+  currentNumPlayers_ = 1;
+  currentPlayer_ = 0;
   ShowPlayerScores(0xFF, false, false);
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }
 
-int MachineState::InitNewBall(bool curStateChanged, byte playerNum, int ballNum) {
+int MachineState::initNewBall(bool curStateChanged, byte playerNum, int ballNum) {
   if (curStateChanged) {
     ShowLamps(LAMP_COLLECTION_BONUS_ALL, true);
 
     BSOS_SetDisplayCredits(Credits, true);
-    samePlayerShootsAgain = false;
+    samePlayerShootsAgain_ = false;
 
     BSOS_SetDisplayBallInPlay(ballNum);
     BSOS_SetLampState(LAMP_TILT, 0);
@@ -139,19 +139,19 @@ int MachineState::InitNewBall(bool curStateChanged, byte playerNum, int ballNum)
       BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
     }
 
-    GlobalGameMode.SetGameMode(GAME_MODE_SKILL_SHOT);
+    g_gameMode.setGameMode(GAME_MODE_SKILL_SHOT);
 
     ExtraBallCollected = false;
 
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 600);
+      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
     }
 
     // Reset progress unless holdover awards
-    bonuses[currentPlayer] = 0;
-    bonusMultipliers[currentPlayer] = 1;
+    bonuses_[currentPlayer_] = 0;
+    bonusMultipliers_[currentPlayer_] = 1;
 
-    scoreMultiplier = 1;
+    scoreMultiplier_ = 1;
     ScoreAdditionAnimation = 0;
     ScoreAdditionAnimationStartTime = 0;
     BonusXAnimationStart = 0;
@@ -166,51 +166,51 @@ int MachineState::InitNewBall(bool curStateChanged, byte playerNum, int ballNum)
   }
 }
 
-unsigned long MachineState::GetCurrentTime() {
-  return currentTime;
+unsigned long MachineState::currentTime() {
+  return currentTime_;
 }
 
-unsigned long MachineState::GetLastTiltWarningTime() {
-  return lastTiltWarningTime;
+unsigned long MachineState::lastTiltWarningTime() {
+  return lastTiltWarningTime_;
 }
 
-unsigned long MachineState::GetScore(byte player) {
-  if (player == 0xFF) player = currentPlayer;
-  return scores[player];
+unsigned long MachineState::score(byte player) {
+  if (player == 0xFF) player = currentPlayer_;
+  return scores_[player];
 }
 
-void MachineState::AwardExtraBall() {
+void MachineState::awardExtraBall() {
   if (ExtraBallCollected) return;
 
   ExtraBallCollected = true;
-  samePlayerShootsAgain = true;
-  BSOS_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain);
+  samePlayerShootsAgain_ = true;
+  BSOS_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain_);
 }
 
-void MachineState::DecreaseBonus(byte amountToSubtract) {
-  bonuses[currentPlayer] -= amountToSubtract;
+void MachineState::decreaseBonus(byte amountToSubtract) {
+  bonuses_[currentPlayer_] -= amountToSubtract;
 }
 
-void MachineState::IncreaseBonus(byte amountToAdd) {
-  bonuses[currentPlayer] += amountToAdd;
-  if (bonuses[currentPlayer] >= MAX_DISPLAY_BONUS) {
-    bonuses[currentPlayer] = MAX_DISPLAY_BONUS;
+void MachineState::increaseBonus(byte amountToAdd) {
+  bonuses_[currentPlayer_] += amountToAdd;
+  if (bonuses_[currentPlayer_] >= MAX_DISPLAY_BONUS) {
+    bonuses_[currentPlayer_] = MAX_DISPLAY_BONUS;
   }
 }
 
-void MachineState::IncreaseBonusMultiplier() {
+void MachineState::increaseBonusMultiplier() {
   boolean soundPlayed = false;
-  if (bonusMultipliers[currentPlayer] < 5) {
-    bonusMultipliers[currentPlayer] += 1;
-    BonusXAnimationStart = currentTime;
+  if (bonusMultipliers_[currentPlayer_] < 5) {
+    bonusMultipliers_[currentPlayer_] += 1;
+    BonusXAnimationStart = currentTime_;
 
-    if (bonusMultipliers[currentPlayer] == 4) {
-      bonusMultipliers[currentPlayer] += 1;
+    if (bonusMultipliers_[currentPlayer_] == 4) {
+      bonusMultipliers_[currentPlayer_] += 1;
     }
   }
 }
 
-void MachineState::IncreaseCredits(boolean playSound, byte numToAdd) {
+void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
   if (Credits < MaximumCredits) {
     Credits += numToAdd;
     if (Credits > MaximumCredits) Credits = MaximumCredits;
@@ -223,43 +223,43 @@ void MachineState::IncreaseCredits(boolean playSound, byte numToAdd) {
   }
 }
 
-void MachineState::IncreaseScore(unsigned long amountToAdd) {
-  scores[currentPlayer] += amountToAdd;
+void MachineState::increaseScore(unsigned long amountToAdd) {
+  scores_[currentPlayer_] += amountToAdd;
 }
 
 
-void MachineState::SetBonus(byte value) {
-  bonuses[currentPlayer] = value;
+void MachineState::setBonus(byte value) {
+  bonuses_[currentPlayer_] = value;
 }
 
-void MachineState::SetCurrentTime(unsigned long value) {
-  currentTime = value;
+void MachineState::setCurrentTime(unsigned long value) {
+  currentTime_ = value;
 }
 
-void MachineState::SetLastTiltWarningTime(unsigned long value) {
-  lastTiltWarningTime = value;
+void MachineState::setLastTiltWarningTime(unsigned long value) {
+  lastTiltWarningTime_ = value;
 }
 
-void MachineState::SetMachineState(byte id) {
-  if (id != machineStateId) {
-    machineStateChanged = true;
+void MachineState::SetmachineState(byte id) {
+  if (id != machineStateId_) {
+    machineStateChanged_ = true;
   } else {
-    machineStateChanged = false;
+    machineStateChanged_ = false;
   }
 
-  machineStateId = id;
+  machineStateId_ = id;
 }
 
-void MachineState::SetNumberOfPlayers(byte value) {
-  currentNumPlayers = value;
+void MachineState::setNumberOfPlayers(byte value) {
+  currentNumPlayers_ = value;
 }
 
-void MachineState::SetScore(unsigned long value, byte player) {
-  if (player == 0xFF) player = currentPlayer;
-  scores[player] = value;
+void MachineState::setScore(unsigned long value, byte player) {
+  if (player == 0xFF) player = currentPlayer_;
+  scores_[player] = value;
 }
 
-void MachineState::WriteCoinToAudit(byte switchHit) {
+void MachineState::writeCoinToAudit(byte switchHit) {
   unsigned short coinAuditStartByte = 0;
 
   switch (switchHit) {

@@ -6,7 +6,7 @@
 #include "Display.h"
 #include "GameMode.h"
 #include "Lamps.h"
-#include "MachineState.h"
+#include "machineState.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include "Sound.h"
@@ -26,12 +26,6 @@ extern byte BallsPerGame;
 extern byte Credits;
 extern byte MaximumCredits;
 extern unsigned long HighScore;
-
-
-/*********************************************************************
-    Machine State Variables
-*********************************************************************/
-extern MachineState GlobalMachineState;
 
 
 /*********************************************************************
@@ -66,10 +60,7 @@ extern unsigned long LastRemainingAnimatedScoreShown;
 extern unsigned long ScoreAdditionAnimation;
 extern unsigned long ScoreAdditionAnimationStartTime;
 
-
-/*********************************************************************
-    Game Mode Variables
-*********************************************************************/
-extern GameMode GlobalGameMode;
+extern MachineState g_machineState;
+extern GameMode g_gameMode;
 
 #endif

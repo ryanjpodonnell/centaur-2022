@@ -14,7 +14,7 @@ boolean SolenoidCycle = true;
 
 int RunSelfTest(int curState, boolean curStateChanged) {
   int returnState = curState;
-  GlobalMachineState.SetNumberOfPlayers(0);
+  g_machineState.setNumberOfPlayers(0);
 
   if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
     returnState = RunBaseSelfTest(returnState, curStateChanged, SW_CREDIT_BUTTON, SW_SLAM);
@@ -39,7 +39,7 @@ int RunBaseSelfTest(
   boolean resetDoubleClick = false;
   unsigned short savedScoreStartByte = 0;
   unsigned short auditNumStartByte = 0;
-  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
+  unsigned long currentTime = g_machineState.currentTime();
 
   if (curSwitch==resetSwitch) {
     ResetHold = currentTime;

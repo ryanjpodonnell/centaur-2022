@@ -9,19 +9,18 @@
 
 class GameMode {
   private:
-    byte gameModeId;
-    unsigned long ballFirstSwitchHitTime;
-    unsigned long ballTimeInTrough;
-    unsigned long gameModeEndTime;
-    unsigned long gameModeStartTime;
+    byte gameModeId_;
+    unsigned long ballFirstSwitchHitTime_;
+    unsigned long ballTimeInTrough_;
+    unsigned long gameModeEndTime_;
+    unsigned long gameModeStartTime_;
 
   public:
     GameMode(byte id);
 
-    void SetGameMode(byte id);
-
-    int ManageGameMode();
-    int RunGamePlayState(int curState, boolean curStateChanged);
+    int  manageGameMode();
+    int  runGamePlayState(int curState, boolean curStateChanged);
+    void setGameMode(byte id);
 };
 
 #endif

@@ -1,11 +1,11 @@
 #include "SharedVariables.h"
 
 int CountdownBonus(boolean curStateChanged) {
-  unsigned long currentTime = GlobalMachineState.GetCurrentTime();
-  byte currentBonus = GlobalMachineState.GetBonus();
+  unsigned long currentTime = g_machineState.currentTime();
+  byte currentBonus = g_machineState.bonus();
 
   if (curStateChanged) {
-    GlobalMachineState.SetBonus(currentBonus);
+    g_machineState.setBonus(currentBonus);
 
     CountdownStartTime = currentTime;
     LastCountdownReportTime = CountdownStartTime;
@@ -16,12 +16,12 @@ int CountdownBonus(boolean curStateChanged) {
   if ((currentTime - LastCountdownReportTime) > countdownDelayTime) {
     if (currentBonus) {
       if (NumTiltWarnings <= MaxTiltWarnings) {
-        unsigned long bonusMultiplier = (unsigned long)GlobalMachineState.GetBonusMultiplier();
+        unsigned long bonusMultiplier = (unsigned long)g_machineState.bonusMultiplier();
         unsigned long bonusValue = bonusMultiplier * 1000;
-        GlobalMachineState.IncreaseScore(bonusValue);
+        g_machineState.increaseScore(bonusValue);
       }
 
-      GlobalMachineState.DecreaseBonus(1);
+      g_machineState.decreaseBonus(1);
 
     } else if (BonusCountDownEndTime == 0xFFFFFFFF) {
       BonusCountDownEndTime = currentTime + 1000;
