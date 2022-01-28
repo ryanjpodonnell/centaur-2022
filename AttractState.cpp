@@ -7,28 +7,58 @@ Attract::Attract() {
 }
 
 byte Attract::run(byte curState, boolean curStateChanged) {
+  if (curStateChanged) handleNewState();
+  handleLightShow();
+
   byte returnState = curState;
+  byte switchHit   = BSOS_PullFirstFromSwitchStack();
 
-  if (curStateChanged) {
-    if (DEBUG_MESSAGES) {
-      Serial.write("Entering Attract State\n\r");
+  while (switchHit != SWITCH_STACK_EMPTY) {
+    switch(switchHit) {
+    case(SW_CREDIT_BUTTON):
+      if (g_machineState.resetNumberOfPlayers()) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      break;
+    case SW_COIN_1:
+    case SW_COIN_2:
+    case SW_COIN_3:
+      g_machineState.writeCoinToAudit(switchHit);
+      g_machineState.increaseCredits(true, 1);
+      break;
+    case SW_SELF_TEST_SWITCH:
+      if (g_machineState.currentTime() - g_selfTestAndAudit.lastSelfTestChangedTime() > 250) {
+        returnState = MACHINE_STATE_TEST_LIGHTS;
+        g_selfTestAndAudit.setLastSelfTestChangedTime(g_machineState.currentTime());
+      }
+      break;
     }
-    BSOS_DisableSolenoidStack();
-    BSOS_TurnOffAllLamps();
-    BSOS_SetDisableFlippers(true);
-    BSOS_SetDisplayCredits(Credits, true);
 
-    g_machineState.setScore(0, 0);
-    g_machineState.setScore(0, 1);
-    g_machineState.setScore(0, 2);
-    g_machineState.setScore(0, 3);
-    g_displayHelper.showPlayerScores(0xFF, false, false);
+    switchHit = BSOS_PullFirstFromSwitchStack();
   }
 
-  byte switchHit;
+  return returnState;
+}
+
+void Attract::handleNewState() {
+  if (DEBUG_MESSAGES) {
+    Serial.write("Entering Attract State\n\r");
+  }
+
+  BSOS_DisableSolenoidStack();
+  BSOS_TurnOffAllLamps();
+  BSOS_SetDisableFlippers(true);
+  BSOS_SetDisplayCredits(Credits, true);
+
+  g_machineState.setScore(0, 0);
+  g_machineState.setScore(0, 1);
+  g_machineState.setScore(0, 2);
+  g_machineState.setScore(0, 3);
+  g_displayHelper.showPlayerScores(0xFF, false, false);
+}
+
+void Attract::handleLightShow() {
   unsigned long currentTime = g_machineState.currentTime();
-  unsigned long seed = currentTime / 250;        // .25 seconds
-  unsigned long cycleSeed = currentTime / 10000; // 10 seconds
+  unsigned long seed        = currentTime / 250;   // .25 seconds
+  unsigned long cycleSeed   = currentTime / 10000; // 10 seconds
 
   if (cycleSeed != currentFlashCycle_) {
     currentFlashCycle_ = cycleSeed;
@@ -47,29 +77,4 @@ byte Attract::run(byte curState, boolean curStateChanged) {
       if ((seed % 3) == 2) ShowLamp(LAMP_40K_BONUS, true);
     }
   }
-
-  switchHit = BSOS_PullFirstFromSwitchStack();
-  while (switchHit != SWITCH_STACK_EMPTY) {
-    switch(switchHit) {
-    case(SW_CREDIT_BUTTON):
-      if (g_machineState.resetNumberOfPlayers()) returnState = MACHINE_STATE_INIT_GAMEPLAY;
-      break;
-    case SW_COIN_1:
-    case SW_COIN_2:
-    case SW_COIN_3:
-      g_machineState.writeCoinToAudit(switchHit);
-      g_machineState.increaseCredits(true, 1);
-      break;
-    case SW_SELF_TEST_SWITCH:
-      if (currentTime - g_selfTestAndAudit.lastSelfTestChangedTime() > 250) {
-        returnState = MACHINE_STATE_TEST_LIGHTS;
-        g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
-      }
-      break;
-    }
-
-    switchHit = BSOS_PullFirstFromSwitchStack();
-  }
-
-  return returnState;
 }

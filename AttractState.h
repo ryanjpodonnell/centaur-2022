@@ -7,6 +7,9 @@ class Attract {
     unsigned long lastFlash_;
     unsigned long stateStatedTime_;
 
+    void handleLightShow();
+    void handleNewState();
+
   public:
     Attract();
 

@@ -8,6 +8,8 @@ class Debug {
   private:
     unsigned long stateStatedTime_;
 
+    void handleNewState();
+
   public:
     Debug();
 
