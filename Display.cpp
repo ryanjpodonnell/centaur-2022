@@ -36,11 +36,11 @@ byte DisplayHelper::numberOfDigits(unsigned long score) {
   return numDigits;
 }
 
-void DisplayHelper::overrideScoreDisplay(byte displayNum, unsigned long value, boolean animate) {
+void DisplayHelper::overrideScoreDisplay(byte displayNum, unsigned long score, boolean animate) {
   scoreOverrideStatus_[displayNum] = true;
   if (animate) scoreOverrideStatus_[displayNum] = true;
 
-  scoreOverrideValue_[displayNum] = value;
+  scoreOverrideValue_[displayNum] = score;
 }
 
 void DisplayHelper::startScoreAnimation(unsigned long scoreToAnimate) {
@@ -53,9 +53,9 @@ void DisplayHelper::startScoreAnimation(unsigned long scoreToAnimate) {
   LastRemainingAnimatedScoreShown = 0;
 }
 
-void DisplayHelper::showAnimatedPlayerScore(byte displayToUpdate, unsigned long value) {
+void DisplayHelper::showAnimatedPlayerScore(byte playerNumber, unsigned long score) {
   if (overrideAnimationSeed_ != lastTimeOverrideAnimated_) {
-    byte numDigits = numberOfDigits(value);
+    byte numDigits = numberOfDigits(score);
     updateLastTimeAnimated_ = true;
 
     byte shiftDigits = (overrideAnimationSeed_) % (((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits) + ((BALLY_STERN_OS_NUM_DIGITS - 1) - numDigits));
@@ -63,20 +63,61 @@ void DisplayHelper::showAnimatedPlayerScore(byte displayToUpdate, unsigned long 
     byte digitCount;
     byte displayMask = getDisplayMask(numDigits);
     for (digitCount = 0; digitCount < shiftDigits; digitCount++) {
-      value *= 10;
+      score *= 10;
       displayMask = displayMask >> 1;
     }
-    BSOS_SetDisplayBlank(displayToUpdate, 0x00);
-    BSOS_SetDisplay(displayToUpdate, value, false);
-    BSOS_SetDisplayBlank(displayToUpdate, displayMask);
+    BSOS_SetDisplayBlank(playerNumber, 0x00);
+    BSOS_SetDisplay(playerNumber, score, false);
+    BSOS_SetDisplayBlank(playerNumber, displayMask);
   }
 }
 
-void DisplayHelper::showPlayerScores(byte displayToUpdate, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
-  if (displayToUpdate == 0xFF) unsigned long scoreOverrideStatus_[] = { false, false, false, false };
+void DisplayHelper::flashScore(byte playerNumber, unsigned long score) {
+  unsigned long currentTime = g_machineState.currentTime();
+  unsigned long flashSeed = currentTime / 250;
+
+  if (flashSeed != LastFlashOrDash) {
+    LastFlashOrDash = flashSeed;
+
+    if (((currentTime / 250) % 2) == 0) BSOS_SetDisplayBlank(playerNumber, 0x00);
+    else BSOS_SetDisplay(playerNumber, score, true, 2);
+  }
+}
+
+void DisplayHelper::dashScore(byte playerNumber, unsigned long score) {
+  unsigned long currentTime = g_machineState.currentTime();
+  unsigned long dashSeed = currentTime / 50;
+  byte          displayMask = 0x7F;
+
+  if (dashSeed != LastFlashOrDash) {
+    LastFlashOrDash = dashSeed;
+    byte dashPhase = (currentTime / 60) % 36;
+    byte numDigits = magnitudeOfScore(score);
+
+    if (dashPhase < 12) {
+      displayMask = getDisplayMask((numDigits == 0) ? 2 : numDigits);
+      if (dashPhase < 7) {
+        for (byte maskCount = 0; maskCount < dashPhase; maskCount++) {
+          displayMask &= ~(0x01 << maskCount);
+        }
+      } else {
+        for (byte maskCount = 12; maskCount > dashPhase; maskCount--) {
+          displayMask &= ~(0x20 >> (maskCount - dashPhase - 1));
+        }
+      }
+      BSOS_SetDisplay(playerNumber, score);
+      BSOS_SetDisplayBlank(playerNumber, displayMask);
+    } else {
+      BSOS_SetDisplay(playerNumber, score, true, 2);
+    }
+  }
+}
+
+void DisplayHelper::showPlayerScores(byte playerNumber, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
+  if (playerNumber == 0xFF) unsigned long scoreOverrideStatus_[] = { false, false, false, false };
   byte          displayMask = 0x7F;
   byte          scrollPhaseChanged = false;
-  unsigned long displayScore = 0;
+  unsigned long playerScore = 0;
   unsigned long currentTime = g_machineState.currentTime();
   unsigned long timeSinceLastScoreChange = currentTime - lastTimeScoreChanged_;
 
@@ -89,54 +130,53 @@ void DisplayHelper::showPlayerScores(byte displayToUpdate, boolean flashCurrent,
     scrollPhaseChanged = true;
   }
 
-  for (byte scoreCount = 0; scoreCount < 4; scoreCount++) {
-    if (allScoresShowValue == 0 && scoreOverrideStatus_[scoreCount]) {
-      displayScore = scoreOverrideValue_[scoreCount];
-      if (displayScore == DISPLAY_OVERRIDE_BLANK_SCORE) {
-        BSOS_SetDisplayBlank(scoreCount, 0);
+  for (byte playerIterator = 0; playerIterator < 4; playerIterator++) {
+    if (allScoresShowValue == 0 && scoreOverrideStatus_[playerIterator]) {
+      playerScore = scoreOverrideValue_[playerIterator];
+      if (playerScore == DISPLAY_OVERRIDE_BLANK_SCORE) {
+        BSOS_SetDisplayBlank(playerIterator, 0);
       } else {
-        byte numDigits = numberOfDigits(displayScore);
-        if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1) && scoreOverrideAnimationStatus_[scoreCount]) {
-          showAnimatedPlayerScore(scoreCount, displayScore);
+        byte numDigits = numberOfDigits(playerScore);
+        if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1) && scoreOverrideAnimationStatus_[playerIterator]) {
+          showAnimatedPlayerScore(playerIterator, playerScore);
         } else {
-          BSOS_SetDisplay(scoreCount, displayScore, true, 1);
+          BSOS_SetDisplay(playerIterator, playerScore, true, 1);
         }
       }
     } else {
-      // No override, update scores designated by displayToUpdate
-      //CurrentScores[CurrentPlayer] = CurrentScoreOfCurrentPlayer;
-      if (allScoresShowValue == 0) displayScore = g_machineState.score(scoreCount);
-      else displayScore = allScoresShowValue;
+      // No override, update scores designated by playerNumber
+      if (allScoresShowValue == 0) playerScore = g_machineState.score(playerIterator);
+      else playerScore = allScoresShowValue;
 
       // If we're updating all displays, or the one currently matching the loop, or if we have to scroll
-      if (displayToUpdate == 0xFF || displayToUpdate == scoreCount || displayScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
+      if (playerNumber == 0xFF || playerNumber == playerIterator || playerScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
 
         // Don't show this score if it's not a current player score (even if it's scrollable)
-        if (displayToUpdate == 0xFF && (scoreCount >= g_machineState.numberOfPlayers() && g_machineState.numberOfPlayers() != 0) && allScoresShowValue == 0) {
-          BSOS_SetDisplayBlank(scoreCount, 0x00);
+        if (playerNumber == 0xFF && (playerIterator >= g_machineState.numberOfPlayers() && g_machineState.numberOfPlayers() != 0) && allScoresShowValue == 0) {
+          BSOS_SetDisplayBlank(playerIterator, 0x00);
           continue;
         }
 
-        if (displayScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
+        if (playerScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
           // Score needs to be scrolled
           if ((currentTime - lastTimeScoreChanged_) < 4000) {
-            BSOS_SetDisplay(scoreCount, displayScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
-            BSOS_SetDisplayBlank(scoreCount, BALLY_STERN_OS_ALL_DIGITS_MASK);
+            BSOS_SetDisplay(playerIterator, playerScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
+            BSOS_SetDisplayBlank(playerIterator, BALLY_STERN_OS_ALL_DIGITS_MASK);
           } else {
             // Scores are scrolled 10 digits and then we wait for 6
             if (scrollPhase < 11 && scrollPhaseChanged) {
-              byte numDigits = magnitudeOfScore(displayScore);
+              byte numDigits = magnitudeOfScore(playerScore);
 
               // Figure out top part of score
-              unsigned long tempScore = displayScore;
+              unsigned long tempScore = playerScore;
               if (scrollPhase < BALLY_STERN_OS_NUM_DIGITS) {
                 displayMask = BALLY_STERN_OS_ALL_DIGITS_MASK;
                 for (byte scrollCount = 0; scrollCount < scrollPhase; scrollCount++) {
-                  displayScore = (displayScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1)) * 10;
+                  playerScore = (playerScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1)) * 10;
                   displayMask = displayMask >> 1;
                 }
               } else {
-                displayScore = 0;
+                playerScore = 0;
                 displayMask = 0x00;
               }
 
@@ -147,45 +187,18 @@ void DisplayHelper::showPlayerScores(byte displayToUpdate, boolean flashCurrent,
                   tempScore /= 10;
                 }
                 displayMask |= getDisplayMask(magnitudeOfScore(tempScore));
-                displayScore += tempScore;
+                playerScore += tempScore;
               }
-              BSOS_SetDisplayBlank(scoreCount, displayMask);
-              BSOS_SetDisplay(scoreCount, displayScore);
+              BSOS_SetDisplayBlank(playerIterator, displayMask);
+              BSOS_SetDisplay(playerIterator, playerScore);
             }
           }
         } else {
           if (flashCurrent) {
-            unsigned long flashSeed = currentTime / 250;
-            if (flashSeed != LastFlashOrDash) {
-              LastFlashOrDash = flashSeed;
-              if (((currentTime / 250) % 2) == 0) BSOS_SetDisplayBlank(scoreCount, 0x00);
-              else BSOS_SetDisplay(scoreCount, displayScore, true, 2);
-            }
+            flashScore(playerIterator, playerScore);
           } else if (dashCurrent) {
-            unsigned long dashSeed = currentTime / 50;
-            if (dashSeed != LastFlashOrDash) {
-              LastFlashOrDash = dashSeed;
-              byte dashPhase = (currentTime / 60) % 36;
-              byte numDigits = magnitudeOfScore(displayScore);
-              if (dashPhase < 12) {
-                displayMask = getDisplayMask((numDigits == 0) ? 2 : numDigits);
-                if (dashPhase < 7) {
-                  for (byte maskCount = 0; maskCount < dashPhase; maskCount++) {
-                    displayMask &= ~(0x01 << maskCount);
-                  }
-                } else {
-                  for (byte maskCount = 12; maskCount > dashPhase; maskCount--) {
-                    displayMask &= ~(0x20 >> (maskCount - dashPhase - 1));
-                  }
-                }
-                BSOS_SetDisplay(scoreCount, displayScore);
-                BSOS_SetDisplayBlank(scoreCount, displayMask);
-              } else {
-                BSOS_SetDisplay(scoreCount, displayScore, true, 2);
-              }
-            }
           } else {
-            BSOS_SetDisplay(scoreCount, displayScore, true, 2);
+            BSOS_SetDisplay(playerIterator, playerScore, true, 2);
           }
         }
       } // End if this display should be updated
