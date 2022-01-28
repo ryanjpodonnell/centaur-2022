@@ -86,6 +86,8 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
   byte currentPlayer = g_machineState.currentPlayer();
   byte currentBallInPlay = g_machineState.currentBallInPlay();
 
+  g_displayHelper.showPlayerScores(currentPlayer, false, false);
+
   // Very first time into gameplay loop
   if (curState == MACHINE_STATE_INIT_GAMEPLAY) {
     returnState = g_machineState.initGamePlay();
@@ -138,8 +140,13 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
           break;
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
-          g_machineState.increaseScore(10);
+          g_machineState.increaseScore(1);
           if (ballFirstSwitchHitTime_ == 0) ballFirstSwitchHitTime_ = currentTime;
+          break;
+        case SW_TOP_RIGHT_LANE:
+        case SW_TOP_MIDDLE_LANE:
+        case SW_TOP_LEFT_LANE:
+          g_machineState.increaseScore(12345678);
           break;
         case SW_COIN_1:
         case SW_COIN_2:

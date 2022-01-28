@@ -4,17 +4,15 @@ DisplayHelper::DisplayHelper() {
   lastScrollPhase_ = 0;
   lastTimeOverrideAnimated_ = 0;
   lastTimeScoreChanged_ = 0;
-  scoreOverrideStatus_ = 0;
-  scoreOverrideValue_[0] = 0;
-  scoreOverrideValue_[1] = 0;
-  scoreOverrideValue_[2] = 0;
-  scoreOverrideValue_[3] = 0;
+  unsigned long scoreOverrideValue_[] = { 0, 0, 0, 0 };
+  unsigned long scoreOverrideStatus_[] = { false, false, false, false };
+  unsigned long scoreOverrideAnimationStatus_[] = { false, false, false, false };
 }
 
 byte DisplayHelper::getDisplayMask(byte numDigits) {
   byte displayMask = 0;
   for (byte digitCount = 0; digitCount < numDigits; digitCount++) {
-    displayMask |= (0x20 >> digitCount);
+    displayMask |= (0x40 >> digitCount);
   }
   return displayMask;
 }
@@ -22,19 +20,26 @@ byte DisplayHelper::getDisplayMask(byte numDigits) {
 byte DisplayHelper::magnitudeOfScore(unsigned long score) {
   if (score == 0) return 0;
 
-  byte retval = 0;
+  byte magnitudeOfScore = 0;
   while (score > 0) {
     score = score / 10;
-    retval += 1;
+    magnitudeOfScore += 1;
   }
-  return retval;
+
+  return magnitudeOfScore;
+}
+
+byte DisplayHelper::numberOfDigits(unsigned long score) {
+  byte numDigits = magnitudeOfScore(score);
+  if (numDigits == 0) return 1;
+
+  return numDigits;
 }
 
 void DisplayHelper::overrideScoreDisplay(byte displayNum, unsigned long value, boolean animate) {
-  if (displayNum > 3) return;
-  scoreOverrideStatus_ |= (0x10 << displayNum);
-  if (animate) scoreOverrideStatus_ |= (0x01 << displayNum);
-  else scoreOverrideStatus_ &= ~(0x01 << displayNum);
+  scoreOverrideStatus_[displayNum] = true;
+  if (animate) scoreOverrideStatus_[displayNum] = true;
+
   scoreOverrideValue_[displayNum] = value;
 }
 
@@ -48,54 +53,55 @@ void DisplayHelper::startScoreAnimation(unsigned long scoreToAnimate) {
   LastRemainingAnimatedScoreShown = 0;
 }
 
+void DisplayHelper::showAnimatedPlayerScore(byte displayToUpdate, unsigned long value) {
+  if (overrideAnimationSeed_ != lastTimeOverrideAnimated_) {
+    byte numDigits = numberOfDigits(value);
+    updateLastTimeAnimated_ = true;
+
+    byte shiftDigits = (overrideAnimationSeed_) % (((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits) + ((BALLY_STERN_OS_NUM_DIGITS - 1) - numDigits));
+    if (shiftDigits >= ((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits)) shiftDigits = (BALLY_STERN_OS_NUM_DIGITS - numDigits) * 2 - shiftDigits;
+    byte digitCount;
+    byte displayMask = getDisplayMask(numDigits);
+    for (digitCount = 0; digitCount < shiftDigits; digitCount++) {
+      value *= 10;
+      displayMask = displayMask >> 1;
+    }
+    BSOS_SetDisplayBlank(displayToUpdate, 0x00);
+    BSOS_SetDisplay(displayToUpdate, value, false);
+    BSOS_SetDisplayBlank(displayToUpdate, displayMask);
+  }
+}
+
 void DisplayHelper::showPlayerScores(byte displayToUpdate, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
-  if (displayToUpdate == 0xFF) scoreOverrideStatus_ = 0;
-
-  unsigned long currentTime = g_machineState.currentTime();
-  byte displayMask = 0x3F;
+  if (displayToUpdate == 0xFF) unsigned long scoreOverrideStatus_[] = { false, false, false, false };
+  byte          displayMask = 0x7F;
+  byte          scrollPhaseChanged = false;
   unsigned long displayScore = 0;
-  unsigned long overrideAnimationSeed = currentTime / 250;
-  byte scrollPhaseChanged = false;
+  unsigned long currentTime = g_machineState.currentTime();
+  unsigned long timeSinceLastScoreChange = currentTime - lastTimeScoreChanged_;
 
-  byte scrollPhase = ((currentTime - lastTimeScoreChanged_) / 250) % 16;
+  overrideAnimationSeed_  = currentTime / 250;
+  updateLastTimeAnimated_ = false;
+
+  byte scrollPhase = (timeSinceLastScoreChange / 250) % 16;
   if (scrollPhase != lastScrollPhase_) {
     lastScrollPhase_ = scrollPhase;
     scrollPhaseChanged = true;
   }
 
-  boolean updateLastTimeAnimated = false;
-
   for (byte scoreCount = 0; scoreCount < 4; scoreCount++) {
-
-    // If this display is currently being overriden, then we should update it
-    if (allScoresShowValue == 0 && (scoreOverrideStatus_ & (0x10 << scoreCount))) {
+    if (allScoresShowValue == 0 && scoreOverrideStatus_[scoreCount]) {
       displayScore = scoreOverrideValue_[scoreCount];
-      if (displayScore != DISPLAY_OVERRIDE_BLANK_SCORE) {
-        byte numDigits = magnitudeOfScore(displayScore);
-        if (numDigits == 0) numDigits = 1;
-        if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1) && (scoreOverrideStatus_ & (0x01 << scoreCount))) {
-          // This score is going to be animated (back and forth)
-          if (overrideAnimationSeed != lastTimeOverrideAnimated_) {
-            updateLastTimeAnimated = true;
-            byte shiftDigits = (overrideAnimationSeed) % (((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits) + ((BALLY_STERN_OS_NUM_DIGITS - 1) - numDigits));
-            if (shiftDigits >= ((BALLY_STERN_OS_NUM_DIGITS + 1) - numDigits)) shiftDigits = (BALLY_STERN_OS_NUM_DIGITS - numDigits) * 2 - shiftDigits;
-            byte digitCount;
-            displayMask = getDisplayMask(numDigits);
-            for (digitCount = 0; digitCount < shiftDigits; digitCount++) {
-              displayScore *= 10;
-              displayMask = displayMask >> 1;
-            }
-            BSOS_SetDisplayBlank(scoreCount, 0x00);
-            BSOS_SetDisplay(scoreCount, displayScore, false);
-            BSOS_SetDisplayBlank(scoreCount, displayMask);
-          }
+      if (displayScore == DISPLAY_OVERRIDE_BLANK_SCORE) {
+        BSOS_SetDisplayBlank(scoreCount, 0);
+      } else {
+        byte numDigits = numberOfDigits(displayScore);
+        if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1) && scoreOverrideAnimationStatus_[scoreCount]) {
+          showAnimatedPlayerScore(scoreCount, displayScore);
         } else {
           BSOS_SetDisplay(scoreCount, displayScore, true, 1);
         }
-      } else {
-        BSOS_SetDisplayBlank(scoreCount, 0);
       }
-
     } else {
       // No override, update scores designated by displayToUpdate
       //CurrentScores[CurrentPlayer] = CurrentScoreOfCurrentPlayer;
@@ -117,7 +123,6 @@ void DisplayHelper::showPlayerScores(byte displayToUpdate, boolean flashCurrent,
             BSOS_SetDisplay(scoreCount, displayScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
             BSOS_SetDisplayBlank(scoreCount, BALLY_STERN_OS_ALL_DIGITS_MASK);
           } else {
-
             // Scores are scrolled 10 digits and then we wait for 6
             if (scrollPhase < 11 && scrollPhaseChanged) {
               byte numDigits = magnitudeOfScore(displayScore);
@@ -187,7 +192,7 @@ void DisplayHelper::showPlayerScores(byte displayToUpdate, boolean flashCurrent,
     } // End on non-overridden
   } // End loop on scores
 
-  if (updateLastTimeAnimated) {
-    lastTimeOverrideAnimated_ = overrideAnimationSeed;
+  if (updateLastTimeAnimated_) {
+    lastTimeOverrideAnimated_ = overrideAnimationSeed_;
   }
 }
