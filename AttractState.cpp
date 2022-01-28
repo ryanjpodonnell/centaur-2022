@@ -57,7 +57,7 @@ void Attract::handleNewState() {
 
 void Attract::handleLightShow() {
   unsigned long currentTime = g_machineState.currentTime();
-  unsigned long seed        = currentTime / 250;   // .25 seconds
+  unsigned long seed        = currentTime / 100;   // .10 seconds
   unsigned long cycleSeed   = currentTime / 10000; // 10 seconds
 
   if (cycleSeed != currentFlashCycle_) {
@@ -67,18 +67,22 @@ void Attract::handleLightShow() {
   if (seed != lastFlash_) {
     lastFlash_ = seed;
 
-    byte step = 0;
+    byte numberOfSteps = 9;
+    byte currentStep = 0;
     if (currentFlashCycle_ % 2 == 0) {
-      step = seed % 6;
+      currentStep = seed % numberOfSteps;
     } else {
-      step = 5 - (seed % 6);
+      currentStep = numberOfSteps - ((seed % numberOfSteps) + 1);
     }
 
-    if (step == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, true);
-    if (step == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
-    if (step == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
-    if (step == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_4, true);
-    if (step == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_5, true);
-    if (step == 5) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_6, true);
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, true);
+    if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
+    if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+    if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_4, true);
+    if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_5, true);
+    if (currentStep == 5) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_6, true);
+    if (currentStep == 6) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_7, true);
+    if (currentStep == 7) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_8, true);
+    if (currentStep == 8) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_9, true);
   }
 }
