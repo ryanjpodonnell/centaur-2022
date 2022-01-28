@@ -9,6 +9,7 @@ class DisplayHelper {
     boolean       scoreOverrideStatus_[4];
     boolean       updateLastTimeAnimated_;
     byte          lastScrollPhase_;
+    unsigned long lastFlashOrDash_;
     unsigned long lastTimeOverrideAnimated_;
     unsigned long lastTimeScoreChanged_;
     unsigned long overrideAnimationSeed_;
@@ -17,8 +18,9 @@ class DisplayHelper {
     byte getDisplayMask(byte numDigits);
     byte magnitudeOfScore(unsigned long score);
     byte numberOfDigits(unsigned long score);
-    void flashScore(byte playerNumber, unsigned long score);
     void dashScore(byte playerNumber, unsigned long score);
+    void flashScore(byte playerNumber, unsigned long score);
+    void scrollScore(byte playerNumber, unsigned long score);
     void overrideScoreDisplay(byte playerNumber, unsigned long score, boolean animate);
     void showAnimatedPlayerScore(byte playerNumber, unsigned long score);
 

@@ -55,7 +55,6 @@ extern unsigned long BonusXAnimationStart;
 /*********************************************************************
     Display Variables
 *********************************************************************/
-extern unsigned long LastFlashOrDash;
 extern unsigned long LastRemainingAnimatedScoreShown;
 extern unsigned long ScoreAdditionAnimation;
 extern unsigned long ScoreAdditionAnimationStartTime;

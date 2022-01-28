@@ -42,7 +42,6 @@ unsigned long BonusXAnimationStart;
 /*********************************************************************
     Display Variables
 *********************************************************************/
-unsigned long LastFlashOrDash = 0;
 unsigned long LastRemainingAnimatedScoreShown;
 unsigned long ScoreAdditionAnimation;
 unsigned long ScoreAdditionAnimationStartTime;

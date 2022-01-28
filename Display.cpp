@@ -1,11 +1,12 @@
 #include "SharedVariables.h"
 
 DisplayHelper::DisplayHelper() {
-  lastScrollPhase_ = 0;
-  lastTimeOverrideAnimated_ = 0;
-  lastTimeScoreChanged_ = 0;
-  unsigned long scoreOverrideValue_[] = { 0, 0, 0, 0 };
-  unsigned long scoreOverrideStatus_[] = { false, false, false, false };
+  lastFlashOrDash_                              = 0;
+  lastScrollPhase_                              = 0;
+  lastTimeOverrideAnimated_                     = 0;
+  lastTimeScoreChanged_                         = 0;
+  unsigned long scoreOverrideValue_[]           = { 0, 0, 0, 0 };
+  unsigned long scoreOverrideStatus_[]          = { false, false, false, false };
   unsigned long scoreOverrideAnimationStatus_[] = { false, false, false, false };
 }
 
@@ -72,12 +73,60 @@ void DisplayHelper::showAnimatedPlayerScore(byte playerNumber, unsigned long sco
   }
 }
 
+void DisplayHelper::scrollScore(byte playerNumber, unsigned long score) {
+  unsigned long currentTime              = g_machineState.currentTime();
+  unsigned long timeSinceLastScoreChange = currentTime - lastTimeScoreChanged_;
+  byte displayMask                       = 0x7F;
+  byte scrollPhaseChanged                = false;
+
+  byte scrollPhase = (timeSinceLastScoreChange / 250) % 16;
+  if (scrollPhase != lastScrollPhase_) {
+    lastScrollPhase_ = scrollPhase;
+    scrollPhaseChanged = true;
+  }
+
+  if ((currentTime - lastTimeScoreChanged_) < 4000) {
+    BSOS_SetDisplay(playerNumber, score % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
+    BSOS_SetDisplayBlank(playerNumber, BALLY_STERN_OS_ALL_DIGITS_MASK);
+  } else {
+    // Scores are scrolled 10 digits and then we wait for 6
+    if (scrollPhase < 11 && scrollPhaseChanged) {
+      byte numDigits = magnitudeOfScore(score);
+
+      // Figure out top part of score
+      unsigned long tempScore = score;
+      if (scrollPhase < BALLY_STERN_OS_NUM_DIGITS) {
+        displayMask = BALLY_STERN_OS_ALL_DIGITS_MASK;
+        for (byte scrollCount = 0; scrollCount < scrollPhase; scrollCount++) {
+          score = (score % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1)) * 10;
+          displayMask = displayMask >> 1;
+        }
+      } else {
+        score = 0;
+        displayMask = 0x00;
+      }
+
+      // Add in lower part of score
+      if ((numDigits + scrollPhase) > 10) {
+        byte numDigitsNeeded = (numDigits + scrollPhase) - 10;
+        for (byte scrollCount = 0; scrollCount < (numDigits - numDigitsNeeded); scrollCount++) {
+          tempScore /= 10;
+        }
+        displayMask |= getDisplayMask(magnitudeOfScore(tempScore));
+        score += tempScore;
+      }
+      BSOS_SetDisplayBlank(playerNumber, displayMask);
+      BSOS_SetDisplay(playerNumber, score);
+    }
+  }
+}
+
 void DisplayHelper::flashScore(byte playerNumber, unsigned long score) {
   unsigned long currentTime = g_machineState.currentTime();
   unsigned long flashSeed = currentTime / 250;
 
-  if (flashSeed != LastFlashOrDash) {
-    LastFlashOrDash = flashSeed;
+  if (flashSeed != lastFlashOrDash_) {
+    lastFlashOrDash_ = flashSeed;
 
     if (((currentTime / 250) % 2) == 0) BSOS_SetDisplayBlank(playerNumber, 0x00);
     else BSOS_SetDisplay(playerNumber, score, true, 2);
@@ -89,8 +138,8 @@ void DisplayHelper::dashScore(byte playerNumber, unsigned long score) {
   unsigned long dashSeed = currentTime / 50;
   byte          displayMask = 0x7F;
 
-  if (dashSeed != LastFlashOrDash) {
-    LastFlashOrDash = dashSeed;
+  if (dashSeed != lastFlashOrDash_) {
+    lastFlashOrDash_ = dashSeed;
     byte dashPhase = (currentTime / 60) % 36;
     byte numDigits = magnitudeOfScore(score);
 
@@ -115,20 +164,12 @@ void DisplayHelper::dashScore(byte playerNumber, unsigned long score) {
 
 void DisplayHelper::showPlayerScores(byte playerNumber, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
   if (playerNumber == 0xFF) unsigned long scoreOverrideStatus_[] = { false, false, false, false };
-  byte          displayMask = 0x7F;
-  byte          scrollPhaseChanged = false;
   unsigned long playerScore = 0;
   unsigned long currentTime = g_machineState.currentTime();
-  unsigned long timeSinceLastScoreChange = currentTime - lastTimeScoreChanged_;
 
   overrideAnimationSeed_  = currentTime / 250;
   updateLastTimeAnimated_ = false;
 
-  byte scrollPhase = (timeSinceLastScoreChange / 250) % 16;
-  if (scrollPhase != lastScrollPhase_) {
-    lastScrollPhase_ = scrollPhase;
-    scrollPhaseChanged = true;
-  }
 
   for (byte playerIterator = 0; playerIterator < 4; playerIterator++) {
     if (allScoresShowValue == 0 && scoreOverrideStatus_[playerIterator]) {
@@ -158,41 +199,7 @@ void DisplayHelper::showPlayerScores(byte playerNumber, boolean flashCurrent, bo
         }
 
         if (playerScore > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
-          // Score needs to be scrolled
-          if ((currentTime - lastTimeScoreChanged_) < 4000) {
-            BSOS_SetDisplay(playerIterator, playerScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
-            BSOS_SetDisplayBlank(playerIterator, BALLY_STERN_OS_ALL_DIGITS_MASK);
-          } else {
-            // Scores are scrolled 10 digits and then we wait for 6
-            if (scrollPhase < 11 && scrollPhaseChanged) {
-              byte numDigits = magnitudeOfScore(playerScore);
-
-              // Figure out top part of score
-              unsigned long tempScore = playerScore;
-              if (scrollPhase < BALLY_STERN_OS_NUM_DIGITS) {
-                displayMask = BALLY_STERN_OS_ALL_DIGITS_MASK;
-                for (byte scrollCount = 0; scrollCount < scrollPhase; scrollCount++) {
-                  playerScore = (playerScore % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1)) * 10;
-                  displayMask = displayMask >> 1;
-                }
-              } else {
-                playerScore = 0;
-                displayMask = 0x00;
-              }
-
-              // Add in lower part of score
-              if ((numDigits + scrollPhase) > 10) {
-                byte numDigitsNeeded = (numDigits + scrollPhase) - 10;
-                for (byte scrollCount = 0; scrollCount < (numDigits - numDigitsNeeded); scrollCount++) {
-                  tempScore /= 10;
-                }
-                displayMask |= getDisplayMask(magnitudeOfScore(tempScore));
-                playerScore += tempScore;
-              }
-              BSOS_SetDisplayBlank(playerIterator, displayMask);
-              BSOS_SetDisplay(playerIterator, playerScore);
-            }
-          }
+          scrollScore(playerIterator, playerScore);
         } else {
           if (flashCurrent) {
             flashScore(playerIterator, playerScore);
