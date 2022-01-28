@@ -3,6 +3,7 @@
 
 #define LAMP_TERMINATOR                 255
 #define LAMP_PLAYFIELD_GI               0
+#define LAMP_RELEASE_ORB                1
 #define LAMP_RIGHT_LANE_RELEASE_ORBS    2
 #define LAMP_COLLECT_BONUS_ARROW        3
 #define LAMP_1K_BONUS                   4
@@ -143,6 +144,7 @@ static byte ring5Lamps_[] = {
 
 static byte ring6Lamps_[] = {
   LAMP_20_CHAMBER,
+  LAMP_RELEASE_ORB,
   LAMP_RESET_1_THROUGH_4_ARROW,
   LAMP_RIGHT_DROP_TARGET_20_ARROW,
   LAMP_TERMINATOR

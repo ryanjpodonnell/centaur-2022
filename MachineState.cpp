@@ -63,7 +63,7 @@ byte MachineState::currentPlayer() {
   return currentPlayer_;
 }
 
-byte MachineState::machineState() {
+int MachineState::machineState() {
   return machineStateId_;
 }
 
@@ -248,7 +248,7 @@ void MachineState::setLastTiltWarningTime(unsigned long value) {
   lastTiltWarningTime_ = value;
 }
 
-void MachineState::SetmachineState(byte id) {
+void MachineState::setMachineState(int id) {
   if (id != machineStateId_) {
     machineStateChanged_ = true;
   } else {

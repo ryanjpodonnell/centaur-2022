@@ -13,7 +13,7 @@ class Debug {
   public:
     Debug();
 
-    byte run(byte currentState, boolean currentStateChanged);
+    int run(int currentState, boolean currentStateChanged);
 };
 
 #endif

@@ -6,12 +6,12 @@ Attract::Attract() {
   stateStatedTime_   = 0;
 }
 
-byte Attract::run(byte curState, boolean curStateChanged) {
+int Attract::run(int curState, boolean curStateChanged) {
   if (curStateChanged) handleNewState();
   handleLightShow();
 
-  byte returnState = curState;
-  byte switchHit   = BSOS_PullFirstFromSwitchStack();
+  int returnState = curState;
+  byte switchHit  = BSOS_PullFirstFromSwitchStack();
 
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {

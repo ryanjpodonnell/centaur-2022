@@ -255,6 +255,12 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
 }
 
 int SelfTestAndAudit::run(int curState, boolean curStateChanged) {
+  if (curStateChanged) {
+    if (DEBUG_MESSAGES) {
+      Serial.write("Entering Self Test And Audit State\n\r");
+    }
+  }
+
   int returnState = curState;
   g_machineState.setNumberOfPlayers(0);
 

@@ -13,7 +13,7 @@ class Attract {
   public:
     Attract();
 
-    byte run(byte currentState, boolean currentStateChanged);
+    int run(int currentState, boolean currentStateChanged);
 };
 
 #endif

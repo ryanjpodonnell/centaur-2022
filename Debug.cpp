@@ -4,7 +4,7 @@ Debug::Debug() {
   stateStatedTime_ = 0;
 }
 
-byte Debug::run(byte curState, boolean curStateChanged) {
+int Debug::run(int curState, boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
   unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStatedTime_;

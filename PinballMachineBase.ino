@@ -83,8 +83,8 @@ void loop() {
   unsigned long currentTime = millis();
   g_machineState.setCurrentTime(currentTime);
 
-  byte machineState = g_machineState.machineState();
-  byte newMachineState = machineState;
+  int machineState = g_machineState.machineState();
+  int newMachineState = machineState;
   boolean machineStateChanged = g_machineState.machineStateChanged();
 
   if (machineState < 0) {
@@ -97,7 +97,7 @@ void loop() {
     newMachineState = g_gameMode.runGamePlayState(machineState, machineStateChanged);
   }
 
-  g_machineState.SetmachineState(newMachineState);
+  g_machineState.setMachineState(newMachineState);
 
   BSOS_ApplyFlashToLamps(currentTime);
   BSOS_UpdateTimedSolenoidStack(currentTime);

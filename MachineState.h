@@ -25,8 +25,8 @@ class MachineState {
     byte          currentBallInPlay_;
     byte          currentNumPlayers_;
     byte          currentPlayer_;
-    byte          machineStateId_;
     byte          scoreMultiplier_;
+    int           machineStateId_;
     unsigned long currentTime_;
     unsigned long lastTiltWarningTime_;
     unsigned long scores_[4];
@@ -37,7 +37,6 @@ class MachineState {
     boolean       machineStateChanged();
     boolean       resetNumberOfPlayers();
     boolean       samePlayerShootsAgain();
-    byte          machineState();
     byte          ballSaveNumSeconds();
     byte          bonus();
     byte          bonusMultiplier();
@@ -48,10 +47,11 @@ class MachineState {
     byte          resetGame();
     int           initGamePlay();
     int           initNewBall(bool curStateChanged, byte playerNum, int ballNum);
+    int           machineState();
     unsigned long currentTime();
     unsigned long lastTiltWarningTime();
     unsigned long score(byte player = 0xFF);
-    void          SetmachineState(byte id);
+    void          setMachineState(int id);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
