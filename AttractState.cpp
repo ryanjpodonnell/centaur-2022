@@ -1,8 +1,9 @@
 #include "SharedVariables.h"
 
 Attract::Attract() {
-  stateStatedTime_ = 0;
-  lastFlash_       = 0;
+  currentFlashCycle_ = 0;
+  lastFlash_         = 0;
+  stateStatedTime_   = 0;
 }
 
 byte Attract::run(byte curState, boolean curStateChanged) {
@@ -16,16 +17,35 @@ byte Attract::run(byte curState, boolean curStateChanged) {
     BSOS_TurnOffAllLamps();
     BSOS_SetDisableFlippers(true);
     BSOS_SetDisplayCredits(Credits, true);
+
+    g_machineState.setScore(0, 0);
+    g_machineState.setScore(0, 1);
+    g_machineState.setScore(0, 2);
+    g_machineState.setScore(0, 3);
+    g_displayHelper.showPlayerScores(0xFF, false, false);
   }
 
   byte switchHit;
   unsigned long currentTime = g_machineState.currentTime();
-  unsigned long seed = currentTime / 250;
+  unsigned long seed = currentTime / 250;        // .25 seconds
+  unsigned long cycleSeed = currentTime / 10000; // 10 seconds
+
+  if (cycleSeed != currentFlashCycle_) {
+    currentFlashCycle_ = cycleSeed;
+  }
+
   if (seed != lastFlash_) {
     lastFlash_ = seed;
-    if (((currentTime / 250) % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
-    if (((currentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
-    if (((currentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+
+    if (currentFlashCycle_ % 2 == 0) {
+      if ((seed % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
+      if ((seed % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
+      if ((seed % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+    } else {
+      if ((seed % 3) == 0) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+      if ((seed % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
+      if ((seed % 3) == 2) ShowLamp(LAMP_40K_BONUS, true);
+    }
   }
 
   switchHit = BSOS_PullFirstFromSwitchStack();
