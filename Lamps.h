@@ -1,6 +1,7 @@
 #ifndef LAMPS_H
+#define LAMPS_H
 
-#define LAMP_TERMINATOR                 -1
+#define LAMP_TERMINATOR                 255
 #define LAMP_PLAYFIELD_GI               0
 #define LAMP_RIGHT_LANE_RELEASE_ORBS    2
 #define LAMP_COLLECT_BONUS_ARROW        3
@@ -67,8 +68,11 @@
 #define LAMP_COLLECTION_BONUS_ALL         0
 #define LAMP_COLLECTION_BONUS_MIDDLE_RING 1
 #define LAMP_COLLECTION_BONUS_OUTER_RING  2
+#define LAMP_COLLECTION_RING_4            3
+#define LAMP_COLLECTION_RING_5            4
+#define LAMP_COLLECTION_RING_6            5
 
-static int bonusAllLamps[] = {
+static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
   LAMP_2K_BONUS,
   LAMP_3K_BONUS,
@@ -89,12 +93,7 @@ static int bonusAllLamps[] = {
   LAMP_TERMINATOR
 };
 
-static int bonusCenterLamps[] = {
-  LAMP_40K_BONUS,
-  LAMP_TERMINATOR
-};
-
-static int bonusMiddleRingLamps[] = {
+static byte bonusMiddleRingLamps_[] = {
   LAMP_20K_BONUS,
   LAMP_60K_BONUS,
   LAMP_2X_BONUS,
@@ -104,7 +103,7 @@ static int bonusMiddleRingLamps[] = {
   LAMP_TERMINATOR
 };
 
-static int bonusOuterRingLamps[] = {
+static byte bonusOuterRingLamps_[] = {
   LAMP_1K_BONUS,
   LAMP_2K_BONUS,
   LAMP_3K_BONUS,
@@ -118,9 +117,40 @@ static int bonusOuterRingLamps[] = {
   LAMP_TERMINATOR
 };
 
-void ShowLamps(int lampCollection, bool clearAllLamps = false);
-void ShowLamp(int lamp, bool clearAllLamps = false);
-void ShowAllLamps();
+static byte ring4Lamps_[] = {
+  LAMP_2_CAPTIVE_ORBS,
+  LAMP_3_CAPTIVE_ORBS,
+  LAMP_10_CHAMBER,
+  LAMP_TERMINATOR
+};
 
-#define LAMPS_H
+static byte ring5Lamps_[] = {
+  LAMP_1_CAPTIVE_ORBS,
+  LAMP_4_CAPTIVE_ORBS,
+  LAMP_LEFT_RETURN_ROLLOVER,
+  LAMP_RIGHT_DROP_TARGET_80_ARROW,
+  LAMP_RIGHT_RETURN_ROLLOVER,
+  LAMP_TERMINATOR
+};
+
+static byte ring6Lamps_[] = {
+  LAMP_1_CAPTIVE_ORBS,
+  LAMP_4_CAPTIVE_ORBS,
+  LAMP_LEFT_RETURN_ROLLOVER,
+  LAMP_RIGHT_DROP_TARGET_80_ARROW,
+  LAMP_RIGHT_RETURN_ROLLOVER,
+  LAMP_TERMINATOR
+};
+
+class LampsHelper {
+  private:
+
+  public:
+    LampsHelper();
+
+    void showLamps(byte lampCollection, bool clearAllLamps = false);
+    void showLamp(byte lamp, bool clearAllLamps = false);
+    void showAllLamps();
+};
+
 #endif

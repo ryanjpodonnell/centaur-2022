@@ -20,8 +20,7 @@ void Debug::handleNewState() {
     Serial.write("Entering Debug State\n\r");
   }
 
-  ShowAllLamps();
-
+  g_lampsHelper.showAllLamps();
   g_machineState.setScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
   g_machineState.setScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);
   g_machineState.setScore(BALLY_STERN_OS_MAJOR_VERSION, 2);

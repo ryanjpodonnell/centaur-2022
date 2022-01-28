@@ -67,14 +67,18 @@ void Attract::handleLightShow() {
   if (seed != lastFlash_) {
     lastFlash_ = seed;
 
+    byte step = 0;
     if (currentFlashCycle_ % 2 == 0) {
-      if ((seed % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
-      if ((seed % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
-      if ((seed % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+      step = seed % 6;
     } else {
-      if ((seed % 3) == 0) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
-      if ((seed % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
-      if ((seed % 3) == 2) ShowLamp(LAMP_40K_BONUS, true);
+      step = 5 - (seed % 6);
     }
+
+    if (step == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, true);
+    if (step == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
+    if (step == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
+    if (step == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_4, true);
+    if (step == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_5, true);
+    if (step == 5) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_6, true);
   }
 }

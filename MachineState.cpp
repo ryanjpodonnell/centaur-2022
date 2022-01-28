@@ -116,6 +116,8 @@ int MachineState::initGamePlay() {
   BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
   BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
 
+  g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, true);
+
   for (int count = 0; count < 4; count++) {
     bonusMultipliers_[count] = 1;
     bonuses_[count] = 0;
@@ -133,7 +135,7 @@ int MachineState::initGamePlay() {
 
 int MachineState::initNewBall(bool curStateChanged, byte playerNum, int ballNum) {
   if (curStateChanged) {
-    ShowLamps(LAMP_COLLECTION_BONUS_ALL, true);
+    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ALL, false);
 
     BSOS_SetDisplayCredits(Credits, true);
     samePlayerShootsAgain_ = false;

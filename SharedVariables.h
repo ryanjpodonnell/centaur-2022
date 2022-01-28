@@ -59,6 +59,7 @@ extern unsigned long ScoreAdditionAnimationStartTime;
 extern Attract          g_attract;
 extern Debug            g_debug;
 extern DisplayHelper    g_displayHelper;
+extern LampsHelper      g_lampsHelper;
 extern GameMode         g_gameMode;
 extern MachineState     g_machineState;
 extern SelfTestAndAudit g_selfTestAndAudit;
