@@ -67,7 +67,7 @@ void Attract::handleLightShow() {
   if (seed != lastFlash_) {
     lastFlash_ = seed;
 
-    byte numberOfSteps = 9;
+    byte numberOfSteps = 16;
     byte currentStep = 0;
     if (currentFlashCycle_ % 2 == 0) {
       currentStep = seed % numberOfSteps;
@@ -84,5 +84,12 @@ void Attract::handleLightShow() {
     if (currentStep == 6) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_7, true);
     if (currentStep == 7) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_8, true);
     if (currentStep == 8) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_9, true);
+    if (currentStep == 9) g_lampsHelper.showLamp(LAMP_COLLECT_BONUS_ARROW, true);
+    if (currentStep == 10) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_10, true);
+    if (currentStep == 11) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_11, true);
+    if (currentStep == 12) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, true);
+    if (currentStep == 13) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_12, true);
+    if (currentStep == 14) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_13, true);
+    if (currentStep == 15) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_14, true);
   }
 }

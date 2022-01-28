@@ -36,6 +36,21 @@ void LampsHelper::showLamps(byte lampCollection, bool clearAllLamps) {
     case LAMP_COLLECTION_RING_9:
       lampsPointer = ring9Lamps_;
       break;
+    case LAMP_COLLECTION_RING_10:
+      lampsPointer = ring10Lamps_;
+      break;
+    case LAMP_COLLECTION_RING_11:
+      lampsPointer = ring11Lamps_;
+      break;
+    case LAMP_COLLECTION_RING_12:
+      lampsPointer = ring12Lamps_;
+      break;
+    case LAMP_COLLECTION_RING_13:
+      lampsPointer = ring13Lamps_;
+      break;
+    case LAMP_COLLECTION_RING_14:
+      lampsPointer = ring14Lamps_;
+      break;
   }
 
   for(byte i = 0; lampsPointer[i] != LAMP_TERMINATOR; i++) {

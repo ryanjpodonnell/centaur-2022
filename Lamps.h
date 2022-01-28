@@ -75,6 +75,11 @@
 #define LAMP_COLLECTION_RING_7            6
 #define LAMP_COLLECTION_RING_8            7
 #define LAMP_COLLECTION_RING_9            8
+#define LAMP_COLLECTION_RING_10           9
+#define LAMP_COLLECTION_RING_11           10
+#define LAMP_COLLECTION_RING_12           11
+#define LAMP_COLLECTION_RING_13           12
+#define LAMP_COLLECTION_RING_14           13
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -172,6 +177,42 @@ static byte ring9Lamps_[] = {
   LAMP_RIGHT_LANE_RELEASE_ORBS,
   LAMP_TERMINATOR
 };
+
+static byte ring10Lamps_[] = {
+  LAMP_RIGHT_LANE_2X,
+  LAMP_LEFT_THUMPER_BUMPER,
+  LAMP_QUEENS_CHAMBER_GI_1,
+  LAMP_RIGHT_THUMPER_BUMPER,
+  LAMP_TERMINATOR
+};
+
+static byte ring11Lamps_[] = {
+  LAMP_RIGHT_LANE_3X,
+  LAMP_QUEENS_CHAMBER_GI_2,
+  LAMP_TERMINATOR
+};
+
+static byte ring12Lamps_[] = {
+  LAMP_RIGHT_LANE_5X,
+  LAMP_QUEENS_CHAMBER_GI_3,
+  LAMP_SPOT_1_THROUGH_4,
+  LAMP_TERMINATOR
+};
+
+static byte ring13Lamps_[] = {
+  LAMP_CHAMBERS_SPECIAL,
+  LAMP_TOP_LEFT_ROLLOVER,
+  LAMP_TOP_MIDDLE_ROLLOVER,
+  LAMP_TOP_RIGHT_ROLLOVER,
+  LAMP_TERMINATOR
+};
+
+static byte ring14Lamps_[] = {
+  LAMP_CHAMBERS_RELEASE,
+  LAMP_QUEENS_CHAMBER_GI_4,
+  LAMP_TERMINATOR
+};
+
 
 class LampsHelper {
   private:
