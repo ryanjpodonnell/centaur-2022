@@ -1,6 +1,5 @@
 #ifndef SELF_TEST_H
 
-#define MACHINE_STATE_ATTRACT             0
 #define MACHINE_STATE_TEST_LIGHTS        -1
 #define MACHINE_STATE_TEST_DISPLAYS      -2
 #define MACHINE_STATE_TEST_SOLENOIDS     -3

@@ -120,6 +120,7 @@ static int bonusOuterRingLamps[] = {
 
 void ShowLamps(int lampCollection, bool clearAllLamps = false);
 void ShowLamp(int lamp, bool clearAllLamps = false);
+void ShowAllLamps();
 
 #define LAMPS_H
 #endif

@@ -27,3 +27,11 @@ void ShowLamp(int lamp, bool clearAllLamps) {
 
   BSOS_SetLampState(lamp, 1);
 }
+
+void ShowAllLamps() {
+  BSOS_TurnOffAllLamps();
+
+  for (int count = 0; count < BSOS_MAX_LAMPS; count++) {
+    BSOS_SetLampState(count, 1);
+  }
+}

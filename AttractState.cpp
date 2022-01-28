@@ -1,7 +1,7 @@
 #include "SharedVariables.h"
 
-int RunAttractState(int curState, boolean curStateChanged) {
-  int returnState = curState;
+byte RunAttractState(byte curState, boolean curStateChanged) {
+  byte returnState = curState;
 
   if (curStateChanged) {
     BSOS_DisableSolenoidStack();

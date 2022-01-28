@@ -3,6 +3,7 @@
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "CountdownBonusState.h"
+#include "Debug.h"
 #include "Display.h"
 #include "GameMode.h"
 #include "Lamps.h"

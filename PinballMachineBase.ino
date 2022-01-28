@@ -1,8 +1,5 @@
 #include "SharedVariables.h"
 
-#define PINBALL_MACHINE_BASE_MAJOR_VERSION  2022
-#define PINBALL_MACHINE_BASE_MINOR_VERSION  1
-
 
 /*********************************************************************
     Machine Options Variables
@@ -49,7 +46,8 @@ unsigned long ScoreAdditionAnimationStartTime;
 
 DisplayHelper g_displayHelper;
 GameMode g_gameMode(GAME_MODE_INITIALIZE);
-MachineState g_machineState(MACHINE_STATE_ATTRACT);
+MachineState g_machineState(MACHINE_STATE_DEBUG);
+Debug g_debug;
 
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
@@ -78,11 +76,6 @@ void setup() {
   // Read parameters from EEProm
   ReadStoredParameters();
   BSOS_SetCoinLockout((Credits >= MaximumCredits) ? true : false);
-
-  g_machineState.setScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
-  g_machineState.setScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);
-  g_machineState.setScore(BALLY_STERN_OS_MAJOR_VERSION, 2);
-  g_machineState.setScore(BALLY_STERN_OS_MINOR_VERSION, 3);
 }
 
 void loop() {
@@ -97,6 +90,8 @@ void loop() {
 
   if (machineState < 0) {
     newMachineState = RunSelfTest(machineState, machineStateChanged);
+  } else if (machineState == MACHINE_STATE_DEBUG) {
+    newMachineState = g_debug.run(machineState, machineStateChanged);
   } else if (machineState == MACHINE_STATE_ATTRACT) {
     newMachineState = RunAttractState(machineState, machineStateChanged);
   } else {
