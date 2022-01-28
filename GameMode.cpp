@@ -137,7 +137,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
           break;
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
-          SetLastSelfTestChangedTime(currentTime);
+          g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
           break;
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
@@ -176,7 +176,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
       switch (switchHit) {
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
-          SetLastSelfTestChangedTime(currentTime);
+          g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
           break;
         case SW_COIN_1:
         case SW_COIN_2:

@@ -10,6 +10,9 @@ byte Debug::run(byte curState, boolean curStateChanged) {
   byte returnState = curState;
 
   if (curStateChanged) {
+    if (DEBUG_MESSAGES) {
+      Serial.write("Entering Debug State\n\r");
+    }
     ShowAllLamps();
     g_machineState.setScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
     g_machineState.setScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);

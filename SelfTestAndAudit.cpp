@@ -1,39 +1,20 @@
 #include "SharedVariables.h"
 
-unsigned long LastSolTestTime = 0; 
-unsigned long LastSelfTestChange = 0;
-unsigned long SavedValue = 0;
-unsigned long ResetHold = 0;
-unsigned long NextSpeedyValueChange = 0;
-unsigned long NumSpeedyChanges = 0;
-unsigned long LastResetPress = 0;
-byte CurValue = 0;
-byte CurSound = 0x01;
-byte SoundPlaying = 0;
-boolean SolenoidCycle = true;
-
-int RunSelfTest(int curState, boolean curStateChanged) {
-  int returnState = curState;
-  g_machineState.setNumberOfPlayers(0);
-
-  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
-    returnState = RunBaseSelfTest(returnState, curStateChanged, SW_CREDIT_BUTTON, SW_SLAM);
-  }
-
-  if (returnState == MACHINE_STATE_ATTRACT) {
-    BSOS_SetDisplayCredits(Credits, true);
-    ReadStoredParameters();
-  }
-
-  return returnState;
+SelfTestAndAudit::SelfTestAndAudit() {
+  lastSolTestTime_       = 0;
+  lastSelfTestChange_    = 0;
+  savedValue_            = 0;
+  resetHold_             = 0;
+  nextSpeedyValueChange_ = 0;
+  numSpeedyChanges_      = 0;
+  lastResetPress_        = 0;
+  curValue_              = 0;
+  curSound_              = 0x01;
+  soundPlaying_          = 0;
+  solenoidCycle_         = true;
 }
 
-int RunBaseSelfTest(
-    int curState,
-    boolean curStateChanged,
-    byte resetSwitch,
-    byte slamSwitch
-    ) {
+int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetSwitch, byte slamSwitch) {
   byte curSwitch = BSOS_PullFirstFromSwitchStack();
   int returnState = curState;
   boolean resetDoubleClick = false;
@@ -42,25 +23,25 @@ int RunBaseSelfTest(
   unsigned long currentTime = g_machineState.currentTime();
 
   if (curSwitch==resetSwitch) {
-    ResetHold = currentTime;
-    if ((currentTime-LastResetPress)<400) {
+    resetHold_ = currentTime;
+    if ((currentTime-lastResetPress_)<400) {
       resetDoubleClick = true;
       curSwitch = SWITCH_STACK_EMPTY;
     }
-    LastResetPress = currentTime;
+    lastResetPress_ = currentTime;
   }
 
-  if (ResetHold!=0 && !BSOS_ReadSingleSwitchState(resetSwitch)) {
-    ResetHold = 0;
-    NextSpeedyValueChange = 0;
+  if (resetHold_!=0 && !BSOS_ReadSingleSwitchState(resetSwitch)) {
+    resetHold_ = 0;
+    nextSpeedyValueChange_ = 0;
   }
 
   boolean resetBeingHeld = false;
-  if (ResetHold!=0 && (currentTime-ResetHold)>1300) {
+  if (resetHold_!=0 && (currentTime-resetHold_)>1300) {
     resetBeingHeld = true;
-    if (NextSpeedyValueChange==0) {
-      NextSpeedyValueChange = currentTime;
-      NumSpeedyChanges = 0;
+    if (nextSpeedyValueChange_==0) {
+      nextSpeedyValueChange_ = currentTime;
+      numSpeedyChanges_ = 0;
     }
   }
 
@@ -68,10 +49,10 @@ int RunBaseSelfTest(
     returnState = MACHINE_STATE_ATTRACT;
   }
   
-  if (curSwitch==SW_SELF_TEST_SWITCH && (currentTime-LastSelfTestChange)>250) {
+  if (curSwitch==SW_SELF_TEST_SWITCH && (currentTime-lastSelfTestChange_)>250) {
     returnState -= 1;
     if (returnState==MACHINE_STATE_TEST_DONE) returnState = MACHINE_STATE_ATTRACT;
-    LastSelfTestChange = currentTime;
+    lastSelfTestChange_ = currentTime;
   }
 
   if (curStateChanged) {
@@ -79,11 +60,10 @@ int RunBaseSelfTest(
     
     for (int count=0; count<4; count++) {
       BSOS_SetDisplay(count, 0);
-      BSOS_SetDisplayBlank(count, 0x00);        
+      BSOS_SetDisplayBlank(count, 0x00);
     }
 
     if (curState<=MACHINE_STATE_TEST_SCORE_LEVEL_1) {
-//      BSOS_SetDisplayCredits(abs(curState)+MACHINE_STATE_TEST_SOUNDS);
       BSOS_SetDisplayCredits(MACHINE_STATE_TEST_SOUNDS-curState);
       BSOS_SetDisplayBallInPlay(0, false);
     }
@@ -91,7 +71,7 @@ int RunBaseSelfTest(
 
   if (curState==MACHINE_STATE_TEST_LIGHTS) {
     if (curStateChanged) {
-      BSOS_DisableSolenoidStack();        
+      BSOS_DisableSolenoidStack();
       BSOS_SetDisableFlippers(true);
       BSOS_SetDisplayCredits(0);
       BSOS_SetDisplayBallInPlay(1);
@@ -99,22 +79,22 @@ int RunBaseSelfTest(
       for (int count=0; count<BSOS_MAX_LAMPS; count++) {
         BSOS_SetLampState(count, 1, 0, 500);
       }
-      CurValue = 99;
-      BSOS_SetDisplay(0, CurValue, true);  
+      curValue_ = 99;
+      BSOS_SetDisplay(0, curValue_, true);
     }
     if (curSwitch==resetSwitch || resetDoubleClick) {
-      CurValue += 1;
-      if (CurValue>99) CurValue = 0;
-      if (CurValue==BSOS_MAX_LAMPS) {
-        CurValue = 99;
+      curValue_ += 1;
+      if (curValue_>99) curValue_ = 0;
+      if (curValue_==BSOS_MAX_LAMPS) {
+        curValue_ = 99;
         for (int count=0; count<BSOS_MAX_LAMPS; count++) {
           BSOS_SetLampState(count, 1, 0, 500);
         }
       } else {
         BSOS_TurnOffAllLamps();
-        BSOS_SetLampState(CurValue, 1, 0, 500);
+        BSOS_SetLampState(curValue_, 1, 0, 500);
       }      
-      BSOS_SetDisplay(0, CurValue, true);  
+      BSOS_SetDisplay(0, curValue_, true);
     }    
   } else if (curState==MACHINE_STATE_TEST_DISPLAYS) {
     if (curStateChanged) {
@@ -122,40 +102,40 @@ int RunBaseSelfTest(
       BSOS_SetDisplayCredits(0);
       BSOS_SetDisplayBallInPlay(2);
       for (int count=0; count<4; count++) {
-        BSOS_SetDisplayBlank(count, 0x3F);        
+        BSOS_SetDisplayBlank(count, 0x3F);
       }
-      CurValue = 0;
+      curValue_ = 0;
     }
     if (curSwitch==resetSwitch || resetDoubleClick) {
-      CurValue += 1;
-      if (CurValue>30) CurValue = 0;
+      curValue_ += 1;
+      if (curValue_>30) curValue_ = 0;
     }    
-    BSOS_CycleAllDisplays(currentTime, CurValue);
+    BSOS_CycleAllDisplays(currentTime, curValue_);
   } else if (curState==MACHINE_STATE_TEST_SOLENOIDS) {
     if (curStateChanged) {
       BSOS_TurnOffAllLamps();
-      LastSolTestTime = currentTime;
+      lastSolTestTime_ = currentTime;
       BSOS_EnableSolenoidStack(); 
       BSOS_SetDisableFlippers(false);
       BSOS_SetDisplayBlank(4, 0);
       BSOS_SetDisplayCredits(0);
       BSOS_SetDisplayBallInPlay(3);
-      SolenoidCycle = true;
-      SavedValue = 0;
-      BSOS_PushToSolenoidStack(SavedValue, 5);
+      solenoidCycle_ = true;
+      savedValue_ = 0;
+      BSOS_PushToSolenoidStack(savedValue_, 5);
     } 
     if (curSwitch==resetSwitch || resetDoubleClick) {
-      SolenoidCycle = (SolenoidCycle) ? false : true;
+      solenoidCycle_ = (solenoidCycle_) ? false : true;
     }
 
-    if ((currentTime-LastSolTestTime)>1000) {
-      if (SolenoidCycle) {
-        SavedValue += 1;
-        if (SavedValue>14) SavedValue = 0;
+    if ((currentTime-lastSolTestTime_)>1000) {
+      if (solenoidCycle_) {
+        savedValue_ += 1;
+        if (savedValue_>14) savedValue_ = 0;
       }
-      BSOS_PushToSolenoidStack(SavedValue, 3);
-      BSOS_SetDisplay(0, SavedValue, true);
-      LastSolTestTime = currentTime;
+      BSOS_PushToSolenoidStack(savedValue_, 3);
+      BSOS_SetDisplay(0, savedValue_, true);
+      lastSolTestTime_ = currentTime;
     }
     
   } else if (curState==MACHINE_STATE_TEST_SWITCHES) {
@@ -184,12 +164,12 @@ int RunBaseSelfTest(
   } else if (curState==MACHINE_STATE_TEST_SOUNDS) {
     BSOS_SetDisplayCredits(0);
     BSOS_SetDisplayBallInPlay(5);
-    byte soundToPlay = ((currentTime-LastSelfTestChange)/2000)%256;
-    if (SoundPlaying!=soundToPlay) {
+    byte soundToPlay = ((currentTime-lastSelfTestChange_)/2000)%256;
+    if (soundPlaying_!=soundToPlay) {
       BSOS_PlaySoundSquawkAndTalk(soundToPlay);
-      SoundPlaying = soundToPlay;
+      soundPlaying_ = soundToPlay;
       BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
-      LastSolTestTime = currentTime; // Time the sound started to play
+      lastSolTestTime_ = currentTime; // Time the sound started to play
     }
   } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_1) {
     savedScoreStartByte = BSOS_AWARD_SCORE_1_EEPROM_START_BYTE;
@@ -201,14 +181,14 @@ int RunBaseSelfTest(
     savedScoreStartByte = BSOS_HIGHSCORE_EEPROM_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_CREDITS) {
     if (curStateChanged) {
-      SavedValue = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
-      BSOS_SetDisplay(0, SavedValue, true);
+      savedValue_ = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
+      BSOS_SetDisplay(0, savedValue_, true);
     }
     if (curSwitch==resetSwitch || resetDoubleClick) {
-      SavedValue += 1;
-      if (SavedValue>20) SavedValue = 0;
-      BSOS_SetDisplay(0, SavedValue, true);
-      BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, SavedValue & 0x000000FF);
+      savedValue_ += 1;
+      if (savedValue_>20) savedValue_ = 0;
+      BSOS_SetDisplay(0, savedValue_, true);
+      BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, savedValue_ & 0x000000FF);
     }
   } else if (curState==MACHINE_STATE_TEST_TOTAL_PLAYS) {
     auditNumStartByte = BSOS_TOTAL_PLAYS_EEPROM_START_BYTE;
@@ -226,47 +206,47 @@ int RunBaseSelfTest(
 
   if (savedScoreStartByte) {
     if (curStateChanged) {
-      SavedValue = BSOS_ReadULFromEEProm(savedScoreStartByte);
-      BSOS_SetDisplay(0, SavedValue, true);  
+      savedValue_ = BSOS_ReadULFromEEProm(savedScoreStartByte);
+      BSOS_SetDisplay(0, savedValue_, true);
     }
 
     if (curSwitch==resetSwitch) {
-      SavedValue += 1000;
-      BSOS_SetDisplay(0, SavedValue, true);  
-      BSOS_WriteULToEEProm(savedScoreStartByte, SavedValue);
+      savedValue_ += 1000;
+      BSOS_SetDisplay(0, savedValue_, true);
+      BSOS_WriteULToEEProm(savedScoreStartByte, savedValue_);
     }
 
-    if (resetBeingHeld && (currentTime>=NextSpeedyValueChange)) {
-      SavedValue += 1000;
-      BSOS_SetDisplay(0, SavedValue, true);  
-      if (NumSpeedyChanges<6) NextSpeedyValueChange = currentTime + 400;
-      else if (NumSpeedyChanges<50) NextSpeedyValueChange = currentTime + 50;
-      else NextSpeedyValueChange = currentTime + 10;
-      NumSpeedyChanges += 1;
+    if (resetBeingHeld && (currentTime>=nextSpeedyValueChange_)) {
+      savedValue_ += 1000;
+      BSOS_SetDisplay(0, savedValue_, true);
+      if (numSpeedyChanges_<6) nextSpeedyValueChange_ = currentTime + 400;
+      else if (numSpeedyChanges_<50) nextSpeedyValueChange_ = currentTime + 50;
+      else nextSpeedyValueChange_ = currentTime + 10;
+      numSpeedyChanges_ += 1;
     }
 
-    if (!resetBeingHeld && NumSpeedyChanges>0) {
-      BSOS_WriteULToEEProm(savedScoreStartByte, SavedValue);
-      NumSpeedyChanges = 0;
+    if (!resetBeingHeld && numSpeedyChanges_>0) {
+      BSOS_WriteULToEEProm(savedScoreStartByte, savedValue_);
+      numSpeedyChanges_ = 0;
     }
     
     if (resetDoubleClick) {
-      SavedValue = 0;
-      BSOS_SetDisplay(0, SavedValue, true);  
-      BSOS_WriteULToEEProm(savedScoreStartByte, SavedValue);
+      savedValue_ = 0;
+      BSOS_SetDisplay(0, savedValue_, true);
+      BSOS_WriteULToEEProm(savedScoreStartByte, savedValue_);
     }
   }
 
   if (auditNumStartByte) {
     if (curStateChanged) {
-      SavedValue = BSOS_ReadULFromEEProm(auditNumStartByte);
-      BSOS_SetDisplay(0, SavedValue, true);
+      savedValue_ = BSOS_ReadULFromEEProm(auditNumStartByte);
+      BSOS_SetDisplay(0, savedValue_, true);
     }
 
     if (resetDoubleClick) {
-      SavedValue = 0;
-      BSOS_SetDisplay(0, SavedValue, true);  
-      BSOS_WriteULToEEProm(auditNumStartByte, SavedValue);
+      savedValue_ = 0;
+      BSOS_SetDisplay(0, savedValue_, true);
+      BSOS_WriteULToEEProm(auditNumStartByte, savedValue_);
     }
     
   }
@@ -274,11 +254,28 @@ int RunBaseSelfTest(
   return returnState;
 }
 
-unsigned long GetLastSelfTestChangedTime() {
-  return LastSelfTestChange;
+int SelfTestAndAudit::run(int curState, boolean curStateChanged) {
+  int returnState = curState;
+  g_machineState.setNumberOfPlayers(0);
+
+  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
+    returnState = runBase(returnState, curStateChanged, SW_CREDIT_BUTTON, SW_SLAM);
+  }
+
+  if (returnState == MACHINE_STATE_ATTRACT) {
+    BSOS_SetDisplayCredits(Credits, true);
+    ReadStoredParameters();
+  }
+
+  return returnState;
 }
 
 
-void SetLastSelfTestChangedTime(unsigned long setSelfTestChange) {
-  LastSelfTestChange = setSelfTestChange;
+unsigned long SelfTestAndAudit::lastSelfTestChangedTime() {
+  return lastSelfTestChange_;
+}
+
+
+void SelfTestAndAudit::setLastSelfTestChangedTime(unsigned long setSelfTestChange) {
+  lastSelfTestChange_ = setSelfTestChange;
 }

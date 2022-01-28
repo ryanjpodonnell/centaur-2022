@@ -41,7 +41,6 @@ extern byte NumTiltWarnings;
 extern unsigned long CountdownStartTime;
 extern unsigned long LastCountdownReportTime;
 extern unsigned long BonusCountDownEndTime;
-extern unsigned long LastFlash;
 
 
 /*********************************************************************
@@ -57,8 +56,11 @@ extern unsigned long LastRemainingAnimatedScoreShown;
 extern unsigned long ScoreAdditionAnimation;
 extern unsigned long ScoreAdditionAnimationStartTime;
 
-extern DisplayHelper g_displayHelper;
-extern GameMode g_gameMode;
-extern MachineState g_machineState;
+extern Attract          g_attract;
+extern Debug            g_debug;
+extern DisplayHelper    g_displayHelper;
+extern GameMode         g_gameMode;
+extern MachineState     g_machineState;
+extern SelfTestAndAudit g_selfTestAndAudit;
 
 #endif

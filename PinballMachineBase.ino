@@ -24,7 +24,6 @@ byte NumTiltWarnings = 0;
 unsigned long BonusCountDownEndTime = 0;
 unsigned long CountdownStartTime = 0;
 unsigned long LastCountdownReportTime = 0;
-unsigned long LastFlash = 0;
 
 
 /*********************************************************************
@@ -41,10 +40,12 @@ unsigned long ScoreAdditionAnimation;
 unsigned long ScoreAdditionAnimationStartTime;
 
 
-DisplayHelper g_displayHelper;
-GameMode g_gameMode(GAME_MODE_INITIALIZE);
-MachineState g_machineState(MACHINE_STATE_DEBUG);
-Debug g_debug;
+Attract          g_attract;
+Debug            g_debug;
+DisplayHelper    g_displayHelper;
+GameMode         g_gameMode(GAME_MODE_INITIALIZE);
+MachineState     g_machineState(MACHINE_STATE_DEBUG);
+SelfTestAndAudit g_selfTestAndAudit;
 
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
@@ -86,11 +87,11 @@ void loop() {
   boolean machineStateChanged = g_machineState.machineStateChanged();
 
   if (machineState < 0) {
-    newMachineState = RunSelfTest(machineState, machineStateChanged);
+    newMachineState = g_selfTestAndAudit.run(machineState, machineStateChanged);
   } else if (machineState == MACHINE_STATE_DEBUG) {
     newMachineState = g_debug.run(machineState, machineStateChanged);
   } else if (machineState == MACHINE_STATE_ATTRACT) {
-    newMachineState = RunAttractState(machineState, machineStateChanged);
+    newMachineState = g_attract.run(machineState, machineStateChanged);
   } else {
     newMachineState = g_gameMode.runGamePlayState(machineState, machineStateChanged);
   }

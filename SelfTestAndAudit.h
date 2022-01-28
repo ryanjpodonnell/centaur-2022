@@ -1,4 +1,5 @@
 #ifndef SELF_TEST_H
+#define SELF_TEST_H
 
 #define MACHINE_STATE_TEST_LIGHTS        -1
 #define MACHINE_STATE_TEST_DISPLAYS      -2
@@ -18,10 +19,27 @@
 #define MACHINE_STATE_TEST_CHUTE_3_COINS -16
 #define MACHINE_STATE_TEST_DONE          -17
 
-int RunBaseSelfTest(int curState, boolean curStateChanged, unsigned long CurrentTime, byte resetSwitch, byte slamSwitch=0xFF);
-int RunSelfTest(int curState, boolean curStateChanged);
-unsigned long GetAwardScore(byte level);
-unsigned long GetLastSelfTestChangedTime();
-void SetLastSelfTestChangedTime(unsigned long setSelfTestChange);
+class SelfTestAndAudit {
+  private:
+    unsigned long lastSolTestTime_;
+    unsigned long lastSelfTestChange_;
+    unsigned long savedValue_;
+    unsigned long resetHold_;
+    unsigned long nextSpeedyValueChange_;
+    unsigned long numSpeedyChanges_;
+    unsigned long lastResetPress_;
+    byte          curValue_;
+    byte          curSound_;
+    byte          soundPlaying_;
+    boolean       solenoidCycle_;
+
+  public:
+    SelfTestAndAudit();
+
+    int           run(int curState, boolean curStateChanged);
+    int           runBase(int curState, boolean curStateChanged, byte resetSwitch, byte slamSwitch=0xFF);
+    unsigned long lastSelfTestChangedTime();
+    void          setLastSelfTestChangedTime(unsigned long setSelfTestChange);
+};
 
 #endif

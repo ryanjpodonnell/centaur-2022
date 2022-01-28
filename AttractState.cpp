@@ -1,24 +1,28 @@
 #include "SharedVariables.h"
 
-byte RunAttractState(byte curState, boolean curStateChanged) {
+Attract::Attract() {
+  stateStatedTime_ = 0;
+  lastFlash_       = 0;
+}
+
+byte Attract::run(byte curState, boolean curStateChanged) {
   byte returnState = curState;
 
   if (curStateChanged) {
+    if (DEBUG_MESSAGES) {
+      Serial.write("Entering Attract State\n\r");
+    }
     BSOS_DisableSolenoidStack();
     BSOS_TurnOffAllLamps();
     BSOS_SetDisableFlippers(true);
-    if (DEBUG_MESSAGES) {
-      Serial.write("Entering Attract Mode\n\r");
-    }
     BSOS_SetDisplayCredits(Credits, true);
   }
 
   byte switchHit;
-
   unsigned long currentTime = g_machineState.currentTime();
   unsigned long seed = currentTime / 250;
-  if (seed != LastFlash) {
-    LastFlash = seed;
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
     if (((currentTime / 250) % 3) == 0) ShowLamp(LAMP_40K_BONUS, true);
     if (((currentTime / 250) % 3) == 1) ShowLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
     if (((currentTime / 250) % 3) == 2) ShowLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
@@ -37,9 +41,9 @@ byte RunAttractState(byte curState, boolean curStateChanged) {
       g_machineState.increaseCredits(true, 1);
       break;
     case SW_SELF_TEST_SWITCH:
-      if (currentTime - GetLastSelfTestChangedTime() > 250) {
+      if (currentTime - g_selfTestAndAudit.lastSelfTestChangedTime() > 250) {
         returnState = MACHINE_STATE_TEST_LIGHTS;
-        SetLastSelfTestChangedTime(currentTime);
+        g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
       }
       break;
     }
