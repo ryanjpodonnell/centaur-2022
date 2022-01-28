@@ -4,9 +4,6 @@
 /*********************************************************************
     Machine Options Variables
 *********************************************************************/
-boolean FreePlayMode = true;
-byte BallSaveNumSeconds = 5;
-byte BallsPerGame = 3;
 byte Credits = 0;
 byte MaximumCredits = 99;
 unsigned long HighScore = 0;
@@ -84,7 +81,7 @@ void loop() {
   unsigned long currentTime = millis();
   g_machineState.setCurrentTime(currentTime);
 
-  byte machineState = g_machineState.GetmachineState();
+  byte machineState = g_machineState.machineState();
   byte newMachineState = machineState;
   boolean machineStateChanged = g_machineState.machineStateChanged();
 

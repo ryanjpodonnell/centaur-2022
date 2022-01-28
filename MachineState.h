@@ -15,8 +15,10 @@
 
 class MachineState {
   private:
+    boolean       freePlayMode_;
     boolean       machineStateChanged_;
     boolean       samePlayerShootsAgain_;
+    byte          ballSaveNumSeconds_;
     byte          ballsPerGame_;
     byte          bonusMultipliers_[4];
     byte          bonuses_[4];
@@ -31,23 +33,25 @@ class MachineState {
 
   public:
     MachineState(byte id);
-    boolean       machineStateChanged();
-    boolean       samePlayerShootsAgain();
     boolean       incrementNumberOfPlayers();
+    boolean       machineStateChanged();
     boolean       resetNumberOfPlayers();
+    boolean       samePlayerShootsAgain();
+    byte          machineState();
+    byte          ballSaveNumSeconds();
     byte          bonus();
     byte          bonusMultiplier();
     byte          currentBallInPlay();
     byte          currentPlayer();
-    byte          GetmachineState();
-    byte          numberOfPlayers();
     byte          incrementCurrentPlayer();
+    byte          numberOfPlayers();
     byte          resetGame();
     int           initGamePlay();
     int           initNewBall(bool curStateChanged, byte playerNum, int ballNum);
     unsigned long currentTime();
     unsigned long lastTiltWarningTime();
     unsigned long score(byte player = 0xFF);
+    void          SetmachineState(byte id);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
@@ -57,7 +61,6 @@ class MachineState {
     void          setBonus(byte value);
     void          setCurrentTime(unsigned long value);
     void          setLastTiltWarningTime(unsigned long value);
-    void          SetmachineState(byte id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
     void          writeCoinToAudit(byte switchHit);

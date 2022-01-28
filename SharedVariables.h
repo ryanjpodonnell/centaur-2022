@@ -21,9 +21,6 @@
 /*********************************************************************
     Machine Options Variables
 *********************************************************************/
-extern boolean FreePlayMode;
-extern byte BallSaveNumSeconds;
-extern byte BallsPerGame;
 extern byte Credits;
 extern byte MaximumCredits;
 extern unsigned long HighScore;

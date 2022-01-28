@@ -59,7 +59,8 @@ int GameMode::manageGameMode() {
           ScoreAdditionAnimation = 0;
           g_displayHelper.showPlayerScores(0xFF, false, false);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
-          if (!BallSaveUsed && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BallSaveNumSeconds * 1000)) {
+          byte ballSaveNumSeconds = g_machineState.ballSaveNumSeconds();
+          if (!BallSaveUsed && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)ballSaveNumSeconds * 1000)) {
             BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
             BallSaveUsed = true;
             BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);

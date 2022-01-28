@@ -1,9 +1,11 @@
 #include "SharedVariables.h"
 
 MachineState::MachineState(byte id) {
-  currentPlayer_ = 0;
+  ballSaveNumSeconds_  = 5;
+  currentPlayer_       = 0;
+  freePlayMode_        = true;
   machineStateChanged_ = true;
-  machineStateId_ = id;
+  machineStateId_      = id;
 }
 
 boolean MachineState::machineStateChanged() {
@@ -15,7 +17,7 @@ boolean MachineState::samePlayerShootsAgain() {
 }
 
 boolean MachineState::incrementNumberOfPlayers() {
-  if (Credits < 1 && !FreePlayMode) return false;
+  if (Credits < 1 && !freePlayMode_) return false;
   if (currentNumPlayers_ >= 4) return false;
 
   currentNumPlayers_ += 1;
@@ -29,7 +31,7 @@ boolean MachineState::incrementNumberOfPlayers() {
 }
 
 boolean MachineState::resetNumberOfPlayers() {
-  if (Credits < 1 && !FreePlayMode) return false;
+  if (Credits < 1 && !freePlayMode_) return false;
 
   currentNumPlayers_ = 1;
 
@@ -39,6 +41,10 @@ boolean MachineState::resetNumberOfPlayers() {
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
+}
+
+byte MachineState::ballSaveNumSeconds() {
+  return ballSaveNumSeconds_;
 }
 
 byte MachineState::bonus() {
@@ -57,7 +63,7 @@ byte MachineState::currentPlayer() {
   return currentPlayer_;
 }
 
-byte MachineState::GetmachineState() {
+byte MachineState::machineState() {
   return machineStateId_;
 }
 
@@ -85,9 +91,9 @@ byte MachineState::incrementCurrentPlayer() {
 }
 
 byte MachineState::resetGame() {
-  if (FreePlayMode) {
+  if (freePlayMode_) {
     return MACHINE_STATE_INIT_GAMEPLAY;
-  } else if (Credits >= 1 && !FreePlayMode) {
+  } else if (Credits >= 1 && !freePlayMode_) {
     Credits -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
     BSOS_SetDisplayCredits(Credits);
@@ -135,7 +141,7 @@ int MachineState::initNewBall(bool curStateChanged, byte playerNum, int ballNum)
     BSOS_SetDisplayBallInPlay(ballNum);
     BSOS_SetLampState(LAMP_TILT, 0);
 
-    if (BallSaveNumSeconds > 0) {
+    if (ballSaveNumSeconds_ > 0) {
       BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
     }
 
