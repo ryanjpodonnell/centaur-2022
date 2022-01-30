@@ -48,7 +48,7 @@ int GameMode::manageGameMode() {
       // Make sure the ball stays on the sensor for at least
       // 0.5 seconds to be sure that it's not bouncing
       if ((currentTime - ballTimeInTrough_) > 500) {
-        if (ballFirstSwitchHitTime_ == 0 && NumTiltWarnings <= MaxTiltWarnings) {
+        if (ballFirstSwitchHitTime_ == 0 && !g_machineState.currentPlayerTilted()) {
           // Nothing hit yet, so return the ball to the player
           BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime);
           ballTimeInTrough_ = 0;
@@ -59,10 +59,9 @@ int GameMode::manageGameMode() {
           ScoreAdditionAnimation = 0;
           g_displayHelper.showPlayerScores(0xFF, false, false);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
-          byte ballSaveNumSeconds = g_machineState.ballSaveNumSeconds();
-          if (!BallSaveUsed && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)ballSaveNumSeconds * 1000)) {
+          if (!g_machineState.ballSaveUsed() && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000)) {
             BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
-            BallSaveUsed = true;
+            g_machineState.setBallSaveUsed(true);
             BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
             ballTimeInTrough_ = currentTime;
             returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -100,7 +99,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
     returnState = CountdownBonus(curStateChanged);
     g_displayHelper.showPlayerScores(0xFF, false, false);
   } else if (curState == MACHINE_STATE_BALL_OVER) {
-    BSOS_SetDisplayCredits(Credits);
+    BSOS_SetDisplayCredits(g_machineState.credits());
 
     if (g_machineState.samePlayerShootsAgain()) {
       returnState = MACHINE_STATE_INIT_NEW_BALL;
@@ -111,8 +110,27 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
   }
 
   byte switchHit;
-  if (NumTiltWarnings <= MaxTiltWarnings) {
-    while ( (switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
+  if (g_machineState.currentPlayerTilted()) {
+    switchHit = BSOS_PullFirstFromSwitchStack();
+
+    while (switchHit != SWITCH_STACK_EMPTY) {
+      switch (switchHit) {
+        case SW_SELF_TEST_SWITCH:
+          returnState = MACHINE_STATE_TEST_LIGHTS;
+          g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
+          break;
+        case SW_COIN_1:
+        case SW_COIN_2:
+        case SW_COIN_3:
+          g_machineState.writeCoinToAudit(switchHit);
+          g_machineState.increaseCredits(true, 1);
+          break;
+      }
+
+      switchHit = BSOS_PullFirstFromSwitchStack();
+    }
+  } else {
+    while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
 
       if (DEBUG_MESSAGES) {
         char buf[128];
@@ -124,16 +142,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
 
       switch (switchHit) {
         case SW_TILT:
-          if ((currentTime - lastTiltWarningTime) > TILT_WARNING_DEBOUNCE_TIME) {
-            g_machineState.setLastTiltWarningTime(currentTime);
-            NumTiltWarnings += 1;
-            if (NumTiltWarnings > MaxTiltWarnings) {
-              BSOS_DisableSolenoidStack();
-              BSOS_SetDisableFlippers(true);
-              BSOS_TurnOffAllLamps();
-              BSOS_SetLampState(LAMP_TILT, 1);
-            }
-          }
+          g_machineState.registerTiltWarning();
           break;
         case SW_SELF_TEST_SWITCH:
           returnState = MACHINE_STATE_TEST_LIGHTS;
@@ -167,26 +176,6 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
           }
           break;
       }
-    }
-  } else {
-    // We're tilted, so just wait for outhole
-    switchHit = BSOS_PullFirstFromSwitchStack();
-
-    while (switchHit != SWITCH_STACK_EMPTY) {
-      switch (switchHit) {
-        case SW_SELF_TEST_SWITCH:
-          returnState = MACHINE_STATE_TEST_LIGHTS;
-          g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
-          break;
-        case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          g_machineState.writeCoinToAudit(switchHit);
-          g_machineState.increaseCredits(true, 1);
-          break;
-      }
-
-      switchHit = BSOS_PullFirstFromSwitchStack();
     }
   }
 

@@ -48,7 +48,7 @@ void Attract::handleNewState() {
   BSOS_DisableSolenoidStack();
   BSOS_TurnOffAllLamps();
   BSOS_SetDisableFlippers(true);
-  BSOS_SetDisplayCredits(Credits, true);
+  BSOS_SetDisplayCredits(g_machineState.credits(), true);
 
   g_machineState.setScore(0, 0);
   g_machineState.setScore(0, 1);

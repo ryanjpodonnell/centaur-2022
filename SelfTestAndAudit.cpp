@@ -269,8 +269,8 @@ int SelfTestAndAudit::run(int curState, boolean curStateChanged) {
   }
 
   if (returnState == MACHINE_STATE_ATTRACT) {
-    BSOS_SetDisplayCredits(Credits, true);
-    ReadStoredParameters();
+    BSOS_SetDisplayCredits(g_machineState.credits(), true);
+    g_machineState.readStoredParameters();
   }
 
   return returnState;

@@ -5,8 +5,6 @@
 #define GAME_MODE_UNSTRUCTURED_PLAY 1
 #define GAME_MODE_INITIALIZE        255
 
-#define TILT_WARNING_DEBOUNCE_TIME  1000
-
 class GameMode {
   private:
     byte gameModeId_;

@@ -10,36 +10,47 @@
 #define MACHINE_STATE_BALL_OVER       100
 #define MACHINE_STATE_MATCH_MODE      110
 
-#define MAX_DISPLAY_BONUS 175
-#define BALLS_PER_GAME 3
+#define BALLS_PER_GAME                  3
+#define BALL_SAVE_NUMBER_OF_SECONDS     5
+#define DEFAULT_HIGH_SCORE              10000
+#define MAXIMUM_NUMBER_OF_CREDITS       99
+#define MAXIMUM_NUMBER_OF_TILT_WARNINGS 2
+#define MAX_DISPLAY_BONUS               175
+#define TILT_WARNING_DEBOUNCE_TIME      1000
 
 class MachineState {
   private:
+    boolean       ballSaveUsed_;
+    boolean       extraBallCollected_;
     boolean       freePlayMode_;
     boolean       machineStateChanged_;
     boolean       samePlayerShootsAgain_;
-    byte          ballSaveNumSeconds_;
     byte          ballsPerGame_;
     byte          bonusMultipliers_[4];
     byte          bonuses_[4];
+    byte          credits_;
     byte          currentBallInPlay_;
-    byte          numberOfPlayers_;
     byte          currentPlayer_;
+    byte          numberOfPlayers_;
+    byte          numberOfTiltWarnings_;
     byte          scoreMultiplier_;
     int           machineStateId_;
     unsigned long currentTime_;
+    unsigned long highScore_;
     unsigned long lastTiltWarningTime_;
     unsigned long scores_[4];
 
   public:
     MachineState(byte id);
+    boolean       ballSaveUsed();
+    boolean       currentPlayerTilted();
     boolean       incrementNumberOfPlayers();
     boolean       machineStateChanged();
     boolean       resetPlayers();
     boolean       samePlayerShootsAgain();
-    byte          ballSaveNumSeconds();
     byte          bonus();
     byte          bonusMultiplier();
+    byte          credits();
     byte          currentBallInPlay();
     byte          currentPlayer();
     byte          incrementCurrentPlayer();
@@ -51,16 +62,20 @@ class MachineState {
     unsigned long currentTime();
     unsigned long lastTiltWarningTime();
     unsigned long score(byte player = 0xFF);
-    void          setMachineState(int id);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
+    void          readStoredParameters();
+    void          registerTiltWarning();
+    void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
+    void          setCredits(byte value);
     void          setCurrentTime(unsigned long value);
-    void          setLastTiltWarningTime(unsigned long value);
+    void          setHighScore(unsigned long value);
+    void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
     void          writeCoinToAudit(byte switchHit);

@@ -15,7 +15,7 @@ int CountdownBonus(boolean curStateChanged) {
   unsigned long countdownDelayTime = 250 - (currentBonus * 3);
   if ((currentTime - LastCountdownReportTime) > countdownDelayTime) {
     if (currentBonus) {
-      if (NumTiltWarnings <= MaxTiltWarnings) {
+      if (!g_machineState.currentPlayerTilted()) {
         unsigned long bonusMultiplier = (unsigned long)g_machineState.bonusMultiplier();
         unsigned long bonusValue = bonusMultiplier * 1000;
         g_machineState.increaseScore(bonusValue);

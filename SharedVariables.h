@@ -11,28 +11,10 @@
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include "Sound.h"
-#include "StoredParameters.h"
 
 #ifndef SHARED_VARIABLES_H
 #define SHARED_VARIABLES_H
 #define DEBUG_MESSAGES  1
-
-
-/*********************************************************************
-    Machine Options Variables
-*********************************************************************/
-extern byte Credits;
-extern byte MaximumCredits;
-extern unsigned long HighScore;
-
-
-/*********************************************************************
-    Ball State Variables
-*********************************************************************/
-extern boolean BallSaveUsed;
-extern boolean ExtraBallCollected;
-extern byte MaxTiltWarnings;
-extern byte NumTiltWarnings;
 
 
 /*********************************************************************
@@ -55,6 +37,7 @@ extern unsigned long BonusXAnimationStart;
 extern unsigned long LastRemainingAnimatedScoreShown;
 extern unsigned long ScoreAdditionAnimation;
 extern unsigned long ScoreAdditionAnimationStartTime;
+
 
 extern Attract          g_attract;
 extern Debug            g_debug;

@@ -2,23 +2,6 @@
 
 
 /*********************************************************************
-    Machine Options Variables
-*********************************************************************/
-byte Credits = 0;
-byte MaximumCredits = 99;
-unsigned long HighScore = 0;
-
-
-/*********************************************************************
-    Ball State Variables
-*********************************************************************/
-boolean BallSaveUsed = false;
-boolean ExtraBallCollected = false;
-byte MaxTiltWarnings = 2;
-byte NumTiltWarnings = 0;
-
-
-/*********************************************************************
     Attract State Variables
 *********************************************************************/
 unsigned long BonusCountDownEndTime = 0;
@@ -57,9 +40,7 @@ struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
 };
 
 void setup() {
-  if (DEBUG_MESSAGES) {
-    Serial.begin(57600);
-  }
+  if (DEBUG_MESSAGES) Serial.begin(57600);
 
   BSOS_SetupGameSwitches(
       NUM_SWITCHES_WITH_TRIGGERS,
@@ -71,10 +52,9 @@ void setup() {
   BSOS_InitializeMPU();
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
+  BSOS_SetCoinLockout(false);
 
-  // Read parameters from EEProm
-  ReadStoredParameters();
-  BSOS_SetCoinLockout((Credits >= MaximumCredits) ? true : false);
+  g_machineState.readStoredParameters();
 }
 
 void loop() {
