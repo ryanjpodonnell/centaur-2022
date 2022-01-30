@@ -16,7 +16,9 @@ int Attract::run(int curState, boolean curStateChanged) {
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
     case(SW_CREDIT_BUTTON):
-      if (g_machineState.resetNumberOfPlayers()) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      if (g_machineState.resetPlayers()) {
+        returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      }
       break;
     case SW_COIN_1:
     case SW_COIN_2:

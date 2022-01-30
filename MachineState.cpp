@@ -20,23 +20,29 @@ boolean MachineState::incrementNumberOfPlayers() {
   if (Credits < 1 && !freePlayMode_) return false;
   if (currentNumPlayers_ >= 4) return false;
 
+  if (!freePlayMode_) {
+    Credits -= 1;
+    BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, Credits);
+    BSOS_SetDisplayCredits(Credits);
+  }
+
   currentNumPlayers_ += 1;
 
   BSOS_SetDisplay(currentNumPlayers_ - 1, 0);
-  BSOS_SetDisplayBlank(currentNumPlayers_ - 1, 0x30);
+  BSOS_SetDisplayBlank(currentNumPlayers_ - 1, 0x60);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
 }
 
-boolean MachineState::resetNumberOfPlayers() {
+boolean MachineState::resetPlayers() {
   if (Credits < 1 && !freePlayMode_) return false;
 
   currentNumPlayers_ = 1;
 
   BSOS_SetDisplay(0, 0);
-  BSOS_SetDisplayBlank(0, 0x30);
+  BSOS_SetDisplayBlank(0, 0x60);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 

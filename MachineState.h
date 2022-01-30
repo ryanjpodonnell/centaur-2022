@@ -35,7 +35,7 @@ class MachineState {
     MachineState(byte id);
     boolean       incrementNumberOfPlayers();
     boolean       machineStateChanged();
-    boolean       resetNumberOfPlayers();
+    boolean       resetPlayers();
     boolean       samePlayerShootsAgain();
     byte          ballSaveNumSeconds();
     byte          bonus();
