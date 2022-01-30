@@ -1,11 +1,18 @@
 #include "SharedVariables.h"
 
 MachineState::MachineState(byte id) {
-  ballSaveNumSeconds_  = 5;
-  currentPlayer_       = 0;
-  freePlayMode_        = true;
-  machineStateChanged_ = true;
-  machineStateId_      = id;
+  ballSaveNumSeconds_      = 5;
+  byte bonusMultipliers_[] = { 1, 1, 1, 1};
+  byte bonuses[]           = { 0, 0, 0, 0};
+  currentBallInPlay_       = 0;
+  currentPlayer_           = 0;
+  freePlayMode_            = true;
+  machineStateChanged_     = true;
+  machineStateId_          = id;
+  numberOfPlayers_         = 0;
+  samePlayerShootsAgain_   = false;
+
+  memset(scores_, 0, 4 * sizeof(unsigned long));
 }
 
 boolean MachineState::machineStateChanged() {
@@ -18,7 +25,7 @@ boolean MachineState::samePlayerShootsAgain() {
 
 boolean MachineState::incrementNumberOfPlayers() {
   if (Credits < 1 && !freePlayMode_) return false;
-  if (currentNumPlayers_ >= 4) return false;
+  if (numberOfPlayers_ >= 4) return false;
 
   if (!freePlayMode_) {
     Credits -= 1;
@@ -26,10 +33,9 @@ boolean MachineState::incrementNumberOfPlayers() {
     BSOS_SetDisplayCredits(Credits);
   }
 
-  currentNumPlayers_ += 1;
-
-  BSOS_SetDisplay(currentNumPlayers_ - 1, 0);
-  BSOS_SetDisplayBlank(currentNumPlayers_ - 1, 0x60);
+  g_machineState.setScore(numberOfPlayers_, 0);
+  g_displayHelper.showPlayerScore(numberOfPlayers_);
+  numberOfPlayers_ += 1;
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
@@ -39,7 +45,7 @@ boolean MachineState::incrementNumberOfPlayers() {
 boolean MachineState::resetPlayers() {
   if (Credits < 1 && !freePlayMode_) return false;
 
-  currentNumPlayers_ = 1;
+  numberOfPlayers_ = 1;
 
   BSOS_SetDisplay(0, 0);
   BSOS_SetDisplayBlank(0, 0x60);
@@ -74,19 +80,19 @@ int MachineState::machineState() {
 }
 
 byte MachineState::numberOfPlayers() {
-  return currentNumPlayers_;
+  return numberOfPlayers_;
 }
 
 byte MachineState::incrementCurrentPlayer() {
   currentPlayer_ += 1;
 
-  if (currentPlayer_ >= currentNumPlayers_) {
+  if (currentPlayer_ >= numberOfPlayers_) {
     currentPlayer_ = 0;
     currentBallInPlay_ += 1;
   }
 
   if (currentBallInPlay_ > BALLS_PER_GAME) {
-    for (int count = 0; count < currentNumPlayers_; count++) {
+    for (int count = 0; count < numberOfPlayers_; count++) {
       BSOS_SetDisplay(count, scores_[count], true, 2);
     }
 
@@ -110,9 +116,7 @@ byte MachineState::resetGame() {
 }
 
 int MachineState::initGamePlay() {
-  if (DEBUG_MESSAGES) {
-    Serial.write("Starting game\n\r");
-  }
+  if (DEBUG_MESSAGES) Serial.write("Starting game\n\r");
 
   BSOS_SetDisableFlippers(false);
   BSOS_EnableSolenoidStack();
@@ -123,18 +127,7 @@ int MachineState::initGamePlay() {
   BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
 
   g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, true);
-
-  for (int count = 0; count < 4; count++) {
-    bonusMultipliers_[count] = 1;
-    bonuses_[count] = 0;
-  }
-  memset(scores_, 0, 4 * sizeof(unsigned long));
-
-  samePlayerShootsAgain_ = false;
-  currentBallInPlay_ = 1;
-  currentNumPlayers_ = 1;
-  currentPlayer_ = 0;
-  g_displayHelper.showPlayerScores(0xFF, false, false);
+  g_displayHelper.showPlayerScores(0xFF);
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }
@@ -265,7 +258,7 @@ void MachineState::setMachineState(int id) {
 }
 
 void MachineState::setNumberOfPlayers(byte value) {
-  currentNumPlayers_ = value;
+  numberOfPlayers_ = value;
 }
 
 void MachineState::setScore(unsigned long value, byte player) {

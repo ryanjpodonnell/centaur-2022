@@ -23,7 +23,7 @@ class MachineState {
     byte          bonusMultipliers_[4];
     byte          bonuses_[4];
     byte          currentBallInPlay_;
-    byte          currentNumPlayers_;
+    byte          numberOfPlayers_;
     byte          currentPlayer_;
     byte          scoreMultiplier_;
     int           machineStateId_;

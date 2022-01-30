@@ -22,14 +22,14 @@ class DisplayHelper {
     void flashScore(byte playerNumber, unsigned long score);
     void scrollScore(byte playerNumber, unsigned long score);
     void showAnimatedPlayerScore(byte playerNumber, unsigned long score);
-    void showPlayerScore(byte playerIterator, byte playerNumber, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue);
     void showScoreOverride(byte playerNumber);
 
   public:
     DisplayHelper();
 
     void overrideScoreDisplay(byte playerNumber, unsigned long score, boolean animate);
-    void showPlayerScores(byte playerNumber, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue = 0);
+    void showPlayerScore(byte playerNumber, byte playerIterator = 0xFF, boolean flashCurrent = false, boolean dashCurrent = false, unsigned long allScoresShowValue = 0);
+    void showPlayerScores(byte playerNumber, boolean flashCurrent = false, boolean dashCurrent = false, unsigned long allScoresShowValue = 0);
     void startScoreAnimation(unsigned long scoreToAnimate);
 };
 
