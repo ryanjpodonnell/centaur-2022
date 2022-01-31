@@ -1,20 +1,5 @@
 #include "SharedVariables.h"
 
-
-/*********************************************************************
-    Bonus Variables
-*********************************************************************/
-unsigned long BonusXAnimationStart;
-
-
-/*********************************************************************
-    Display Variables
-*********************************************************************/
-unsigned long LastRemainingAnimatedScoreShown;
-unsigned long ScoreAdditionAnimation;
-unsigned long ScoreAdditionAnimationStartTime;
-
-
 Attract          g_attract;
 CountdownBonus   g_countdownBonus;
 Debug            g_debug;

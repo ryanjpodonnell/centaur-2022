@@ -65,19 +65,20 @@ class MachineState {
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
-    void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
     void          readStoredParameters();
     void          registerTiltWarning();
     void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
+    void          setBonusMultiplier(byte value);
     void          setCredits(byte value);
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
     void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
+    void          setScoreMultiplier(byte value);
     void          writeCoinToAudit(byte switchHit);
 };
 

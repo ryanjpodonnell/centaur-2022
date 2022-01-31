@@ -5,13 +5,11 @@ GameMode::GameMode(byte id) {
 }
 
 void GameMode::setGameMode(byte id) {
-  gameModeId_ = id;
-
-  gameModeStartTime_ = 0;
-  gameModeEndTime_ = 0;
-
   ballFirstSwitchHitTime_ = 0;
-  ballTimeInTrough_ = 0;
+  ballTimeInTrough_       = 0;
+  gameModeEndTime_        = 0;
+  gameModeId_             = id;
+  gameModeStartTime_      = 0;
 
   if (DEBUG_MESSAGES) {
     char buf[129];
@@ -36,7 +34,7 @@ int GameMode::manageGameMode() {
       }
 
       if (gameModeEndTime_ != 0 && currentTime > gameModeEndTime_) {
-        g_displayHelper.showPlayerScores(0xFF, false, false);
+        g_displayHelper.showPlayerScores(0xFF);
       }
       break;
   }
@@ -54,10 +52,7 @@ int GameMode::manageGameMode() {
           ballTimeInTrough_ = 0;
           returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
         } else {
-          g_machineState.increaseScore(ScoreAdditionAnimation);
-          ScoreAdditionAnimationStartTime = 0;
-          ScoreAdditionAnimation = 0;
-          g_displayHelper.showPlayerScores(0xFF, false, false);
+          g_displayHelper.showPlayerScores(0xFF);
           // if we haven't used the ball save, and we're under the time limit, then save the ball
           if (!g_machineState.ballSaveUsed() && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000)) {
             BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
@@ -66,7 +61,7 @@ int GameMode::manageGameMode() {
             ballTimeInTrough_ = currentTime;
             returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
           } else {
-            g_displayHelper.showPlayerScores(0xFF, false, false);
+            g_displayHelper.showPlayerScores(0xFF);
 
             returnState = MACHINE_STATE_COUNTDOWN_BONUS;
           }
@@ -86,7 +81,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
   byte currentPlayer = g_machineState.currentPlayer();
   byte currentBallInPlay = g_machineState.currentBallInPlay();
 
-  g_displayHelper.showPlayerScores(currentPlayer, false, false);
+  g_displayHelper.showPlayerScores(currentPlayer);
 
   // Very first time into gameplay loop
   if (curState == MACHINE_STATE_INIT_GAMEPLAY) {

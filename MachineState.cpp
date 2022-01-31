@@ -25,14 +25,6 @@ boolean MachineState::currentPlayerTilted() {
   return numberOfTiltWarnings_ > MAXIMUM_NUMBER_OF_TILT_WARNINGS;
 }
 
-boolean MachineState::machineStateChanged() {
-  return machineStateChanged_;
-}
-
-boolean MachineState::samePlayerShootsAgain() {
-  return samePlayerShootsAgain_;
-}
-
 boolean MachineState::incrementNumberOfPlayers() {
   if (credits_ < 1 && !freePlayMode_) return false;
   if (numberOfPlayers_ >= 4) return false;
@@ -43,13 +35,17 @@ boolean MachineState::incrementNumberOfPlayers() {
     BSOS_SetDisplayCredits(credits_);
   }
 
-  g_machineState.setScore(numberOfPlayers_, 0);
+  setScore(numberOfPlayers_, 0);
   g_displayHelper.showPlayerScore(numberOfPlayers_);
   numberOfPlayers_ += 1;
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
+}
+
+boolean MachineState::machineStateChanged() {
+  return machineStateChanged_;
 }
 
 boolean MachineState::resetPlayers() {
@@ -61,13 +57,17 @@ boolean MachineState::resetPlayers() {
     BSOS_SetDisplayCredits(credits_);
   }
 
-  g_machineState.setScore(0, 0);
+  setScore(0, 0);
   g_displayHelper.showPlayerScore(0);
   numberOfPlayers_ = 1;
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
+}
+
+boolean MachineState::samePlayerShootsAgain() {
+  return samePlayerShootsAgain_;
 }
 
 byte MachineState::bonus() {
@@ -166,13 +166,9 @@ int MachineState::initNewBall(bool curStateChanged, byte playerNum, int ballNum)
     }
 
     // Reset progress unless holdover awards
-    bonuses_[currentPlayer_] = 0;
-    bonusMultipliers_[currentPlayer_] = 1;
-
-    scoreMultiplier_ = 1;
-    ScoreAdditionAnimation = 0;
-    ScoreAdditionAnimationStartTime = 0;
-    BonusXAnimationStart = 0;
+    setBonusMultiplier(1);
+    setBonus(0);
+    setScoreMultiplier(1);
   }
 
   // We should only consider the ball initialized when
@@ -230,18 +226,6 @@ void MachineState::increaseBonus(byte amountToAdd) {
   }
 }
 
-void MachineState::increaseBonusMultiplier() {
-  boolean soundPlayed = false;
-  if (bonusMultipliers_[currentPlayer_] < 5) {
-    bonusMultipliers_[currentPlayer_] += 1;
-    BonusXAnimationStart = currentTime_;
-
-    if (bonusMultipliers_[currentPlayer_] == 4) {
-      bonusMultipliers_[currentPlayer_] += 1;
-    }
-  }
-}
-
 void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
   credits_ += numToAdd;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
@@ -281,6 +265,11 @@ void MachineState::setBonus(byte value) {
   bonuses_[currentPlayer_] = value;
 }
 
+void MachineState::setBonusMultiplier(byte value) {
+  if (value > 4) value = 4;
+  bonusMultipliers_[currentPlayer_] = value;
+}
+
 void MachineState::setCredits(byte value) {
   credits_ = value;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
@@ -301,6 +290,10 @@ void MachineState::setNumberOfPlayers(byte value) {
 void MachineState::setScore(unsigned long value, byte player) {
   if (player == 0xFF) player = currentPlayer_;
   scores_[player] = value;
+}
+
+void MachineState::setScoreMultiplier(byte value) {
+  scoreMultiplier_ = value;
 }
 
 void MachineState::writeCoinToAudit(byte switchHit) {

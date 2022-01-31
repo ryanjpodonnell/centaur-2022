@@ -30,7 +30,6 @@ class DisplayHelper {
     void overrideScoreDisplay(byte playerNumber, unsigned long score, boolean animate);
     void showPlayerScore(byte playerNumber, byte playerIterator = 0xFF, boolean flashCurrent = false, boolean dashCurrent = false, unsigned long allScoresShowValue = 0);
     void showPlayerScores(byte playerNumber, boolean flashCurrent = false, boolean dashCurrent = false, unsigned long allScoresShowValue = 0);
-    void startScoreAnimation(unsigned long scoreToAnimate);
 };
 
 #endif

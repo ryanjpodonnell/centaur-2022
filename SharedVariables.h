@@ -16,21 +16,6 @@
 #define SHARED_VARIABLES_H
 #define DEBUG_MESSAGES  1
 
-
-/*********************************************************************
-    Bonus Variables
-*********************************************************************/
-extern unsigned long BonusXAnimationStart;
-
-
-/*********************************************************************
-    Display Variables
-*********************************************************************/
-extern unsigned long LastRemainingAnimatedScoreShown;
-extern unsigned long ScoreAdditionAnimation;
-extern unsigned long ScoreAdditionAnimationStartTime;
-
-
 extern Attract          g_attract;
 extern CountdownBonus   g_countdownBonus;
 extern Debug            g_debug;

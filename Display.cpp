@@ -59,15 +59,6 @@ void DisplayHelper::showPlayerScores(byte playerNumber, boolean flashCurrent, bo
   }
 }
 
-void DisplayHelper::startScoreAnimation(unsigned long scoreToAnimate) {
-  if (ScoreAdditionAnimation != 0) {
-    g_machineState.increaseScore(ScoreAdditionAnimation);
-  }
-  ScoreAdditionAnimation = scoreToAnimate;
-  ScoreAdditionAnimationStartTime = g_machineState.currentTime();
-  LastRemainingAnimatedScoreShown = 0;
-}
-
 
 /*********************************************************************
     Private
