@@ -18,159 +18,152 @@ void GameMode::setGameMode(byte id) {
   }
 }
 
-int GameMode::manageGameMode() {
-  int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-  unsigned long currentTime = g_machineState.currentTime();
+int GameMode::run(int curState, boolean curStateChanged) {
+  byte currentBallInPlay    = g_machineState.currentBallInPlay();
+  byte currentPlayer        = g_machineState.currentPlayer();
+  int returnState           = curState;
 
-  switch (gameModeId_) {
-    case GAME_MODE_SKILL_SHOT:
-      if (gameModeStartTime_ == 0) {
-        gameModeStartTime_ = currentTime;
-        gameModeEndTime_ = 0;
-      }
+  g_displayHelper.showPlayerScores(currentPlayer);
 
-      if (ballFirstSwitchHitTime_ != 0) {
-        setGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
-      }
-
-      if (gameModeEndTime_ != 0 && currentTime > gameModeEndTime_) {
-        g_displayHelper.showPlayerScores(0xFF);
-      }
-      break;
-  }
-
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    if (ballTimeInTrough_ == 0) {
-      ballTimeInTrough_ = currentTime;
-    } else {
-      // Make sure the ball stays on the sensor for at least
-      // 0.5 seconds to be sure that it's not bouncing
-      if ((currentTime - ballTimeInTrough_) > 500) {
-        if (ballFirstSwitchHitTime_ == 0 && !g_machineState.currentPlayerTilted()) {
-          // Nothing hit yet, so return the ball to the player
-          BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime);
-          ballTimeInTrough_ = 0;
-          returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-        } else {
-          g_displayHelper.showPlayerScores(0xFF);
-          // if we haven't used the ball save, and we're under the time limit, then save the ball
-          if (!g_machineState.ballSaveUsed() && ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000)) {
-            BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
-            g_machineState.setBallSaveUsed(true);
-            BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
-            ballTimeInTrough_ = currentTime;
-            returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-          } else {
-            g_displayHelper.showPlayerScores(0xFF);
-
-            returnState = MACHINE_STATE_COUNTDOWN_BONUS;
-          }
-        }
-      }
-    }
+  if (g_machineState.currentPlayerTilted()) {
+    returnState = manageTilt(returnState);
   } else {
-    ballTimeInTrough_ = 0;
+    returnState = manageGameBase(returnState);
+    returnState = manageGameMode(returnState);
+
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+      returnState = manageBallInTrough(returnState);
+    } else {
+      ballTimeInTrough_ = 0;
+    }
   }
 
   return returnState;
 }
 
-int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
-  int returnState = curState;
+int GameMode::manageBallInTrough(int returnState) {
   unsigned long currentTime = g_machineState.currentTime();
-  byte currentPlayer = g_machineState.currentPlayer();
-  byte currentBallInPlay = g_machineState.currentBallInPlay();
 
-  g_displayHelper.showPlayerScores(currentPlayer);
+  if (ballTimeInTrough_ == 0) ballTimeInTrough_ = currentTime;
+  if ((currentTime - ballTimeInTrough_) <= 500) return returnState;
 
-  // Very first time into gameplay loop
-  if (curState == MACHINE_STATE_INIT_GAMEPLAY) {
-    returnState = g_machineState.initGamePlay();
-  } else if (curState == MACHINE_STATE_INIT_NEW_BALL) {
-    returnState = g_machineState.initNewBall(curStateChanged, currentPlayer, currentBallInPlay);
-  } else if (curState == MACHINE_STATE_NORMAL_GAMEPLAY) {
-    returnState = manageGameMode();
-  } else if (curState == MACHINE_STATE_COUNTDOWN_BONUS) {
-    returnState = g_countdownBonus.run(curStateChanged);
-  } else if (curState == MACHINE_STATE_BALL_OVER) {
-    BSOS_SetDisplayCredits(g_machineState.credits());
-
-    if (g_machineState.samePlayerShootsAgain()) {
-      returnState = MACHINE_STATE_INIT_NEW_BALL;
-    } else {
-      returnState = g_machineState.incrementCurrentPlayer();
-    }
-  } else if (curState == MACHINE_STATE_MATCH_MODE) {
+  if (ballFirstSwitchHitTime_ == 0) {
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime);
+  } else if (!g_machineState.ballSaveUsed() &&
+      ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000)) {
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
+    g_machineState.setBallSaveUsed(true);
+    BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
+    ballTimeInTrough_ = currentTime;
+    returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+  } else {
+    returnState = MACHINE_STATE_COUNTDOWN_BONUS;
   }
 
+  return returnState;
+}
+
+int GameMode::manageGameBase(int returnState) {
+  unsigned long currentTime = g_machineState.currentTime();
+
   byte switchHit;
-  if (g_machineState.currentPlayerTilted()) {
+  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
+    if (DEBUG_MESSAGES) {
+      char buf[128];
+      sprintf(buf, "Switch Hit = %d\n", switchHit);
+      Serial.write(buf);
+    }
+
+    switch (switchHit) {
+      case SW_TILT:
+        g_machineState.registerTiltWarning();
+        break;
+      case SW_SELF_TEST_SWITCH:
+        returnState = MACHINE_STATE_TEST_LIGHTS;
+        g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
+        break;
+      case SW_10_POINT_REBOUND:
+      case SW_1ST_INLINE_DROP_TARGET:
+      case SW_2ND_INLINE_DROP_TARGET:
+      case SW_3RD_INLINE_DROP_TARGET:
+      case SW_4TH_INLINE_DROP_TARGET:
+      case SW_B_DROP_TARGET:
+      case SW_INLANE_BACK_TARGET:
+      case SW_LEFT_OUTLANE:
+      case SW_LEFT_RETURN_LANE:
+      case SW_LEFT_SIDE_RO_BUTTON:
+      case SW_LEFT_SLINGSHOT:
+      case SW_LEFT_THUMPER_BUMPER:
+      case SW_ORBS_RIGHT_LANE_TARGET:
+      case SW_O_DROP_TARGET:
+      case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
+      case SW_RIGHT_4_DROP_TARGET_1:
+      case SW_RIGHT_4_DROP_TARGET_2:
+      case SW_RIGHT_4_DROP_TARGET_3:
+      case SW_RIGHT_4_DROP_TARGET_4:
+      case SW_RIGHT_OUTLANE:
+      case SW_RIGHT_RETURN_LANE:
+      case SW_RIGHT_SLINGSHOT:
+      case SW_RIGHT_THUMPER_BUMPER:
+      case SW_R_DROP_TARGET:
+      case SW_S_DROP_TARGET:
+      case SW_TOP_LEFT_LANE:
+      case SW_TOP_LEFT_LANE_RO_BUTTON:
+      case SW_TOP_MIDDLE_LANE:
+      case SW_TOP_RIGHT_LANE:
+      case SW_TOP_SPOT_1_THROUGH_4_TARGET:
+        g_machineState.increaseScore(10);
+        if (ballFirstSwitchHitTime_ == 0) ballFirstSwitchHitTime_ = currentTime;
+        break;
+      case SW_COIN_1:
+      case SW_COIN_2:
+      case SW_COIN_3:
+        g_machineState.writeCoinToAudit(switchHit);
+        g_machineState.increaseCredits(true, 1);
+        break;
+      case SW_CREDIT_BUTTON:
+        if (DEBUG_MESSAGES) {
+          Serial.write("Start game button pressed\n\r");
+        }
+
+        if (g_machineState.currentBallInPlay() == 1) {
+          g_machineState.incrementNumberOfPlayers();
+        } else {
+          returnState = g_machineState.resetGame();
+        }
+        break;
+    }
+  }
+}
+
+int GameMode::manageGameMode(int returnState) {
+  switch (gameModeId_) {
+    case GAME_MODE_SKILL_SHOT:
+      break;
+  }
+
+  return returnState;
+}
+
+int GameMode::manageTilt(int returnState) {
+  unsigned long currentTime = g_machineState.currentTime();
+
+  byte switchHit;
+  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
+    switch (switchHit) {
+      case SW_SELF_TEST_SWITCH:
+        returnState = MACHINE_STATE_TEST_LIGHTS;
+        g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
+        break;
+      case SW_COIN_1:
+      case SW_COIN_2:
+      case SW_COIN_3:
+        g_machineState.writeCoinToAudit(switchHit);
+        g_machineState.increaseCredits(true, 1);
+        break;
+    }
+
     switchHit = BSOS_PullFirstFromSwitchStack();
-
-    while (switchHit != SWITCH_STACK_EMPTY) {
-      switch (switchHit) {
-        case SW_SELF_TEST_SWITCH:
-          returnState = MACHINE_STATE_TEST_LIGHTS;
-          g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
-          break;
-        case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          g_machineState.writeCoinToAudit(switchHit);
-          g_machineState.increaseCredits(true, 1);
-          break;
-      }
-
-      switchHit = BSOS_PullFirstFromSwitchStack();
-    }
-  } else {
-    while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
-
-      if (DEBUG_MESSAGES) {
-        char buf[128];
-        sprintf(buf, "Switch Hit = %d\n", switchHit);
-        Serial.write(buf);
-      }
-
-      unsigned long lastTiltWarningTime = g_machineState.lastTiltWarningTime();
-
-      switch (switchHit) {
-        case SW_TILT:
-          g_machineState.registerTiltWarning();
-          break;
-        case SW_SELF_TEST_SWITCH:
-          returnState = MACHINE_STATE_TEST_LIGHTS;
-          g_selfTestAndAudit.setLastSelfTestChangedTime(currentTime);
-          break;
-        case SW_LEFT_SLINGSHOT:
-        case SW_RIGHT_SLINGSHOT:
-          g_machineState.increaseScore(1);
-          if (ballFirstSwitchHitTime_ == 0) ballFirstSwitchHitTime_ = currentTime;
-          break;
-        case SW_TOP_RIGHT_LANE:
-        case SW_TOP_MIDDLE_LANE:
-        case SW_TOP_LEFT_LANE:
-          g_machineState.increaseScore(12345678);
-          break;
-        case SW_COIN_1:
-        case SW_COIN_2:
-        case SW_COIN_3:
-          g_machineState.writeCoinToAudit(switchHit);
-          g_machineState.increaseCredits(true, 1);
-          break;
-        case SW_CREDIT_BUTTON:
-          if (DEBUG_MESSAGES) {
-            Serial.write("Start game button pressed\n\r");
-          }
-
-          if (g_machineState.currentBallInPlay() == 1) {
-            g_machineState.incrementNumberOfPlayers();
-          } else {
-            returnState = g_machineState.resetGame();
-          }
-          break;
-      }
-    }
   }
 
   return returnState;

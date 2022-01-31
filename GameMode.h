@@ -13,11 +13,15 @@ class GameMode {
     unsigned long gameModeEndTime_;
     unsigned long gameModeStartTime_;
 
+    int manageBallInTrough(int curState);
+    int manageGameBase(int curState);
+    int manageGameMode(int curState);
+    int manageTilt(int curState);
+
   public:
     GameMode(byte id);
 
-    int  manageGameMode();
-    int  runGamePlayState(int curState, boolean curStateChanged);
+    int  run(int curState, boolean curStateChanged);
     void setGameMode(byte id);
 };
 

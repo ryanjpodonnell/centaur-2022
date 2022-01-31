@@ -55,10 +55,10 @@ class MachineState {
     byte          currentPlayer();
     byte          incrementCurrentPlayer();
     byte          numberOfPlayers();
-    byte          resetGame();
     int           initGamePlay();
-    int           initNewBall(bool curStateChanged, byte playerNum, int ballNum);
+    int           initNewBall(bool curStateChanged);
     int           machineState();
+    int           resetGame();
     unsigned long currentTime();
     unsigned long lastTiltWarningTime();
     unsigned long score(byte player = 0xFF);
@@ -78,7 +78,6 @@ class MachineState {
     void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
-    void          setScoreMultiplier(byte value);
     void          writeCoinToAudit(byte switchHit);
 };
 

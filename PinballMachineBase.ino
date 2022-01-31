@@ -51,8 +51,19 @@ void loop() {
     newMachineState = g_debug.run(machineState, machineStateChanged);
   } else if (machineState == MACHINE_STATE_ATTRACT) {
     newMachineState = g_attract.run(machineState, machineStateChanged);
-  } else {
-    newMachineState = g_gameMode.runGamePlayState(machineState, machineStateChanged);
+  } else if (machineState == MACHINE_STATE_INIT_GAMEPLAY) {
+    newMachineState = g_machineState.initGamePlay();
+  } else if (machineState == MACHINE_STATE_INIT_NEW_BALL) {
+    newMachineState = g_machineState.initNewBall(machineStateChanged);
+  } else if (machineState == MACHINE_STATE_NORMAL_GAMEPLAY) {
+    newMachineState = g_gameMode.run(machineState, machineStateChanged);
+  } else if (machineState == MACHINE_STATE_COUNTDOWN_BONUS) {
+    newMachineState = g_countdownBonus.run(machineStateChanged);
+  } else if (machineState == MACHINE_STATE_BALL_OVER && g_machineState.samePlayerShootsAgain()) {
+    newMachineState = MACHINE_STATE_INIT_NEW_BALL;
+    newMachineState = g_machineState.initNewBall(machineStateChanged);
+  } else if (machineState == MACHINE_STATE_BALL_OVER && !g_machineState.samePlayerShootsAgain()) {
+    newMachineState = g_machineState.incrementCurrentPlayer();
   }
 
   g_machineState.setMachineState(newMachineState);

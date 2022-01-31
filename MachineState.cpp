@@ -113,19 +113,6 @@ byte MachineState::incrementCurrentPlayer() {
   }
 }
 
-byte MachineState::resetGame() {
-  if (freePlayMode_) {
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  } else if (credits_ >= 1 && !freePlayMode_) {
-    credits_ -= 1;
-    BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
-    BSOS_SetDisplayCredits(credits_);
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  } else {
-    return machineStateId_;
-  }
-}
-
 int MachineState::initGamePlay() {
   if (DEBUG_MESSAGES) Serial.write("Starting game\n\r");
 
@@ -143,45 +130,43 @@ int MachineState::initGamePlay() {
   return MACHINE_STATE_INIT_NEW_BALL;
 }
 
-int MachineState::initNewBall(bool curStateChanged, byte playerNum, int ballNum) {
+int MachineState::initNewBall(bool curStateChanged) {
   if (curStateChanged) {
-    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ALL, false);
-
-    BSOS_SetDisplayCredits(credits_, true);
+    extraBallCollected_    = false;
     samePlayerShootsAgain_ = false;
+    scoreMultiplier_       = 1;
 
-    BSOS_SetDisplayBallInPlay(ballNum);
-    BSOS_SetLampState(LAMP_TILT, 0);
-
-    if (BALL_SAVE_NUMBER_OF_SECONDS > 0) {
-      BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
-    }
-
-    g_gameMode.setGameMode(GAME_MODE_SKILL_SHOT);
-
-    extraBallCollected_ = false;
-
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
-    }
-
-    // Reset progress unless holdover awards
-    setBonusMultiplier(1);
     setBonus(0);
-    setScoreMultiplier(1);
+    setBonusMultiplier(1);
+
+    BSOS_SetDisplayBallInPlay(currentBallInPlay_);
+    BSOS_SetLampState(LAMP_TILT, 0);
+    if (BALL_SAVE_NUMBER_OF_SECONDS) BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
 
-  // We should only consider the ball initialized when
-  // the ball is no longer triggering the SW_OUTHOLE
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
     return MACHINE_STATE_INIT_NEW_BALL;
   } else {
+    g_gameMode.setGameMode(GAME_MODE_SKILL_SHOT);
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
 }
 
 int MachineState::machineState() {
   return machineStateId_;
+}
+
+int MachineState::resetGame() {
+  if (freePlayMode_) {
+    return MACHINE_STATE_INIT_GAMEPLAY;
+  } else if (credits_ >= 1 && !freePlayMode_) {
+    credits_ -= 1;
+    BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
+    return MACHINE_STATE_INIT_GAMEPLAY;
+  } else {
+    return machineStateId_;
+  }
 }
 
 unsigned long MachineState::currentTime() {
@@ -290,10 +275,6 @@ void MachineState::setNumberOfPlayers(byte value) {
 void MachineState::setScore(unsigned long value, byte player) {
   if (player == 0xFF) player = currentPlayer_;
   scores_[player] = value;
-}
-
-void MachineState::setScoreMultiplier(byte value) {
-  scoreMultiplier_ = value;
 }
 
 void MachineState::writeCoinToAudit(byte switchHit) {
