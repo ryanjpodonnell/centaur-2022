@@ -80,6 +80,7 @@
 #define LAMP_COLLECTION_RING_12           11
 #define LAMP_COLLECTION_RING_13           12
 #define LAMP_COLLECTION_RING_14           13
+#define LAMP_COLLECTION_TOP_ROLLOVERS     14
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -213,13 +214,21 @@ static byte ring14Lamps_[] = {
   LAMP_TERMINATOR
 };
 
+static byte rolloverLamps[] = {
+  LAMP_TOP_LEFT_ROLLOVER,
+  LAMP_TOP_MIDDLE_ROLLOVER,
+  LAMP_TOP_RIGHT_ROLLOVER,
+  LAMP_TERMINATOR
+};
 
 class LampsHelper {
   private:
+    byte* lampsPointer(byte lampCollection);
 
   public:
     LampsHelper();
 
+    void hideLamps(byte lampCollection);
     void hideLamp(byte lamp);
     void showLamp(byte lamp, bool flash = false, bool clearAllLamps = false);
     void showLamps(byte lampCollection, bool clearAllLamps = false);

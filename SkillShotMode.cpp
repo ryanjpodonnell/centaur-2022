@@ -28,9 +28,7 @@ byte SkillShot::run(byte gameModeId, boolean gameModeChanged) {
         break;
 
       case SW_TOP_LEFT_LANE:
-        g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
+        g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
         g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER);
 
         if(litRollover_ == 0) {
@@ -42,9 +40,7 @@ byte SkillShot::run(byte gameModeId, boolean gameModeChanged) {
         break;
 
       case SW_TOP_MIDDLE_LANE:
-        g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
+        g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
         g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER);
 
         if(litRollover_ == 1) {
@@ -56,9 +52,7 @@ byte SkillShot::run(byte gameModeId, boolean gameModeChanged) {
         break;
 
       case SW_TOP_RIGHT_LANE:
-        g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
+        g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
         g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER);
 
         if(litRollover_ == 2) {
@@ -73,9 +67,7 @@ byte SkillShot::run(byte gameModeId, boolean gameModeChanged) {
         break;
 
       default:
-        g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
-        g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
+        g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
 
         newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
         break;
@@ -90,5 +82,6 @@ byte SkillShot::run(byte gameModeId, boolean gameModeChanged) {
 void SkillShot::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering SkillShot Mode\n\r");
 
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
   g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER, true);
 }
