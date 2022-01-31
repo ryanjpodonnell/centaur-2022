@@ -3,6 +3,10 @@
 LampsHelper::LampsHelper() {
 }
 
+void LampsHelper::hideLamp(byte lamp) {
+  BSOS_SetLampState(lamp, 0);
+}
+
 void LampsHelper::showLamps(byte lampCollection, bool clearAllLamps) {
   if (clearAllLamps) BSOS_TurnOffAllLamps();
 
@@ -58,10 +62,14 @@ void LampsHelper::showLamps(byte lampCollection, bool clearAllLamps) {
   }
 }
 
-void LampsHelper::showLamp(byte lamp, bool clearAllLamps) {
+void LampsHelper::showLamp(byte lamp, bool flash, bool clearAllLamps) {
   if (clearAllLamps) BSOS_TurnOffAllLamps();
 
-  BSOS_SetLampState(lamp, 1);
+  if (flash) {
+    BSOS_SetLampState(lamp, 1, 0, 500);
+  } else {
+    BSOS_SetLampState(lamp, 1);
+  }
 }
 
 void LampsHelper::showAllLamps() {

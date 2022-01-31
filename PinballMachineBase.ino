@@ -8,6 +8,7 @@ GameMode         g_gameMode(GAME_MODE_INITIALIZE);
 LampsHelper      g_lampsHelper;
 MachineState     g_machineState(MACHINE_STATE_DEBUG);
 SelfTestAndAudit g_selfTestAndAudit;
+SkillShot        g_skillShot;
 
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {

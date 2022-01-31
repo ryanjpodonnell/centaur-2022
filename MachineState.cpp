@@ -124,7 +124,7 @@ int MachineState::initGamePlay() {
   BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
   BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
 
-  g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, true);
+  g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
   g_displayHelper.showPlayerScores(0xFF);
 
   return MACHINE_STATE_INIT_NEW_BALL;
@@ -141,7 +141,7 @@ int MachineState::initNewBall(bool curStateChanged) {
 
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetLampState(LAMP_TILT, 0);
-    if (BALL_SAVE_NUMBER_OF_SECONDS) BSOS_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
+    if (BALL_SAVE_NUMBER_OF_SECONDS) g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
 
@@ -185,11 +185,10 @@ unsigned long MachineState::score(byte player) {
 void MachineState::setMachineState(int id) {
   if (id != machineStateId_) {
     machineStateChanged_ = true;
+    machineStateId_ = id;
   } else {
     machineStateChanged_ = false;
   }
-
-  machineStateId_ = id;
 }
 
 void MachineState::awardExtraBall() {

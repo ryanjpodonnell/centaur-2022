@@ -1,20 +1,19 @@
 #include "SharedVariables.h"
 
 GameMode::GameMode(byte id) {
+  ballTimeInTrough_   = 0;
+  firstSwitchHitTime_ = 0;
+  gameModeChanged_    = true;
+
   setGameMode(id);
 }
 
 void GameMode::setGameMode(byte id) {
-  ballFirstSwitchHitTime_ = 0;
-  ballTimeInTrough_       = 0;
-  gameModeEndTime_        = 0;
-  gameModeId_             = id;
-  gameModeStartTime_      = 0;
-
-  if (DEBUG_MESSAGES) {
-    char buf[129];
-    sprintf(buf, "Game mode set to %d\n", gameModeId_);
-    Serial.write(buf);
+  if (id != gameModeId_) {
+    gameModeChanged_ = true;
+    gameModeId_ = id;
+  } else {
+    gameModeChanged_ = false;
   }
 }
 
@@ -28,8 +27,8 @@ int GameMode::run(int curState, boolean curStateChanged) {
   if (g_machineState.currentPlayerTilted()) {
     returnState = manageTilt(returnState);
   } else {
-    returnState = manageGameBase(returnState);
     returnState = manageGameMode(returnState);
+    returnState = manageGameBase(returnState);
 
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
       returnState = manageBallInTrough(returnState);
@@ -42,9 +41,9 @@ int GameMode::run(int curState, boolean curStateChanged) {
 }
 
 boolean GameMode::ballSaveActive() {
-  if (!ballFirstSwitchHitTime_) return true;
+  if (!firstSwitchHitTime_) return true;
 
-  return (g_machineState.currentTime() - ballFirstSwitchHitTime_) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
+  return (g_machineState.currentTime() - firstSwitchHitTime_) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
 }
 
 int GameMode::manageBallInTrough(int returnState) {
@@ -53,16 +52,18 @@ int GameMode::manageBallInTrough(int returnState) {
   if (ballTimeInTrough_ == 0) ballTimeInTrough_ = currentTime;
   if ((currentTime - ballTimeInTrough_) <= 500) return returnState;
 
-  if (ballFirstSwitchHitTime_ == 0) {
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime);
+  if (firstSwitchHitTime_ == 0) {
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
   } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
+    g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
     g_machineState.setBallSaveUsed(true);
-    BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
-    ballTimeInTrough_ = currentTime;
-    returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+
+    ballTimeInTrough_   = currentTime;
+    returnState         = MACHINE_STATE_NORMAL_GAMEPLAY;
   } else {
-    returnState = MACHINE_STATE_COUNTDOWN_BONUS;
+    firstSwitchHitTime_ = 0;
+    returnState         = MACHINE_STATE_COUNTDOWN_BONUS;
   }
 
   return returnState;
@@ -71,7 +72,7 @@ int GameMode::manageBallInTrough(int returnState) {
 int GameMode::manageGameBase(int returnState) {
   unsigned long currentTime = g_machineState.currentTime();
 
-  if (!ballSaveActive()) BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
+  if (!ballSaveActive()) g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
@@ -120,7 +121,7 @@ int GameMode::manageGameBase(int returnState) {
       case SW_TOP_RIGHT_LANE:
       case SW_TOP_SPOT_1_THROUGH_4_TARGET:
         g_machineState.increaseScore(10);
-        if (ballFirstSwitchHitTime_ == 0) ballFirstSwitchHitTime_ = currentTime;
+        if (firstSwitchHitTime_ == 0) firstSwitchHitTime_ = currentTime;
         break;
       case SW_COIN_1:
       case SW_COIN_2:
@@ -144,10 +145,18 @@ int GameMode::manageGameBase(int returnState) {
 }
 
 int GameMode::manageGameMode(int returnState) {
+  byte newGameMode = 0;
+
   switch (gameModeId_) {
     case GAME_MODE_SKILL_SHOT:
+      newGameMode = g_skillShot.run(gameModeId_, gameModeChanged_);
+      break;
+    case GAME_MODE_UNSTRUCTURED_PLAY:
+      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
       break;
   }
+
+  setGameMode(newGameMode);
 
   return returnState;
 }

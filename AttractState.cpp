@@ -74,7 +74,7 @@ void Attract::handleLightShow() {
       currentStep = numberOfSteps - ((seed % numberOfSteps) + 1);
     }
 
-    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, true);
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, false, true);
     if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING, true);
     if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_OUTER_RING, true);
     if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_4, true);
@@ -83,10 +83,10 @@ void Attract::handleLightShow() {
     if (currentStep == 6) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_7, true);
     if (currentStep == 7) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_8, true);
     if (currentStep == 8) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_9, true);
-    if (currentStep == 9) g_lampsHelper.showLamp(LAMP_COLLECT_BONUS_ARROW, true);
+    if (currentStep == 9) g_lampsHelper.showLamp(LAMP_COLLECT_BONUS_ARROW, false, true);
     if (currentStep == 10) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_10, true);
     if (currentStep == 11) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_11, true);
-    if (currentStep == 12) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, true);
+    if (currentStep == 12) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, false, true);
     if (currentStep == 13) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_12, true);
     if (currentStep == 14) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_13, true);
     if (currentStep == 15) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_14, true);

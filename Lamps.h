@@ -220,8 +220,9 @@ class LampsHelper {
   public:
     LampsHelper();
 
+    void hideLamp(byte lamp);
+    void showLamp(byte lamp, bool flash = false, bool clearAllLamps = false);
     void showLamps(byte lampCollection, bool clearAllLamps = false);
-    void showLamp(byte lamp, bool clearAllLamps = false);
     void showAllLamps();
 };
 

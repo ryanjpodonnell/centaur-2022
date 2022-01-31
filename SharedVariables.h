@@ -7,10 +7,11 @@
 #include "Display.h"
 #include "GameMode.h"
 #include "Lamps.h"
-#include "machineState.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
+#include "SkillShotMode.h"
 #include "Sound.h"
+#include "machineState.h"
 
 #ifndef SHARED_VARIABLES_H
 #define SHARED_VARIABLES_H
@@ -24,5 +25,6 @@ extern GameMode         g_gameMode;
 extern LampsHelper      g_lampsHelper;
 extern MachineState     g_machineState;
 extern SelfTestAndAudit g_selfTestAndAudit;
+extern SkillShot        g_skillShot;
 
 #endif

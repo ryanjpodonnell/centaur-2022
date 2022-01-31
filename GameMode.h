@@ -7,11 +7,10 @@
 
 class GameMode {
   private:
-    byte gameModeId_;
-    unsigned long ballFirstSwitchHitTime_;
+    boolean       gameModeChanged_;
+    byte          gameModeId_;
+    unsigned long firstSwitchHitTime_;
     unsigned long ballTimeInTrough_;
-    unsigned long gameModeEndTime_;
-    unsigned long gameModeStartTime_;
 
     boolean ballSaveActive();
     int     manageBallInTrough(int curState);
