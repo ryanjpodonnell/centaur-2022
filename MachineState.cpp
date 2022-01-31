@@ -201,7 +201,13 @@ void MachineState::awardExtraBall() {
 }
 
 void MachineState::decreaseBonus(byte amountToSubtract) {
-  bonuses_[currentPlayer_] -= amountToSubtract;
+  int currentBonus = bonus();
+
+  if ((currentBonus - amountToSubtract) < 0) {
+    setBonus(0);
+  } else {
+    setBonus(currentBonus - amountToSubtract);
+  }
 }
 
 void MachineState::increaseBonus(byte amountToAdd) {

@@ -25,7 +25,9 @@ void CountdownBonus::countdownBonusStep() {
   if (g_machineState.bonus()) {
     if (!g_machineState.currentPlayerTilted()) addBonusToScore();
     g_machineState.decreaseBonus(1);
-  } else {
+  }
+
+  if (!g_machineState.bonus() && !countdownEndTime_) {
     countdownEndTime_ = g_machineState.currentTime() + 1000;
   }
 }
