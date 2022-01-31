@@ -3,14 +3,14 @@
 
 class SkillShot {
   private:
-    byte litRollover_;
+    byte activeRollover_;
 
     void handleNewMode();
 
   public:
     SkillShot();
 
-    byte run(byte gameModeId, boolean currentStateChanged);
+    byte run(boolean currentStateChanged, byte switchHit);
 };
 
 #endif

@@ -214,7 +214,7 @@ static byte ring14Lamps_[] = {
   LAMP_TERMINATOR
 };
 
-static byte rolloverLamps[] = {
+static byte rolloverLamps_[] = {
   LAMP_TOP_LEFT_ROLLOVER,
   LAMP_TOP_MIDDLE_ROLLOVER,
   LAMP_TOP_RIGHT_ROLLOVER,

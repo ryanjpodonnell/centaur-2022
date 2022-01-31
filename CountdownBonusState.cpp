@@ -11,6 +11,8 @@ int CountdownBonus::run(boolean curStateChanged) {
   unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
   if (timeSinceStateStarted > 2500) countdownBonusStep();
 
+  g_displayHelper.showPlayerScores(g_machineState.currentPlayer());
+
   if (countdownEndTime_ && g_machineState.currentTime() > countdownEndTime_) return MACHINE_STATE_BALL_OVER;
   return MACHINE_STATE_COUNTDOWN_BONUS;
 }

@@ -9,6 +9,8 @@ MachineState::MachineState(byte id) {
   extraBallCollected_      = false;
   freePlayMode_            = true;
   highScore_               = 0;
+  lastTiltWarningTime_     = 0;
+  lastScoreChangeTime_     = 0;
   machineStateChanged_     = true;
   machineStateId_          = id;
   numberOfPlayers_         = 0;
@@ -36,7 +38,7 @@ boolean MachineState::incrementNumberOfPlayers() {
   }
 
   setScore(numberOfPlayers_, 0);
-  g_displayHelper.showPlayerScore(numberOfPlayers_);
+  g_displayHelper.showPlayerScores(numberOfPlayers_);
   numberOfPlayers_ += 1;
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
@@ -58,7 +60,7 @@ boolean MachineState::resetPlayers() {
   }
 
   setScore(0, 0);
-  g_displayHelper.showPlayerScore(0);
+  g_displayHelper.showPlayerScores(0);
   numberOfPlayers_ = 1;
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
@@ -114,7 +116,7 @@ byte MachineState::incrementCurrentPlayer() {
 }
 
 int MachineState::initGamePlay() {
-  if (DEBUG_MESSAGES) Serial.write("Starting game\n\r");
+  if (DEBUG_MESSAGES) Serial.write("Initializing gameplay\n\r");
 
   BSOS_SetDisableFlippers(false);
   BSOS_EnableSolenoidStack();
@@ -132,6 +134,7 @@ int MachineState::initGamePlay() {
 
 int MachineState::initNewBall(bool curStateChanged) {
   if (curStateChanged) {
+    if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
     extraBallCollected_    = false;
     samePlayerShootsAgain_ = false;
     scoreMultiplier_       = 1;
@@ -175,6 +178,10 @@ unsigned long MachineState::currentTime() {
 
 unsigned long MachineState::lastTiltWarningTime() {
   return lastTiltWarningTime_;
+}
+
+unsigned long MachineState::lastScoreChangeTime() {
+  return lastScoreChangeTime_;
 }
 
 unsigned long MachineState::score(byte player) {
@@ -225,6 +232,7 @@ void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
 }
 
 void MachineState::increaseScore(unsigned long amountToAdd) {
+  lastScoreChangeTime_ = currentTime_;
   scores_[currentPlayer_] += amountToAdd;
 }
 

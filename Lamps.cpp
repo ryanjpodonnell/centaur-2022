@@ -87,7 +87,7 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
       pointer = ring14Lamps_;
       break;
     case LAMP_COLLECTION_TOP_ROLLOVERS:
-      pointer = rolloverLamps;
+      pointer = rolloverLamps_;
       break;
   }
 

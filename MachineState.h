@@ -37,6 +37,7 @@ class MachineState {
     int           machineStateId_;
     unsigned long currentTime_;
     unsigned long highScore_;
+    unsigned long lastScoreChangeTime_;
     unsigned long lastTiltWarningTime_;
     unsigned long scores_[4];
 
@@ -61,6 +62,7 @@ class MachineState {
     int           resetGame();
     unsigned long currentTime();
     unsigned long lastTiltWarningTime();
+    unsigned long lastScoreChangeTime();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
