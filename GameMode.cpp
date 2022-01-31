@@ -19,9 +19,9 @@ void GameMode::setGameMode(byte id) {
 }
 
 int GameMode::run(int curState, boolean curStateChanged) {
+  int returnState           = curState;
   byte currentBallInPlay    = g_machineState.currentBallInPlay();
   byte currentPlayer        = g_machineState.currentPlayer();
-  int returnState           = curState;
 
   g_displayHelper.showPlayerScores(currentPlayer);
 
@@ -41,6 +41,12 @@ int GameMode::run(int curState, boolean curStateChanged) {
   return returnState;
 }
 
+boolean GameMode::ballSaveActive() {
+  if (!ballFirstSwitchHitTime_) return true;
+
+  return (g_machineState.currentTime() - ballFirstSwitchHitTime_) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
+}
+
 int GameMode::manageBallInTrough(int returnState) {
   unsigned long currentTime = g_machineState.currentTime();
 
@@ -49,8 +55,7 @@ int GameMode::manageBallInTrough(int returnState) {
 
   if (ballFirstSwitchHitTime_ == 0) {
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime);
-  } else if (!g_machineState.ballSaveUsed() &&
-      ((currentTime - ballFirstSwitchHitTime_)) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000)) {
+  } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
     g_machineState.setBallSaveUsed(true);
     BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
@@ -65,6 +70,8 @@ int GameMode::manageBallInTrough(int returnState) {
 
 int GameMode::manageGameBase(int returnState) {
   unsigned long currentTime = g_machineState.currentTime();
+
+  if (!ballSaveActive()) BSOS_SetLampState(LAMP_SHOOT_AGAIN, 0);
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
