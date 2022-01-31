@@ -2,14 +2,6 @@
 
 
 /*********************************************************************
-    Attract State Variables
-*********************************************************************/
-unsigned long BonusCountDownEndTime = 0;
-unsigned long CountdownStartTime = 0;
-unsigned long LastCountdownReportTime = 0;
-
-
-/*********************************************************************
     Bonus Variables
 *********************************************************************/
 unsigned long BonusXAnimationStart;
@@ -24,6 +16,7 @@ unsigned long ScoreAdditionAnimationStartTime;
 
 
 Attract          g_attract;
+CountdownBonus   g_countdownBonus;
 Debug            g_debug;
 DisplayHelper    g_displayHelper;
 GameMode         g_gameMode(GAME_MODE_INITIALIZE);

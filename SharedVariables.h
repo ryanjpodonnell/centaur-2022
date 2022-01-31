@@ -18,14 +18,6 @@
 
 
 /*********************************************************************
-    Attract State Variables
-*********************************************************************/
-extern unsigned long CountdownStartTime;
-extern unsigned long LastCountdownReportTime;
-extern unsigned long BonusCountDownEndTime;
-
-
-/*********************************************************************
     Bonus Variables
 *********************************************************************/
 extern unsigned long BonusXAnimationStart;
@@ -40,10 +32,11 @@ extern unsigned long ScoreAdditionAnimationStartTime;
 
 
 extern Attract          g_attract;
+extern CountdownBonus   g_countdownBonus;
 extern Debug            g_debug;
 extern DisplayHelper    g_displayHelper;
-extern LampsHelper      g_lampsHelper;
 extern GameMode         g_gameMode;
+extern LampsHelper      g_lampsHelper;
 extern MachineState     g_machineState;
 extern SelfTestAndAudit g_selfTestAndAudit;
 

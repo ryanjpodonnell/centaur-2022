@@ -3,7 +3,6 @@
 Attract::Attract() {
   currentFlashCycle_ = 0;
   lastFlash_         = 0;
-  stateStatedTime_   = 0;
 }
 
 int Attract::run(int curState, boolean curStateChanged) {
@@ -41,9 +40,7 @@ int Attract::run(int curState, boolean curStateChanged) {
 }
 
 void Attract::handleNewState() {
-  if (DEBUG_MESSAGES) {
-    Serial.write("Entering Attract State\n\r");
-  }
+  if (DEBUG_MESSAGES) Serial.write("Entering Attract State\n\r");
 
   BSOS_DisableSolenoidStack();
   BSOS_TurnOffAllLamps();
@@ -54,7 +51,7 @@ void Attract::handleNewState() {
   g_machineState.setScore(0, 1);
   g_machineState.setScore(0, 2);
   g_machineState.setScore(0, 3);
-  g_displayHelper.showPlayerScores(0xFF, false, false);
+  g_displayHelper.showPlayerScores(0xFF);
 }
 
 void Attract::handleLightShow() {

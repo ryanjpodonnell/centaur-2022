@@ -6,7 +6,7 @@
 
 class Debug {
   private:
-    unsigned long stateStatedTime_;
+    unsigned long stateStartedTime_;
 
     void handleNewState();
 

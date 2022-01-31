@@ -1,20 +1,20 @@
 #include "SharedVariables.h"
 
 Debug::Debug() {
-  stateStatedTime_ = 0;
+  stateStartedTime_ = 0;
 }
 
 int Debug::run(int curState, boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
-  unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStatedTime_;
+  unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
   if (timeSinceStateStarted >= 5000) return MACHINE_STATE_ATTRACT;
 
   return curState;
 }
 
 void Debug::handleNewState() {
-  stateStatedTime_ = g_machineState.currentTime();
+  stateStartedTime_ = g_machineState.currentTime();
 
   if (DEBUG_MESSAGES) {
     Serial.write("Entering Debug State\n\r");

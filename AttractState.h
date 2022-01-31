@@ -5,7 +5,6 @@ class Attract {
   private:
     unsigned long currentFlashCycle_;
     unsigned long lastFlash_;
-    unsigned long stateStatedTime_;
 
     void handleLightShow();
     void handleNewState();

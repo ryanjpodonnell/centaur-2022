@@ -1,39 +1,38 @@
 #include "SharedVariables.h"
 
-int CountdownBonus(boolean curStateChanged) {
-  unsigned long currentTime = g_machineState.currentTime();
-  byte currentBonus = g_machineState.bonus();
+CountdownBonus::CountdownBonus() {
+  countdownEndTime_ = 0;
+  stateStartedTime_ = 0;
+}
 
-  if (curStateChanged) {
-    g_machineState.setBonus(currentBonus);
+int CountdownBonus::run(boolean curStateChanged) {
+  if (curStateChanged) handleNewState();
 
-    CountdownStartTime = currentTime;
-    LastCountdownReportTime = CountdownStartTime;
-    BonusCountDownEndTime = 0xFFFFFFFF;
-  }
+  unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
+  if (timeSinceStateStarted > 2500) countdownBonusStep();
 
-  unsigned long countdownDelayTime = 250 - (currentBonus * 3);
-  if ((currentTime - LastCountdownReportTime) > countdownDelayTime) {
-    if (currentBonus) {
-      if (!g_machineState.currentPlayerTilted()) {
-        unsigned long bonusMultiplier = (unsigned long)g_machineState.bonusMultiplier();
-        unsigned long bonusValue = bonusMultiplier * 1000;
-        g_machineState.increaseScore(bonusValue);
-      }
-
-      g_machineState.decreaseBonus(1);
-
-    } else if (BonusCountDownEndTime == 0xFFFFFFFF) {
-      BonusCountDownEndTime = currentTime + 1000;
-    }
-
-    LastCountdownReportTime = currentTime;
-  }
-
-  if (currentTime > BonusCountDownEndTime) {
-    BonusCountDownEndTime = 0xFFFFFFFF;
-    return MACHINE_STATE_BALL_OVER;
-  }
-
+  if (countdownEndTime_ && g_machineState.currentTime() > countdownEndTime_) return MACHINE_STATE_BALL_OVER;
   return MACHINE_STATE_COUNTDOWN_BONUS;
+}
+
+void CountdownBonus::addBonusToScore() {
+  unsigned long bonusMultiplier = (unsigned long)g_machineState.bonusMultiplier();
+  unsigned long bonusValue = bonusMultiplier * 1000;
+  g_machineState.increaseScore(bonusValue);
+}
+
+void CountdownBonus::countdownBonusStep() {
+  if (g_machineState.bonus()) {
+    if (!g_machineState.currentPlayerTilted()) addBonusToScore();
+    g_machineState.decreaseBonus(1);
+  } else {
+    countdownEndTime_ = g_machineState.currentTime() + 1000;
+  }
+}
+
+void CountdownBonus::handleNewState() {
+  if (DEBUG_MESSAGES) Serial.write("Entering Countdown Bonus State\n\r");
+
+  countdownEndTime_ = 0;
+  stateStartedTime_ = g_machineState.currentTime();
 }

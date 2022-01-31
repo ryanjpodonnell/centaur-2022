@@ -96,8 +96,7 @@ int GameMode::runGamePlayState(int curState, boolean curStateChanged) {
   } else if (curState == MACHINE_STATE_NORMAL_GAMEPLAY) {
     returnState = manageGameMode();
   } else if (curState == MACHINE_STATE_COUNTDOWN_BONUS) {
-    returnState = CountdownBonus(curStateChanged);
-    g_displayHelper.showPlayerScores(0xFF, false, false);
+    returnState = g_countdownBonus.run(curStateChanged);
   } else if (curState == MACHINE_STATE_BALL_OVER) {
     BSOS_SetDisplayCredits(g_machineState.credits());
 
