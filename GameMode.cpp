@@ -4,6 +4,7 @@ GameMode::GameMode(byte id) {
   ballTimeInTrough_   = 0;
   firstSwitchHitTime_ = 0;
   gameModeChanged_    = true;
+  savingBall_         = false;
   scoreIncreased_     = false;
 
   setGameMode(id);
@@ -17,6 +18,7 @@ int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) handleNewMode();
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
+  // flashes or dashes the current score
   boolean shouldFlashScore = (firstSwitchHitTime_ == 0) ? true : false;
   boolean shouldDashScore  = (firstSwitchHitTime_ > 0 && ((g_machineState.currentTime() - g_machineState.lastScoreChangeTime()) > 2000)) ? true : false;
   g_displayHelper.showPlayerScores(g_machineState.currentPlayer(), shouldFlashScore, shouldDashScore);
@@ -28,9 +30,10 @@ int GameMode::run(boolean curStateChanged) {
   }
 
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    returnState = manageBallInTrough();
+    returnState       = manageBallInTrough();
   } else {
     ballTimeInTrough_ = 0;
+    savingBall_       = false;
   }
 
   return returnState;
@@ -73,47 +76,29 @@ int GameMode::manageBallInTrough() {
 
   if (ballTimeInTrough_ == 0) ballTimeInTrough_ = currentTime;
   if ((currentTime - ballTimeInTrough_) <= 500) return MACHINE_STATE_NORMAL_GAMEPLAY;
+  if (savingBall_) return MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  // no switches hit. return ball to shooter lane
   if (firstSwitchHitTime_ == 0) {
+    // no switches hit. return ball to shooter lane
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
-  }
-
-  // ball save active. return ball to shooter lane
-  else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
+  } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
+    // ball save active. return ball to shooter lane
+    if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
     g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
     g_machineState.setBallSaveUsed(true);
+    savingBall_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
-  }
-
-  // end ball
-  else {
+  } else {
+    // end ball
     setGameMode(GAME_MODE_INITIALIZE);
     firstSwitchHitTime_ = 0;
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
-}
-
-int GameMode::manageGameMode(byte switchHit) {
-  byte newGameMode = gameModeId_;
-
-  switch (gameModeId_) {
-    case GAME_MODE_SKILL_SHOT:
-      newGameMode = g_skillShot.run(gameModeChanged_, switchHit);
-      break;
-    case GAME_MODE_UNSTRUCTURED_PLAY:
-      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
-      break;
-  }
-
-  setGameMode(newGameMode);
-
-  return MACHINE_STATE_NORMAL_GAMEPLAY;
 }
 
 int GameMode::manageGameModes() {
@@ -129,7 +114,7 @@ int GameMode::manageGameModes() {
       Serial.write(buf);
     }
 
-    returnState = manageGameMode(switchHit);
+    manageGameMode(switchHit);
     returnState = g_base.run(switchHit);
     scoreIncreased_ = false;
   }
@@ -167,4 +152,21 @@ void GameMode::handleNewMode() {
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
   g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER, true);
+}
+
+void GameMode::manageGameMode(byte switchHit) {
+  byte newGameMode = gameModeId_;
+
+  switch (gameModeId_) {
+    case GAME_MODE_SKILL_SHOT:
+      newGameMode = g_skillShot.run(gameModeChanged_, switchHit);
+      break;
+    case GAME_MODE_INITIALIZE:
+      newGameMode = GAME_MODE_INITIALIZE;
+    case GAME_MODE_UNSTRUCTURED_PLAY:
+      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
+      break;
+  }
+
+  setGameMode(newGameMode);
 }

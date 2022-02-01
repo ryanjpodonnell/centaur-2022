@@ -9,7 +9,7 @@ int CountdownBonus::run(boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
   unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
-  if (timeSinceStateStarted > 2500) countdownBonusStep();
+  if (timeSinceStateStarted > 1000) countdownBonusStep();
 
   g_displayHelper.showPlayerScores(g_machineState.currentPlayer());
 
@@ -36,6 +36,10 @@ void CountdownBonus::countdownBonusStep() {
 
 void CountdownBonus::handleNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Countdown Bonus State\n\r");
+
+  BSOS_DisableSolenoidStack();
+  BSOS_SetDisableFlippers(true);
+  g_lampsHelper.hideAllLamps();
 
   countdownEndTime_ = 0;
   stateStartedTime_ = g_machineState.currentTime();

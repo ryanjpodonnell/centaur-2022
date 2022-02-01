@@ -38,7 +38,7 @@ boolean MachineState::incrementNumberOfPlayers() {
   }
 
   setScore(numberOfPlayers_, 0);
-  g_displayHelper.showPlayerScores(numberOfPlayers_);
+  g_displayHelper.showPlayerScores(0xFF);
   numberOfPlayers_ += 1;
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
@@ -60,8 +60,8 @@ boolean MachineState::resetPlayers() {
   }
 
   setScore(0, 0);
-  g_displayHelper.showPlayerScores(0);
   numberOfPlayers_ = 1;
+  g_displayHelper.showPlayerScores(0xFF);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
@@ -99,7 +99,7 @@ byte MachineState::numberOfPlayers() {
 byte MachineState::incrementCurrentPlayer() {
   currentPlayer_ += 1;
 
-  if (currentPlayer_ >= numberOfPlayers_) {
+  if (currentPlayer_ == numberOfPlayers_) {
     currentPlayer_ = 0;
     currentBallInPlay_ += 1;
   }
@@ -109,7 +109,7 @@ byte MachineState::incrementCurrentPlayer() {
       BSOS_SetDisplay(count, scores_[count], true, 2);
     }
 
-    return MACHINE_STATE_INIT_GAMEPLAY;
+    return MACHINE_STATE_ATTRACT;
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
   }
@@ -118,16 +118,7 @@ byte MachineState::incrementCurrentPlayer() {
 int MachineState::initGamePlay() {
   if (DEBUG_MESSAGES) Serial.write("Initializing gameplay\n\r");
 
-  BSOS_SetDisableFlippers(false);
-  BSOS_EnableSolenoidStack();
-  BSOS_TurnOffAllLamps();
-
-  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, currentTime_ + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
-
-  g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
-  g_displayHelper.showPlayerScores(0xFF);
+  currentBallInPlay_ = 1;
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }
@@ -135,6 +126,7 @@ int MachineState::initGamePlay() {
 int MachineState::initNewBall(bool curStateChanged) {
   if (curStateChanged) {
     if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
+    ballSaveUsed_          = false;
     extraBallCollected_    = false;
     samePlayerShootsAgain_ = false;
     scoreMultiplier_       = 1;
@@ -142,8 +134,14 @@ int MachineState::initNewBall(bool curStateChanged) {
     setBonus(0);
     setBonusMultiplier(1);
 
+    BSOS_EnableSolenoidStack();
+    BSOS_SetDisableFlippers(false);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
-    BSOS_SetLampState(LAMP_TILT, 0);
+
+    g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
     if (BALL_SAVE_NUMBER_OF_SECONDS) g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
@@ -174,6 +172,10 @@ int MachineState::resetGame() {
 
 unsigned long MachineState::currentTime() {
   return currentTime_;
+}
+
+unsigned long MachineState::highScore() {
+  return highScore_;
 }
 
 unsigned long MachineState::lastTiltWarningTime() {

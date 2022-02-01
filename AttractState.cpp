@@ -45,12 +45,14 @@ void Attract::handleNewState() {
   BSOS_DisableSolenoidStack();
   BSOS_TurnOffAllLamps();
   BSOS_SetDisableFlippers(true);
+
   BSOS_SetDisplayCredits(g_machineState.credits(), true);
 
-  g_machineState.setScore(0, 0);
-  g_machineState.setScore(0, 1);
-  g_machineState.setScore(0, 2);
-  g_machineState.setScore(0, 3);
+  unsigned long highScore = g_machineState.highScore();
+  g_machineState.setScore(highScore, 0);
+  g_machineState.setScore(highScore, 1);
+  g_machineState.setScore(highScore, 2);
+  g_machineState.setScore(highScore, 3);
   g_displayHelper.showPlayerScores(0xFF);
 }
 

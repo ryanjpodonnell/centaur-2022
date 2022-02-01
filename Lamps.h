@@ -228,11 +228,12 @@ class LampsHelper {
   public:
     LampsHelper();
 
-    void hideLamps(byte lampCollection);
+    void hideAllLamps();
     void hideLamp(byte lamp);
+    void hideLamps(byte lampCollection);
+    void showAllLamps();
     void showLamp(byte lamp, bool flash = false, bool clearAllLamps = false);
     void showLamps(byte lampCollection, bool clearAllLamps = false);
-    void showAllLamps();
 };
 
 #endif
