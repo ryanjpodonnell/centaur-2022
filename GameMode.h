@@ -14,19 +14,22 @@ class GameMode {
     unsigned long ballTimeInTrough_;
 
     boolean ballSaveActive();
-    int     manageBallInTrough(int curState);
-    int     manageGameBase(int curState, byte switchHit);
-    int     manageGameMode(int curState, byte switchHit);
-    int     manageGameModes(int curState);
-    int     manageTilt(int curState);
+    int     manageBallInTrough();
+    int     manageGameBase(byte switchHit);
+    int     manageGameMode(byte switchHit);
+    int     manageGameModes();
+    int     manageTilt();
     void    handleNewMode();
 
   public:
     GameMode(byte id);
 
-    int  run(int curState, boolean curStateChanged);
-    void setGameMode(byte id);
-    void setScoreIncreased(boolean value);
+    boolean       scoreIncreased();
+    int           run(boolean curStateChanged);
+    unsigned long firstSwitchHitTime();
+    void          setFirstSwitchHitTime(unsigned long value);
+    void          setGameMode(byte id);
+    void          setScoreIncreased(boolean value);
 };
 
 #endif

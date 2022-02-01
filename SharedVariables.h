@@ -2,6 +2,7 @@
 #include "AttractState.h"
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
+#include "BaseMode.h"
 #include "CountdownBonusState.h"
 #include "Debug.h"
 #include "Display.h"
@@ -18,6 +19,7 @@
 #define DEBUG_MESSAGES  1
 
 extern Attract          g_attract;
+extern Base             g_base;
 extern CountdownBonus   g_countdownBonus;
 extern Debug            g_debug;
 extern DisplayHelper    g_displayHelper;

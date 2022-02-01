@@ -1,6 +1,7 @@
 #include "SharedVariables.h"
 
 Attract          g_attract;
+Base             g_base;
 CountdownBonus   g_countdownBonus;
 Debug            g_debug;
 DisplayHelper    g_displayHelper;
@@ -57,7 +58,7 @@ void loop() {
   } else if (machineState == MACHINE_STATE_INIT_NEW_BALL) {
     newMachineState = g_machineState.initNewBall(machineStateChanged);
   } else if (machineState == MACHINE_STATE_NORMAL_GAMEPLAY) {
-    newMachineState = g_gameMode.run(machineState, machineStateChanged);
+    newMachineState = g_gameMode.run(machineStateChanged);
   } else if (machineState == MACHINE_STATE_COUNTDOWN_BONUS) {
     newMachineState = g_countdownBonus.run(machineStateChanged);
   } else if (machineState == MACHINE_STATE_BALL_OVER && g_machineState.samePlayerShootsAgain()) {
