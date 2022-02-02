@@ -17,6 +17,7 @@
 #ifndef SHARED_VARIABLES_H
 #define SHARED_VARIABLES_H
 #define DEBUG_MESSAGES  1
+#define DEBUG_HERTZ     0
 
 extern Attract          g_attract;
 extern Base             g_base;

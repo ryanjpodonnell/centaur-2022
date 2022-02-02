@@ -86,7 +86,11 @@ int GameMode::manageBallInTrough() {
   } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
     // ball save active. return ball to shooter lane
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
+
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, currentTime + 100);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 4, currentTime + 1000);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 1000);
+
     g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
     g_machineState.setBallSaveUsed(true);
     savingBall_ = true;

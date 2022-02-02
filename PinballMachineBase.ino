@@ -11,6 +11,8 @@ MachineState     g_machineState(MACHINE_STATE_DEBUG);
 SelfTestAndAudit g_selfTestAndAudit;
 SkillShot        g_skillShot;
 
+unsigned long NumLoops = 0;
+unsigned long LastLoopReportTime = 0;
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},
@@ -42,6 +44,17 @@ void loop() {
 
   unsigned long currentTime = millis();
   g_machineState.setCurrentTime(currentTime);
+
+  if (DEBUG_MESSAGES && DEBUG_HERTZ) {
+    NumLoops += 1;
+    if (currentTime>(LastLoopReportTime+1000)) {
+      LastLoopReportTime = currentTime;
+      char buf[128];
+      sprintf(buf, "Loop running at %lu Hz\n", NumLoops);
+      Serial.write(buf);
+      NumLoops = 0;
+    }
+  }
 
   int machineState = g_machineState.machineState();
   int newMachineState = machineState;
