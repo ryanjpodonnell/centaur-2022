@@ -38,9 +38,9 @@ boolean MachineState::incrementNumberOfPlayers() {
     BSOS_SetDisplayCredits(credits_);
   }
 
-  setScore(numberOfPlayers_, 0);
-  g_displayHelper.showPlayerScores(0xFF);
+  setScore(0, numberOfPlayers_);
   numberOfPlayers_ += 1;
+  g_displayHelper.showPlayerScores(0xFF);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
@@ -108,10 +108,6 @@ byte MachineState::incrementCurrentPlayer() {
   setCurrentPlayer(currentPlayerNumber_);
 
   if (currentBallInPlay_ > BALLS_PER_GAME) {
-    /* for (int count = 0; count < numberOfPlayers_; count++) { */
-    /*   BSOS_SetDisplay(count, scores_[count], true, 2); */
-    /* } */
-
     return MACHINE_STATE_ATTRACT;
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;

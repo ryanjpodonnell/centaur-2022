@@ -60,6 +60,7 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
       newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
       break;
 
+    case SW_CREDIT_BUTTON:
     case SW_OUTHOLE:
       break;
 
