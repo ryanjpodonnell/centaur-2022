@@ -15,22 +15,24 @@
 #define DEFAULT_HIGH_SCORE              10000
 #define MAXIMUM_NUMBER_OF_CREDITS       99
 #define MAXIMUM_NUMBER_OF_TILT_WARNINGS 2
-#define MAX_DISPLAY_BONUS               175
 #define TILT_WARNING_DEBOUNCE_TIME      1000
 
 class MachineState {
   private:
+    PlayerState*  currentPlayer_;
+    PlayerState   player1_;
+    PlayerState   player2_;
+    PlayerState   player3_;
+    PlayerState   player4_;
     boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
     boolean       freePlayMode_;
     boolean       machineStateChanged_;
     boolean       samePlayerShootsAgain_;
     byte          ballsPerGame_;
-    byte          bonusMultipliers_[4];
-    byte          bonuses_[4];
     byte          credits_;
     byte          currentBallInPlay_;
-    byte          currentPlayer_;
+    byte          currentPlayerNumber_;
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     byte          scoreMultiplier_;
@@ -39,7 +41,6 @@ class MachineState {
     unsigned long highScore_;
     unsigned long lastScoreChangeTime_;
     unsigned long lastTiltWarningTime_;
-    unsigned long scores_[4];
 
   public:
     MachineState(byte id);
@@ -53,7 +54,7 @@ class MachineState {
     byte          bonusMultiplier();
     byte          credits();
     byte          currentBallInPlay();
-    byte          currentPlayer();
+    byte          currentPlayerNumber();
     byte          incrementCurrentPlayer();
     byte          numberOfPlayers();
     int           initGamePlay();
@@ -76,6 +77,7 @@ class MachineState {
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setCredits(byte value);
+    void          setCurrentPlayer(byte value);
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
     void          setMachineState(int id);

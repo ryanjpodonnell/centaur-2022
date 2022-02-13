@@ -21,7 +21,7 @@ int GameMode::run(boolean curStateChanged) {
   // flashes or dashes the current score
   boolean shouldFlashScore = (firstSwitchHitTime_ == 0) ? true : false;
   boolean shouldDashScore  = (firstSwitchHitTime_ > 0 && ((g_machineState.currentTime() - g_machineState.lastScoreChangeTime()) > 2000)) ? true : false;
-  g_displayHelper.showPlayerScores(g_machineState.currentPlayer(), shouldFlashScore, shouldDashScore);
+  g_displayHelper.showPlayerScores(g_machineState.currentPlayerNumber(), shouldFlashScore, shouldDashScore);
 
   if (g_machineState.currentPlayerTilted()) {
     returnState = manageTilt();

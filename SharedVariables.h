@@ -12,7 +12,9 @@
 #include "SelfTestAndAudit.h"
 #include "SkillShotMode.h"
 #include "Sound.h"
-#include "machineState.h"
+
+#include "PlayerState.h"
+#include "MachineState.h"
 
 #ifndef SHARED_VARIABLES_H
 #define SHARED_VARIABLES_H

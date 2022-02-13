@@ -1,22 +1,23 @@
 #include "SharedVariables.h"
 
 MachineState::MachineState(byte id) {
-  byte bonusMultipliers_[] = { 1, 1, 1, 1};
-  byte bonuses[]           = { 0, 0, 0, 0};
-  credits_                 = 0;
-  currentBallInPlay_       = 0;
-  currentPlayer_           = 0;
-  extraBallCollected_      = false;
-  freePlayMode_            = true;
-  highScore_               = 0;
-  lastTiltWarningTime_     = 0;
-  lastScoreChangeTime_     = 0;
-  machineStateChanged_     = true;
-  machineStateId_          = id;
-  numberOfPlayers_         = 0;
-  numberOfTiltWarnings_    = 0;
-  samePlayerShootsAgain_   = false;
-  unsigned long scores_[]  = { 0, 0, 0, 0 };
+  player1_               = PlayerState();
+  player2_               = PlayerState();
+  player3_               = PlayerState();
+  player4_               = PlayerState();
+  credits_               = 0;
+  currentBallInPlay_     = 0;
+  currentPlayerNumber_   = 0;
+  extraBallCollected_    = false;
+  freePlayMode_          = true;
+  highScore_             = 0;
+  lastTiltWarningTime_   = 0;
+  lastScoreChangeTime_   = 0;
+  machineStateChanged_   = true;
+  machineStateId_        = id;
+  numberOfPlayers_       = 0;
+  numberOfTiltWarnings_  = 0;
+  samePlayerShootsAgain_ = false;
 }
 
 boolean MachineState::ballSaveUsed() {
@@ -73,11 +74,11 @@ boolean MachineState::samePlayerShootsAgain() {
 }
 
 byte MachineState::bonus() {
-  return bonuses_[currentPlayer_];
+  return currentPlayer_->bonus();
 }
 
 byte MachineState::bonusMultiplier() {
-  return bonusMultipliers_[currentPlayer_];
+  return currentPlayer_->bonusMultiplier();
 }
 
 byte MachineState::credits() {
@@ -88,8 +89,8 @@ byte MachineState::currentBallInPlay() {
   return currentBallInPlay_;
 }
 
-byte MachineState::currentPlayer() {
-  return currentPlayer_;
+byte MachineState::currentPlayerNumber() {
+  return currentPlayerNumber_;
 }
 
 byte MachineState::numberOfPlayers() {
@@ -97,17 +98,19 @@ byte MachineState::numberOfPlayers() {
 }
 
 byte MachineState::incrementCurrentPlayer() {
-  currentPlayer_ += 1;
+  currentPlayerNumber_ += 1;
 
-  if (currentPlayer_ == numberOfPlayers_) {
-    currentPlayer_ = 0;
+  if (currentPlayerNumber_ == numberOfPlayers_) {
+    currentPlayerNumber_ = 0;
     currentBallInPlay_ += 1;
   }
 
+  setCurrentPlayer(currentPlayerNumber_);
+
   if (currentBallInPlay_ > BALLS_PER_GAME) {
-    for (int count = 0; count < numberOfPlayers_; count++) {
-      BSOS_SetDisplay(count, scores_[count], true, 2);
-    }
+    /* for (int count = 0; count < numberOfPlayers_; count++) { */
+    /*   BSOS_SetDisplay(count, scores_[count], true, 2); */
+    /* } */
 
     return MACHINE_STATE_ATTRACT;
   } else {
@@ -119,6 +122,7 @@ int MachineState::initGamePlay() {
   if (DEBUG_MESSAGES) Serial.write("Initializing gameplay\n\r");
 
   currentBallInPlay_ = 1;
+  setCurrentPlayer(0);
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }
@@ -182,13 +186,16 @@ unsigned long MachineState::lastTiltWarningTime() {
   return lastTiltWarningTime_;
 }
 
-unsigned long MachineState::lastScoreChangeTime() {
-  return lastScoreChangeTime_;
+unsigned long MachineState::score(byte player) {
+  if (player == 0xFF) player = currentPlayerNumber();
+  if (player == 0) return player1_.score();
+  if (player == 1) return player2_.score();
+  if (player == 2) return player3_.score();
+  if (player == 3) return player4_.score();
 }
 
-unsigned long MachineState::score(byte player) {
-  if (player == 0xFF) player = currentPlayer_;
-  return scores_[player];
+unsigned long MachineState::lastScoreChangeTime() {
+  return lastScoreChangeTime_;
 }
 
 void MachineState::setMachineState(int id) {
@@ -209,20 +216,11 @@ void MachineState::awardExtraBall() {
 }
 
 void MachineState::decreaseBonus(byte amountToSubtract) {
-  int currentBonus = bonus();
-
-  if ((currentBonus - amountToSubtract) < 0) {
-    setBonus(0);
-  } else {
-    setBonus(currentBonus - amountToSubtract);
-  }
+  currentPlayer_->decreaseBonus(amountToSubtract);
 }
 
 void MachineState::increaseBonus(byte amountToAdd) {
-  bonuses_[currentPlayer_] += amountToAdd;
-  if (bonuses_[currentPlayer_] >= MAX_DISPLAY_BONUS) {
-    bonuses_[currentPlayer_] = MAX_DISPLAY_BONUS;
-  }
+  currentPlayer_->increaseBonus(amountToAdd);
 }
 
 void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
@@ -235,7 +233,7 @@ void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
 
 void MachineState::increaseScore(unsigned long amountToAdd) {
   lastScoreChangeTime_ = currentTime_;
-  scores_[currentPlayer_] += amountToAdd;
+  currentPlayer_->increaseScore(amountToAdd);
 }
 
 void MachineState::readStoredParameters() {
@@ -262,17 +260,23 @@ void MachineState::setBallSaveUsed(byte value) {
 }
 
 void MachineState::setBonus(byte value) {
-  bonuses_[currentPlayer_] = value;
+  currentPlayer_->setBonus(value);
 }
 
 void MachineState::setBonusMultiplier(byte value) {
-  if (value > 4) value = 4;
-  bonusMultipliers_[currentPlayer_] = value;
+  currentPlayer_->setBonusMultiplier(value);
 }
 
 void MachineState::setCredits(byte value) {
   credits_ = value;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
+}
+
+void MachineState::setCurrentPlayer(byte value) {
+  if (value == 0) currentPlayer_ = &player1_;
+  if (value == 1) currentPlayer_ = &player2_;
+  if (value == 2) currentPlayer_ = &player3_;
+  if (value == 3) currentPlayer_ = &player4_;
 }
 
 void MachineState::setCurrentTime(unsigned long value) {
@@ -288,8 +292,11 @@ void MachineState::setNumberOfPlayers(byte value) {
 }
 
 void MachineState::setScore(unsigned long value, byte player) {
-  if (player == 0xFF) player = currentPlayer_;
-  scores_[player] = value;
+  if (player == 0xFF) player = currentPlayerNumber();
+  if (player == 0) player1_.setScore(value);
+  if (player == 1) player2_.setScore(value);
+  if (player == 2) player3_.setScore(value);
+  if (player == 3) player4_.setScore(value);
 }
 
 void MachineState::writeCoinToAudit(byte switchHit) {
