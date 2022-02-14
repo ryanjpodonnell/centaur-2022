@@ -47,13 +47,6 @@ void Attract::handleNewState() {
   BSOS_SetDisableFlippers(true);
 
   BSOS_SetDisplayCredits(g_machineState.credits(), true);
-
-  unsigned long highScore = g_machineState.highScore();
-  g_machineState.setScore(highScore, 0);
-  g_machineState.setScore(highScore, 1);
-  g_machineState.setScore(highScore, 2);
-  g_machineState.setScore(highScore, 3);
-  g_displayHelper.showPlayerScores(0xFF);
 }
 
 void Attract::handleLightShow() {
@@ -72,8 +65,16 @@ void Attract::handleLightShow() {
     byte currentStep = 0;
     if (currentFlashCycle_ % 2 == 0) {
       currentStep = seed % numberOfSteps;
+
+      unsigned long highScore = g_machineState.highScore();
+      g_displayHelper.overrideScoreDisplay(0, highScore);
+      g_displayHelper.overrideScoreDisplay(1, highScore);
+      g_displayHelper.overrideScoreDisplay(2, highScore);
+      g_displayHelper.overrideScoreDisplay(3, highScore);
     } else {
       currentStep = numberOfSteps - ((seed % numberOfSteps) + 1);
+
+      g_displayHelper.showPlayerScores(0xFF);
     }
 
     if (currentStep == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, false, true);

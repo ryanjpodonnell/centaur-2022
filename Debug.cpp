@@ -25,5 +25,5 @@ void Debug::handleNewState() {
   g_machineState.setScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);
   g_machineState.setScore(BALLY_STERN_OS_MAJOR_VERSION, 2);
   g_machineState.setScore(BALLY_STERN_OS_MINOR_VERSION, 3);
-  g_displayHelper.showPlayerScores(0xFF, false, false);
+  g_displayHelper.showPlayerScores(0xFF);
 }

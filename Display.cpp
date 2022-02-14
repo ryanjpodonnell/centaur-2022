@@ -1,31 +1,37 @@
 #include "SharedVariables.h"
 
 DisplayHelper::DisplayHelper() {
-  lastFlashOrDash_                              = 0;
-  lastScrollPhase_                              = 0;
-  lastTimeOverrideAnimated_                     = 0;
-  unsigned long scoreOverrideValue_[]           = { 0, 0, 0, 0 };
-  unsigned long scoreOverrideStatus_[]          = { false, false, false, false };
-  unsigned long scoreOverrideAnimationStatus_[] = { false, false, false, false };
+  lastFlashOrDash_          = 0;
+  lastScrollPhase_          = 0;
+  lastTimeOverrideAnimated_ = 0;
+
+  scoreOverrideStatus_[0] = false;
+  scoreOverrideStatus_[1] = false;
+  scoreOverrideStatus_[2] = false;
+  scoreOverrideStatus_[3] = false;
 }
 
-void DisplayHelper::overrideScoreDisplay(byte displayNum, unsigned long score, boolean animate) {
+void DisplayHelper::overrideScoreDisplay(byte displayNum, unsigned long score) {
   scoreOverrideStatus_[displayNum] = true;
-  if (animate) scoreOverrideStatus_[displayNum] = true;
-
   scoreOverrideValue_[displayNum] = score;
+  showPlayerScores(displayNum);
 }
 
 // 0xFF will reset all displays to the 4 scores (blank if the player isn't active)
-void DisplayHelper::showPlayerScores(byte playerNumber, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
-  if (playerNumber == 0xFF) unsigned long scoreOverrideStatus_[] = { false, false, false, false };
+void DisplayHelper::showPlayerScores(byte playerNumber, boolean flashCurrent, boolean dashCurrent) {
+  if (playerNumber == 0xFF) {
+    scoreOverrideStatus_[0] = false;
+    scoreOverrideStatus_[1] = false;
+    scoreOverrideStatus_[2] = false;
+    scoreOverrideStatus_[3] = false;
+  }
 
   overrideAnimationSeed_  = g_machineState.currentTime() / 250;
   updateLastTimeAnimated_ = false;
 
   for (byte playerIterator = 0; playerIterator < 4; playerIterator++) {
-    if (allScoresShowValue == 0 && scoreOverrideStatus_[playerIterator]) showScoreOverride(playerIterator);
-    else showPlayerScore(playerNumber, playerIterator, flashCurrent, dashCurrent, allScoresShowValue);
+    if (scoreOverrideStatus_[playerIterator]) showScoreOverride(playerIterator);
+    else showPlayerScore(playerNumber, playerIterator, flashCurrent, dashCurrent);
   }
 
   if (updateLastTimeAnimated_) {
@@ -169,14 +175,11 @@ void DisplayHelper::showAnimatedPlayerScore(byte playerNumber, unsigned long sco
   }
 }
 
-void DisplayHelper::showPlayerScore(byte playerNumber, byte playerIterator, boolean flashCurrent, boolean dashCurrent, unsigned long allScoresShowValue) {
-  unsigned long score = 0;
-
-  if (allScoresShowValue == 0) score = g_machineState.score(playerIterator);
-  else score = allScoresShowValue;
+void DisplayHelper::showPlayerScore(byte playerNumber, byte playerIterator, boolean flashCurrent, boolean dashCurrent) {
+  unsigned long score = g_machineState.score(playerIterator);
 
   if (playerNumber == 0xFF || playerIterator == playerNumber || score > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
-    if (playerNumber == 0xFF && (playerIterator >= g_machineState.numberOfPlayers() && g_machineState.numberOfPlayers() != 0) && allScoresShowValue == 0) {
+    if (playerNumber == 0xFF && (playerIterator >= g_machineState.numberOfPlayers() && g_machineState.numberOfPlayers() != 0)) {
       BSOS_SetDisplayBlank(playerIterator, 0x00);
       return;
     }
@@ -201,7 +204,7 @@ void DisplayHelper::showScoreOverride(byte playerNumber) {
     BSOS_SetDisplayBlank(playerNumber, 0);
   } else {
     byte numDigits = numberOfDigits(score);
-    if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1) && scoreOverrideAnimationStatus_[playerNumber]) {
+    if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1)) {
       showAnimatedPlayerScore(playerNumber, score);
     } else {
       BSOS_SetDisplay(playerNumber, score, true, 1);

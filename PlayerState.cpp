@@ -1,10 +1,14 @@
 #include "SharedVariables.h"
 
 PlayerState::PlayerState() {
-  boolean guardianLights_[] = { false, false, false, false };
-  byte bonusMultiplier_     = 1;
-  byte bonus_               = 0;
-  unsigned long score_      = 0;
+  bonusMultiplier_ = 1;
+  bonus_           = 0;
+  score_           = 0;
+
+  guardianLights_[0] = false;
+  guardianLights_[1] = false;
+  guardianLights_[2] = false;
+  guardianLights_[3] = false;
 }
 
 byte PlayerState::bonus() {
@@ -54,21 +58,22 @@ void PlayerState::registerGuardianRollover(byte switchHit) {
 }
 
 void PlayerState::resetPlayerState() {
-  bonusMultiplier_   = 1;
-  bonus_             = 0;
+  bonusMultiplier_ = 1;
+  bonus_           = 0;
+  score_           = 0;
+
   guardianLights_[0] = false;
   guardianLights_[1] = false;
   guardianLights_[2] = false;
   guardianLights_[3] = false;
-  score_             = 0;
 }
 
 void PlayerState::rotatePlayerLamps() {
   bool tempGuardianLight = guardianLights_[0];
-  guardianLights_[0] = guardianLights_[1];
-  guardianLights_[1] = guardianLights_[2];
-  guardianLights_[2] = guardianLights_[3];
-  guardianLights_[3] = tempGuardianLight;
+  guardianLights_[0]     = guardianLights_[1];
+  guardianLights_[1]     = guardianLights_[2];
+  guardianLights_[2]     = guardianLights_[3];
+  guardianLights_[3]     = tempGuardianLight;
 }
 
 void PlayerState::setBonus(byte value) {

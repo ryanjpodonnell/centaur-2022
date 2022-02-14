@@ -5,13 +5,13 @@
 
 class DisplayHelper {
   private:
-    boolean       scoreOverrideAnimationStatus_[4];
-    boolean       scoreOverrideStatus_[4];
     boolean       updateLastTimeAnimated_;
     byte          lastScrollPhase_;
     unsigned long lastFlashOrDash_;
     unsigned long lastTimeOverrideAnimated_;
     unsigned long overrideAnimationSeed_;
+
+    boolean       scoreOverrideStatus_[4];
     unsigned long scoreOverrideValue_[4];
 
     byte getDisplayMask(byte numDigits);
@@ -21,14 +21,14 @@ class DisplayHelper {
     void flashScore(byte playerNumber, unsigned long score);
     void scrollScore(byte playerNumber, unsigned long score);
     void showAnimatedPlayerScore(byte playerNumber, unsigned long score);
-    void showPlayerScore(byte playerNumber, byte playerIterator = 0xFF, boolean flashCurrent = false, boolean dashCurrent = false, unsigned long allScoresShowValue = 0);
+    void showPlayerScore(byte playerNumber, byte playerIterator = 0xFF, boolean flashCurrent = false, boolean dashCurrent = false);
     void showScoreOverride(byte playerNumber);
 
   public:
     DisplayHelper();
 
-    void overrideScoreDisplay(byte playerNumber, unsigned long score, boolean animate);
-    void showPlayerScores(byte playerNumber, boolean flashCurrent = false, boolean dashCurrent = false, unsigned long allScoresShowValue = 0);
+    void overrideScoreDisplay(byte playerNumber, unsigned long score);
+    void showPlayerScores(byte playerNumber, boolean flashCurrent = false, boolean dashCurrent = false);
 };
 
 #endif
