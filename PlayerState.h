@@ -14,14 +14,13 @@ class PlayerState {
     byte          bonus();
     byte          bonusMultiplier();
     byte          playerNumber();
-    byte          test();
     unsigned long score();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
-    void          setScore(unsigned long value, byte player = 0xFF);
+    void          setScore(unsigned long value);
 };
 
 #endif

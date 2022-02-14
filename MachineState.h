@@ -60,7 +60,6 @@ class MachineState {
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
     int           machineState();
-    int           resetGame();
     unsigned long currentTime();
     unsigned long highScore();
     unsigned long lastScoreChangeTime();

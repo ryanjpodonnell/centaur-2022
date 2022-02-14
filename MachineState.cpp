@@ -61,6 +61,9 @@ boolean MachineState::resetPlayers() {
   }
 
   setScore(0, 0);
+  setScore(0, 1);
+  setScore(0, 2);
+  setScore(0, 3);
   numberOfPlayers_ = 1;
   g_displayHelper.showPlayerScores(0xFF);
 
@@ -156,18 +159,6 @@ int MachineState::initNewBall(bool curStateChanged) {
 
 int MachineState::machineState() {
   return machineStateId_;
-}
-
-int MachineState::resetGame() {
-  if (freePlayMode_) {
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  } else if (credits_ >= 1 && !freePlayMode_) {
-    credits_ -= 1;
-    BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  } else {
-    return machineStateId_;
-  }
 }
 
 unsigned long MachineState::currentTime() {

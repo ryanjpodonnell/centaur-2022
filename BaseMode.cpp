@@ -60,8 +60,8 @@ int Base::run(byte switchHit) {
 
       if (g_machineState.currentBallInPlay() == 1) {
         g_machineState.incrementNumberOfPlayers();
-      } else {
-        returnState = g_machineState.resetGame();
+      } else if (g_machineState.resetPlayers()) {
+        returnState = MACHINE_STATE_INIT_GAMEPLAY;
       }
       break;
   }

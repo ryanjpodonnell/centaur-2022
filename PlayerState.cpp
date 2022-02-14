@@ -14,10 +14,6 @@ byte PlayerState::bonusMultiplier() {
   return bonusMultiplier_;
 }
 
-byte PlayerState::test() {
-  return 0;
-}
-
 unsigned long PlayerState::score() {
   return score_;
 }
@@ -51,6 +47,6 @@ void PlayerState::setBonusMultiplier(byte value) {
   bonusMultiplier_ = value;
 }
 
-void PlayerState::setScore(unsigned long value, byte player) {
+void PlayerState::setScore(unsigned long value) {
   score_ = value;
 }
