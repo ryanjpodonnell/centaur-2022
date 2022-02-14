@@ -152,10 +152,8 @@ int GameMode::manageTilt() {
 }
 
 void GameMode::handleNewMode() {
-  if (DEBUG_MESSAGES) Serial.write("Entering Skill Shot Game Mode\n\r");
-
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
-  g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER, true);
+  if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
+  manageGameMode(0xFF);
 }
 
 void GameMode::manageGameMode(byte switchHit) {

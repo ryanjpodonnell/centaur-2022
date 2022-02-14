@@ -1,8 +1,6 @@
 #include "SharedVariables.h"
 
-SkillShot::SkillShot() {
-  activeRollover_ = SW_TOP_LEFT_LANE;
-}
+SkillShot::SkillShot() {}
 
 byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) handleNewMode();
@@ -25,43 +23,20 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
       break;
 
     case SW_TOP_LEFT_LANE:
-      g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
-      g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER);
-
-      if(activeRollover_ == SW_TOP_LEFT_LANE) {
-        g_machineState.increaseScore(100);
-        g_machineState.increaseBonus(100);
-        g_gameMode.setScoreIncreased(true);
-      }
-      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
+      newGameMode = checkRollover(SW_TOP_LEFT_LANE);
       break;
 
     case SW_TOP_MIDDLE_LANE:
-      g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
-      g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER);
-
-      if(activeRollover_ == SW_TOP_MIDDLE_LANE) {
-        g_machineState.increaseScore(100);
-        g_machineState.increaseBonus(100);
-        g_gameMode.setScoreIncreased(true);
-      }
-      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
+      newGameMode = checkRollover(SW_TOP_MIDDLE_LANE);
       break;
 
     case SW_TOP_RIGHT_LANE:
-      g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
-      g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER);
-
-      if(activeRollover_ == SW_TOP_RIGHT_LANE) {
-        g_machineState.increaseScore(100);
-        g_machineState.increaseBonus(100);
-        g_gameMode.setScoreIncreased(true);
-      }
-      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
+      newGameMode = checkRollover(SW_TOP_RIGHT_LANE);
       break;
 
     case SW_CREDIT_BUTTON:
     case SW_OUTHOLE:
+    case 0xFF:
       break;
 
     default:
@@ -74,10 +49,35 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
   return newGameMode;
 }
 
+byte SkillShot::checkRollover(byte switchHit) {
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
+
+  if(activeRollover_ == switchHit) {
+    g_machineState.increaseScore(100);
+    g_machineState.increaseBonus(100);
+    g_gameMode.setScoreIncreased(true);
+  }
+
+  return GAME_MODE_UNSTRUCTURED_PLAY;
+}
+
 void SkillShot::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering SkillShot Mode\n\r");
 
-  activeRollover_ = SW_TOP_LEFT_LANE;
   g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
-  g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER, true);
+
+  long randomNumber = random(3);
+  if (randomNumber == 0) {
+    if (DEBUG_MESSAGES) Serial.write("Random 0\n\r");
+    activeRollover_ = SW_TOP_LEFT_LANE;
+    g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER, true);
+  } else if (randomNumber == 1) {
+    if (DEBUG_MESSAGES) Serial.write("Random 1\n\r");
+    activeRollover_ = SW_TOP_MIDDLE_LANE;
+    g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER, true);
+  } else {
+    if (DEBUG_MESSAGES) Serial.write("Random 2\n\r");
+    activeRollover_ = SW_TOP_RIGHT_LANE;
+    g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER, true);
+  }
 }
