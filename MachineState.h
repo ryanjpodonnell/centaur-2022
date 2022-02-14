@@ -71,7 +71,9 @@ class MachineState {
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
     void          readStoredParameters();
+    void          registerGuardianRollover(byte switchHit);
     void          registerTiltWarning();
+    void          rotatePlayerLamps();
     void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
@@ -82,6 +84,7 @@ class MachineState {
     void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
+    void          showPlayerLamps();
     void          writeCoinToAudit(byte switchHit);
 };
 

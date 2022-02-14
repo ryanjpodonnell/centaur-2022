@@ -60,10 +60,10 @@ boolean MachineState::resetPlayers() {
     BSOS_SetDisplayCredits(credits_);
   }
 
-  setScore(0, 0);
-  setScore(0, 1);
-  setScore(0, 2);
-  setScore(0, 3);
+  player1_.resetPlayerState();
+  player2_.resetPlayerState();
+  player3_.resetPlayerState();
+  player4_.resetPlayerState();
   numberOfPlayers_ = 1;
   g_displayHelper.showPlayerScores(0xFF);
 
@@ -228,6 +228,10 @@ void MachineState::readStoredParameters() {
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
 }
 
+void MachineState::registerGuardianRollover(byte switchHit) {
+  currentPlayer_->registerGuardianRollover(switchHit);
+}
+
 void MachineState::registerTiltWarning() {
   if ((currentTime_ - lastTiltWarningTime_) > TILT_WARNING_DEBOUNCE_TIME) {
     lastTiltWarningTime_ = currentTime_;
@@ -240,6 +244,10 @@ void MachineState::registerTiltWarning() {
       BSOS_SetLampState(LAMP_TILT, 1);
     }
   }
+}
+
+void MachineState::rotatePlayerLamps() {
+  currentPlayer_->rotatePlayerLamps();
 }
 
 void MachineState::setBallSaveUsed(byte value) {
@@ -284,6 +292,10 @@ void MachineState::setScore(unsigned long value, byte player) {
   if (player == 1) player2_.setScore(value);
   if (player == 2) player3_.setScore(value);
   if (player == 3) player4_.setScore(value);
+}
+
+void MachineState::showPlayerLamps() {
+  currentPlayer_->showPlayerLamps();
 }
 
 void MachineState::writeCoinToAudit(byte switchHit) {

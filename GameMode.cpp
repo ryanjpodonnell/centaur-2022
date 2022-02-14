@@ -154,6 +154,7 @@ int GameMode::manageTilt() {
 void GameMode::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
   manageGameMode(0xFF);
+  g_base.run(0xFF);
 }
 
 void GameMode::manageGameMode(byte switchHit) {
@@ -165,6 +166,7 @@ void GameMode::manageGameMode(byte switchHit) {
       break;
     case GAME_MODE_INITIALIZE:
       newGameMode = GAME_MODE_INITIALIZE;
+      break;
     case GAME_MODE_UNSTRUCTURED_PLAY:
       newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
       break;

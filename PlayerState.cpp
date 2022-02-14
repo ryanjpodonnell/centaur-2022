@@ -1,9 +1,10 @@
 #include "SharedVariables.h"
 
 PlayerState::PlayerState() {
-  byte bonusMultiplier_ = 1;
-  byte bonus_           = 0;
-  unsigned long score_  = 0;
+  boolean guardianLights_[] = { false, false, false, false };
+  byte bonusMultiplier_     = 1;
+  byte bonus_               = 0;
+  unsigned long score_      = 0;
 }
 
 byte PlayerState::bonus() {
@@ -38,6 +39,38 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
   score_ += amountToAdd;
 }
 
+void PlayerState::registerGuardianRollover(byte switchHit) {
+  if (switchHit == SW_LEFT_OUTLANE) guardianLights_[0] = true;
+  if (switchHit == SW_LEFT_RETURN_LANE) guardianLights_[1] = true;
+  if (switchHit == SW_RIGHT_RETURN_LANE) guardianLights_[2] = true;
+  if (switchHit == SW_RIGHT_OUTLANE) guardianLights_[3] = true;
+
+  if (guardianLights_[0] == true && guardianLights_[1] == true && guardianLights_[2] == true && guardianLights_[3] == true) {
+    guardianLights_[0] = false;
+    guardianLights_[1] = false;
+    guardianLights_[2] = false;
+    guardianLights_[3] = false;
+  }
+}
+
+void PlayerState::resetPlayerState() {
+  bonusMultiplier_   = 1;
+  bonus_             = 0;
+  guardianLights_[0] = false;
+  guardianLights_[1] = false;
+  guardianLights_[2] = false;
+  guardianLights_[3] = false;
+  score_             = 0;
+}
+
+void PlayerState::rotatePlayerLamps() {
+  bool tempGuardianLight = guardianLights_[0];
+  guardianLights_[0] = guardianLights_[1];
+  guardianLights_[1] = guardianLights_[2];
+  guardianLights_[2] = guardianLights_[3];
+  guardianLights_[3] = tempGuardianLight;
+}
+
 void PlayerState::setBonus(byte value) {
   bonus_ = value;
 }
@@ -49,4 +82,15 @@ void PlayerState::setBonusMultiplier(byte value) {
 
 void PlayerState::setScore(unsigned long value) {
   score_ = value;
+}
+
+void PlayerState::showPlayerLamps() {
+  if (guardianLights_[0] == true) g_lampsHelper.showLamp(LAMP_LEFT_OUT_ROLLOVER);
+  if (guardianLights_[0] == false) g_lampsHelper.hideLamp(LAMP_LEFT_OUT_ROLLOVER);
+  if (guardianLights_[1] == true) g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER);
+  if (guardianLights_[1] == false) g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
+  if (guardianLights_[2] == true) g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER);
+  if (guardianLights_[2] == false) g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
+  if (guardianLights_[3] == true) g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER);
+  if (guardianLights_[3] == false) g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
 }

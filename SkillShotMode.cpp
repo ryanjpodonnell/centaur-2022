@@ -73,15 +73,12 @@ void SkillShot::handleNewMode() {
 
   long randomNumber = random(3);
   if (randomNumber == 0) {
-    if (DEBUG_MESSAGES) Serial.write("Random 0\n\r");
     activeRollover_ = SW_TOP_LEFT_LANE;
     g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER, true);
   } else if (randomNumber == 1) {
-    if (DEBUG_MESSAGES) Serial.write("Random 1\n\r");
     activeRollover_ = SW_TOP_MIDDLE_LANE;
     g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER, true);
   } else {
-    if (DEBUG_MESSAGES) Serial.write("Random 2\n\r");
     activeRollover_ = SW_TOP_RIGHT_LANE;
     g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER, true);
   }

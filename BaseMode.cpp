@@ -4,6 +4,7 @@ Base::Base() {
 }
 
 int Base::run(byte switchHit) {
+  if (switchHit == 0xFF) handleNewMode();
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
   switch (switchHit) {
@@ -14,6 +15,16 @@ int Base::run(byte switchHit) {
       returnState = MACHINE_STATE_TEST_LIGHTS;
       g_selfTestAndAudit.setLastSelfTestChangedTime(g_machineState.currentTime());
       break;
+    case SW_RIGHT_FLIPPER_BUTTON:
+      g_machineState.rotatePlayerLamps();
+      g_machineState.showPlayerLamps();
+      break;
+    case SW_LEFT_OUTLANE:
+    case SW_LEFT_RETURN_LANE:
+    case SW_RIGHT_OUTLANE:
+    case SW_RIGHT_RETURN_LANE:
+      g_machineState.registerGuardianRollover(switchHit);
+      g_machineState.showPlayerLamps();
     case SW_10_POINT_REBOUND:
     case SW_1ST_INLINE_DROP_TARGET:
     case SW_2ND_INLINE_DROP_TARGET:
@@ -21,8 +32,6 @@ int Base::run(byte switchHit) {
     case SW_4TH_INLINE_DROP_TARGET:
     case SW_B_DROP_TARGET:
     case SW_INLANE_BACK_TARGET:
-    case SW_LEFT_OUTLANE:
-    case SW_LEFT_RETURN_LANE:
     case SW_LEFT_SIDE_RO_BUTTON:
     case SW_LEFT_SLINGSHOT:
     case SW_LEFT_THUMPER_BUMPER:
@@ -33,8 +42,6 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_2:
     case SW_RIGHT_4_DROP_TARGET_3:
     case SW_RIGHT_4_DROP_TARGET_4:
-    case SW_RIGHT_OUTLANE:
-    case SW_RIGHT_RETURN_LANE:
     case SW_RIGHT_SLINGSHOT:
     case SW_RIGHT_THUMPER_BUMPER:
     case SW_R_DROP_TARGET:
@@ -67,4 +74,9 @@ int Base::run(byte switchHit) {
   }
 
   return returnState;
+}
+
+void Base::handleNewMode() {
+  if (DEBUG_MESSAGES) Serial.write("Entering Base Mode\n\r");
+  g_machineState.showPlayerLamps();
 }

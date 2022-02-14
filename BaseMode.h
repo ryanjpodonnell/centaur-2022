@@ -3,6 +3,7 @@
 
 class Base {
   private:
+    void handleNewMode();
 
   public:
     Base();
