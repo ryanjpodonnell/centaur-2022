@@ -4,6 +4,8 @@
 class SkillShot {
   private:
     byte activeRollover_;
+    byte bonusValue_;
+    byte scoreValue_;
 
     byte checkRollover(byte switchHit);
     void handleNewMode();

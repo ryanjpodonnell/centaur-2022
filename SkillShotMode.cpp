@@ -8,8 +8,10 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
 
   switch(switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
-      g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
+      bonusValue_ = 10;
+      scoreValue_ = 10;
 
+      g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
       if(activeRollover_ == SW_TOP_LEFT_LANE) {
         activeRollover_ = SW_TOP_MIDDLE_LANE;
         g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER, true);
@@ -53,8 +55,8 @@ byte SkillShot::checkRollover(byte switchHit) {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
 
   if(activeRollover_ == switchHit) {
-    g_machineState.increaseScore(100);
-    g_machineState.increaseBonus(100);
+    g_machineState.increaseScore(scoreValue_);
+    g_machineState.increaseBonus(bonusValue_);
     g_gameMode.setScoreIncreased(true);
   }
 
@@ -63,6 +65,9 @@ byte SkillShot::checkRollover(byte switchHit) {
 
 void SkillShot::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering SkillShot Mode\n\r");
+
+  bonusValue_ = 100;
+  scoreValue_ = 100;
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
 
