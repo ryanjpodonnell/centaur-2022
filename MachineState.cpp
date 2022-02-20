@@ -77,8 +77,12 @@ boolean MachineState::samePlayerShootsAgain() {
   return samePlayerShootsAgain_;
 }
 
-byte MachineState::bonus() {
-  return currentPlayer_->bonus();
+byte MachineState::bonus(byte player) {
+  if (player == 0xFF) player = currentPlayerNumber();
+  if (player == 0) return player1_.bonus();
+  if (player == 1) return player2_.bonus();
+  if (player == 2) return player3_.bonus();
+  if (player == 3) return player4_.bonus();
 }
 
 byte MachineState::bonusMultiplier() {

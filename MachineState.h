@@ -50,7 +50,7 @@ class MachineState {
     boolean       machineStateChanged();
     boolean       resetPlayers();
     boolean       samePlayerShootsAgain();
-    byte          bonus();
+    byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
     byte          credits();
     byte          currentBallInPlay();

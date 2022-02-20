@@ -2,6 +2,7 @@
 
 CountdownBonus::CountdownBonus() {
   countdownEndTime_ = 0;
+  lastDecrease_     = 0;
   stateStartedTime_ = 0;
 }
 
@@ -12,6 +13,7 @@ int CountdownBonus::run(boolean curStateChanged) {
   if (timeSinceStateStarted > 1000) countdownBonusStep();
 
   g_displayHelper.showPlayerScores(g_machineState.currentPlayerNumber());
+  g_lampsHelper.showBonusLamps(g_machineState.currentPlayerNumber());
 
   if (countdownEndTime_ && g_machineState.currentTime() > countdownEndTime_) return MACHINE_STATE_BALL_OVER;
   return MACHINE_STATE_COUNTDOWN_BONUS;
@@ -24,9 +26,14 @@ void CountdownBonus::addBonusToScore() {
 }
 
 void CountdownBonus::countdownBonusStep() {
-  if (g_machineState.bonus()) {
-    if (!g_machineState.currentPlayerTilted()) addBonusToScore();
-    g_machineState.decreaseBonus(1);
+  unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
+  if (seed != lastDecrease_) {
+    lastDecrease_ = seed;
+
+    if (g_machineState.bonus()) {
+      if (!g_machineState.currentPlayerTilted()) addBonusToScore();
+      g_machineState.decreaseBonus(1);
+    }
   }
 
   if (!g_machineState.bonus() && !countdownEndTime_) {
@@ -42,5 +49,6 @@ void CountdownBonus::handleNewState() {
   g_lampsHelper.hideAllLamps();
 
   countdownEndTime_ = 0;
+  lastDecrease_     = 0;
   stateStartedTime_ = g_machineState.currentTime();
 }

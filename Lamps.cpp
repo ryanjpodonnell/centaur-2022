@@ -7,15 +7,15 @@ void LampsHelper::hideAllLamps() {
   BSOS_TurnOffAllLamps();
 }
 
+void LampsHelper::hideLamp(byte lamp) {
+  BSOS_SetLampState(lamp, 0);
+}
+
 void LampsHelper::hideLamps(byte lampCollection) {
   byte* pointer = lampsPointer(lampCollection);
   for(byte i = 0; pointer[i] != LAMP_TERMINATOR; i++) {
     BSOS_SetLampState(pointer[i], 0);
   }
-}
-
-void LampsHelper::hideLamp(byte lamp) {
-  BSOS_SetLampState(lamp, 0);
 }
 
 void LampsHelper::showAllLamps() {
@@ -24,12 +24,16 @@ void LampsHelper::showAllLamps() {
   }
 }
 
-void LampsHelper::showLamps(byte lampCollection, bool clearAllLamps) {
-  if (clearAllLamps) BSOS_TurnOffAllLamps();
+void LampsHelper::showBonusLamps(byte playerNumber) {
+  byte bonus = g_machineState.bonus(playerNumber);
 
-  byte* pointer = lampsPointer(lampCollection);
-  for(byte i = 0; pointer[i] != LAMP_TERMINATOR; i++) {
-    BSOS_SetLampState(pointer[i], 1);
+  for(byte itr = 0; itr < sizeof(descendingBonusValues_); itr++) {
+    if (bonus >= descendingBonusValues_[itr]) {
+      showLamp(descendingBonusLamps_[itr]);
+      bonus -= descendingBonusValues_[itr];
+    } else {
+      hideLamp(descendingBonusLamps_[itr]);
+    }
   }
 }
 
@@ -43,6 +47,19 @@ void LampsHelper::showLamp(byte lamp, bool flash, bool clearAllLamps) {
   }
 }
 
+void LampsHelper::showLamps(byte lampCollection, bool clearAllLamps) {
+  if (clearAllLamps) BSOS_TurnOffAllLamps();
+
+  byte* pointer = lampsPointer(lampCollection);
+  for(byte i = 0; pointer[i] != LAMP_TERMINATOR; i++) {
+    BSOS_SetLampState(pointer[i], 1);
+  }
+}
+
+
+/*********************************************************************
+    Private
+*********************************************************************/
 byte* LampsHelper::lampsPointer(byte lampCollection) {
   byte* pointer;
   switch(lampCollection) {

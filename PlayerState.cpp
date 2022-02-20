@@ -79,6 +79,10 @@ void PlayerState::resetPlayerState() {
   guardianLights_[1] = false;
   guardianLights_[2] = false;
   guardianLights_[3] = false;
+
+  topLaneLights_[0] = false;
+  topLaneLights_[1] = false;
+  topLaneLights_[2] = false;
 }
 
 void PlayerState::rotatePlayerLamps() {

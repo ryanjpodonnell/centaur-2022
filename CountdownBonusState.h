@@ -4,6 +4,7 @@
 class CountdownBonus {
   private:
     unsigned long countdownEndTime_;
+    unsigned long lastDecrease_;
     unsigned long stateStartedTime_;
 
     void addBonusToScore();

@@ -233,6 +233,38 @@ static byte allRolloverLamps_[] = {
   LAMP_TERMINATOR
 };
 
+static byte descendingBonusValues_[] = {
+  60,
+  40,
+  20,
+  10,
+  9,
+  8,
+  7,
+  6,
+  5,
+  4,
+  3,
+  2,
+  1
+};
+
+static byte descendingBonusLamps_[] = {
+  LAMP_60K_BONUS,
+  LAMP_40K_BONUS,
+  LAMP_20K_BONUS,
+  LAMP_10K_BONUS,
+  LAMP_9K_BONUS,
+  LAMP_8K_BONUS,
+  LAMP_7K_BONUS,
+  LAMP_6K_BONUS,
+  LAMP_5K_BONUS,
+  LAMP_4K_BONUS,
+  LAMP_3K_BONUS,
+  LAMP_2K_BONUS,
+  LAMP_1K_BONUS
+};
+
 class LampsHelper {
   private:
     byte* lampsPointer(byte lampCollection);
@@ -244,6 +276,7 @@ class LampsHelper {
     void hideLamp(byte lamp);
     void hideLamps(byte lampCollection);
     void showAllLamps();
+    void showBonusLamps(byte playerNumber);
     void showLamp(byte lamp, bool flash = false, bool clearAllLamps = false);
     void showLamps(byte lampCollection, bool clearAllLamps = false);
 };
