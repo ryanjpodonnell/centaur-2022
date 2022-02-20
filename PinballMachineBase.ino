@@ -42,34 +42,41 @@ void loop() {
 
   unsigned long currentTime = millis();
   g_machineState.setCurrentTime(currentTime);
+
   if (DEBUG_MESSAGES && DEBUG_HERTZ) g_hertzLogging.run();
 
   int machineState = g_machineState.machineState();
-  int newMachineState = machineState;
   boolean machineStateChanged = g_machineState.machineStateChanged();
 
   if (machineState < 0) {
-    newMachineState = g_selfTestAndAudit.run(machineState, machineStateChanged);
+    machineState = g_selfTestAndAudit.run(machineState, machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_DEBUG) {
-    newMachineState = g_debug.run(machineState, machineStateChanged);
+    machineState = g_debug.run(machineState, machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_ATTRACT) {
-    newMachineState = g_attract.run(machineState, machineStateChanged);
+    machineState = g_attract.run(machineState, machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_INIT_GAMEPLAY) {
-    newMachineState = g_machineState.initGamePlay();
+    machineState = g_machineState.initGamePlay();
+
   } else if (machineState == MACHINE_STATE_INIT_NEW_BALL) {
-    newMachineState = g_machineState.initNewBall(machineStateChanged);
+    machineState = g_machineState.initNewBall(machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_NORMAL_GAMEPLAY) {
-    newMachineState = g_gameMode.run(machineStateChanged);
+    machineState = g_gameMode.run(machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_COUNTDOWN_BONUS) {
-    newMachineState = g_countdownBonus.run(machineStateChanged);
+    machineState = g_countdownBonus.run(machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_BALL_OVER && g_machineState.samePlayerShootsAgain()) {
-    newMachineState = MACHINE_STATE_INIT_NEW_BALL;
-    newMachineState = g_machineState.initNewBall(machineStateChanged);
+    machineState = g_machineState.initNewBall(machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_BALL_OVER && !g_machineState.samePlayerShootsAgain()) {
-    newMachineState = g_machineState.incrementCurrentPlayer();
+    machineState = g_machineState.incrementCurrentPlayer();
   }
 
-  g_machineState.setMachineState(newMachineState);
+  g_machineState.setMachineState(machineState);
 
   BSOS_ApplyFlashToLamps(currentTime);
   BSOS_UpdateTimedSolenoidStack(currentTime);

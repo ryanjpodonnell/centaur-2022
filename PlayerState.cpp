@@ -44,10 +44,10 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
-  if (switchHit == SW_LEFT_OUTLANE) guardianLights_[0] = true;
-  if (switchHit == SW_LEFT_RETURN_LANE) guardianLights_[1] = true;
+  if (switchHit == SW_LEFT_OUTLANE)      guardianLights_[0] = true;
+  if (switchHit == SW_LEFT_RETURN_LANE)  guardianLights_[1] = true;
   if (switchHit == SW_RIGHT_RETURN_LANE) guardianLights_[2] = true;
-  if (switchHit == SW_RIGHT_OUTLANE) guardianLights_[3] = true;
+  if (switchHit == SW_RIGHT_OUTLANE)     guardianLights_[3] = true;
 
   if (guardianLights_[0] == true && guardianLights_[1] == true && guardianLights_[2] == true && guardianLights_[3] == true) {
     guardianLights_[0] = false;
@@ -90,12 +90,8 @@ void PlayerState::setScore(unsigned long value) {
 }
 
 void PlayerState::showPlayerLamps() {
-  if (guardianLights_[0] == true) g_lampsHelper.showLamp(LAMP_LEFT_OUT_ROLLOVER);
-  if (guardianLights_[0] == false) g_lampsHelper.hideLamp(LAMP_LEFT_OUT_ROLLOVER);
-  if (guardianLights_[1] == true) g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER);
-  if (guardianLights_[1] == false) g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
-  if (guardianLights_[2] == true) g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER);
-  if (guardianLights_[2] == false) g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
-  if (guardianLights_[3] == true) g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER);
-  if (guardianLights_[3] == false) g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
+  guardianLights_[0] ? g_lampsHelper.showLamp(LAMP_LEFT_OUT_ROLLOVER)     : g_lampsHelper.hideLamp(LAMP_LEFT_OUT_ROLLOVER);
+  guardianLights_[1] ? g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
+  guardianLights_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
+  guardianLights_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER)    : g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
 }

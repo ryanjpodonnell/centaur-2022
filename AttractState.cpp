@@ -3,6 +3,7 @@
 Attract::Attract() {
   currentFlashCycle_ = 0;
   lastFlash_         = 0;
+  updateScores_      = true;
 }
 
 int Attract::run(int curState, boolean curStateChanged) {
@@ -46,6 +47,11 @@ void Attract::handleNewState() {
   BSOS_TurnOffAllLamps();
   BSOS_SetDisableFlippers(true);
 
+  score1_ = g_machineState.score(0);
+  score2_ = g_machineState.score(1);
+  score3_ = g_machineState.score(2);
+  score4_ = g_machineState.score(3);
+
   BSOS_SetDisplayCredits(g_machineState.credits(), true);
 }
 
@@ -56,25 +62,37 @@ void Attract::handleLightShow() {
 
   if (cycleSeed != currentFlashCycle_) {
     currentFlashCycle_ = cycleSeed;
+    updateScores_ = true;
   }
 
   if (seed != lastFlash_) {
     lastFlash_ = seed;
-
     byte numberOfSteps = 16;
     byte currentStep = 0;
+
     if (currentFlashCycle_ % 2 == 0) {
       currentStep = seed % numberOfSteps;
 
-      unsigned long highScore = g_machineState.highScore();
-      g_displayHelper.overrideScoreDisplay(0, highScore);
-      g_displayHelper.overrideScoreDisplay(1, highScore);
-      g_displayHelper.overrideScoreDisplay(2, highScore);
-      g_displayHelper.overrideScoreDisplay(3, highScore);
+      if (updateScores_ == true) {
+        unsigned long highScore = g_machineState.highScore();
+        g_machineState.setScore(highScore, 0);
+        g_machineState.setScore(highScore, 1);
+        g_machineState.setScore(highScore, 2);
+        g_machineState.setScore(highScore, 3);
+        g_displayHelper.showPlayerScores(0xFF);
+        updateScores_ = false;
+      }
     } else {
       currentStep = numberOfSteps - ((seed % numberOfSteps) + 1);
 
-      g_displayHelper.showPlayerScores(0xFF);
+      if (updateScores_ == true) {
+        g_machineState.setScore(score1_, 0);
+        g_machineState.setScore(score2_, 1);
+        g_machineState.setScore(score3_, 2);
+        g_machineState.setScore(score4_, 3);
+        g_displayHelper.showPlayerScores(0xFF);
+        updateScores_ = false;
+      }
     }
 
     if (currentStep == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS, false, true);

@@ -5,14 +5,15 @@ MachineState::MachineState(byte id) {
   player2_               = PlayerState();
   player3_               = PlayerState();
   player4_               = PlayerState();
+
   credits_               = 0;
   currentBallInPlay_     = 0;
   currentPlayerNumber_   = 0;
   extraBallCollected_    = false;
   freePlayMode_          = true;
   highScore_             = 0;
-  lastTiltWarningTime_   = 0;
   lastScoreChangeTime_   = 0;
+  lastTiltWarningTime_   = 0;
   machineStateChanged_   = true;
   machineStateId_        = id;
   numberOfPlayers_       = 0;
@@ -111,6 +112,7 @@ byte MachineState::incrementCurrentPlayer() {
   setCurrentPlayer(currentPlayerNumber_);
 
   if (currentBallInPlay_ > BALLS_PER_GAME) {
+    numberOfPlayers_ = 0;
     return MACHINE_STATE_ATTRACT;
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
@@ -129,6 +131,7 @@ int MachineState::initGamePlay() {
 int MachineState::initNewBall(bool curStateChanged) {
   if (curStateChanged) {
     if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
+
     ballSaveUsed_          = false;
     extraBallCollected_    = false;
     samePlayerShootsAgain_ = false;
