@@ -9,6 +9,10 @@ PlayerState::PlayerState() {
   guardianLights_[1] = false;
   guardianLights_[2] = false;
   guardianLights_[3] = false;
+
+  topLaneLights_[0] = false;
+  topLaneLights_[1] = false;
+  topLaneLights_[2] = false;
 }
 
 byte PlayerState::bonus() {
@@ -43,17 +47,26 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
   score_ += amountToAdd;
 }
 
-void PlayerState::registerGuardianRollover(byte switchHit) {
+void PlayerState::registerRollover(byte switchHit) {
   if (switchHit == SW_LEFT_OUTLANE)      guardianLights_[0] = true;
   if (switchHit == SW_LEFT_RETURN_LANE)  guardianLights_[1] = true;
   if (switchHit == SW_RIGHT_RETURN_LANE) guardianLights_[2] = true;
   if (switchHit == SW_RIGHT_OUTLANE)     guardianLights_[3] = true;
+  if (switchHit == SW_TOP_LEFT_LANE)     topLaneLights_[0]  = true;
+  if (switchHit == SW_TOP_MIDDLE_LANE)   topLaneLights_[1]  = true;
+  if (switchHit == SW_TOP_RIGHT_LANE)    topLaneLights_[2]  = true;
 
   if (guardianLights_[0] == true && guardianLights_[1] == true && guardianLights_[2] == true && guardianLights_[3] == true) {
     guardianLights_[0] = false;
     guardianLights_[1] = false;
     guardianLights_[2] = false;
     guardianLights_[3] = false;
+  }
+
+  if (topLaneLights_[0] == true && topLaneLights_[1] == true && topLaneLights_[2] == true) {
+    topLaneLights_[0] = false;
+    topLaneLights_[1] = false;
+    topLaneLights_[2] = false;
   }
 }
 
@@ -69,11 +82,16 @@ void PlayerState::resetPlayerState() {
 }
 
 void PlayerState::rotatePlayerLamps() {
-  bool tempGuardianLight = guardianLights_[0];
-  guardianLights_[0]     = guardianLights_[1];
-  guardianLights_[1]     = guardianLights_[2];
-  guardianLights_[2]     = guardianLights_[3];
-  guardianLights_[3]     = tempGuardianLight;
+  bool tempLight     = guardianLights_[0];
+  guardianLights_[0] = guardianLights_[1];
+  guardianLights_[1] = guardianLights_[2];
+  guardianLights_[2] = guardianLights_[3];
+  guardianLights_[3] = tempLight;
+
+  tempLight         = topLaneLights_[2];
+  topLaneLights_[2] = topLaneLights_[1];
+  topLaneLights_[1] = topLaneLights_[0];
+  topLaneLights_[0] = tempLight;
 }
 
 void PlayerState::setBonus(byte value) {
@@ -94,4 +112,8 @@ void PlayerState::showPlayerLamps() {
   guardianLights_[1] ? g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
   guardianLights_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
   guardianLights_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER)    : g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
+
+  topLaneLights_[0] ? g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER)   : g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
+  topLaneLights_[1] ? g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
+  topLaneLights_[2] ? g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
 }

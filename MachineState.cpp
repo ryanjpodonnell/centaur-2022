@@ -148,6 +148,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
 
     g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
     if (BALL_SAVE_NUMBER_OF_SECONDS) g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
@@ -231,8 +232,8 @@ void MachineState::readStoredParameters() {
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
 }
 
-void MachineState::registerGuardianRollover(byte switchHit) {
-  currentPlayer_->registerGuardianRollover(switchHit);
+void MachineState::registerRollover(byte switchHit) {
+  currentPlayer_->registerRollover(switchHit);
 }
 
 void MachineState::registerTiltWarning() {

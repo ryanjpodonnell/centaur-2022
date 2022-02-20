@@ -81,6 +81,7 @@
 #define LAMP_COLLECTION_RING_13           12
 #define LAMP_COLLECTION_RING_14           13
 #define LAMP_COLLECTION_TOP_ROLLOVERS     14
+#define LAMP_COLLECTION_ALL_ROLLOVERS     15
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -214,10 +215,21 @@ static byte ring14Lamps_[] = {
   LAMP_TERMINATOR
 };
 
-static byte rolloverLamps_[] = {
+static byte topRolloverLamps_[] = {
   LAMP_TOP_LEFT_ROLLOVER,
   LAMP_TOP_MIDDLE_ROLLOVER,
   LAMP_TOP_RIGHT_ROLLOVER,
+  LAMP_TERMINATOR
+};
+
+static byte allRolloverLamps_[] = {
+  LAMP_TOP_LEFT_ROLLOVER,
+  LAMP_TOP_MIDDLE_ROLLOVER,
+  LAMP_TOP_RIGHT_ROLLOVER,
+  LAMP_LEFT_OUT_ROLLOVER,
+  LAMP_LEFT_RETURN_ROLLOVER,
+  LAMP_RIGHT_RETURN_ROLLOVER,
+  LAMP_RIGHT_OUT_ROLLOVER,
   LAMP_TERMINATOR
 };
 

@@ -71,7 +71,7 @@ class MachineState {
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
     void          readStoredParameters();
-    void          registerGuardianRollover(byte switchHit);
+    void          registerRollover(byte switchHit);
     void          registerTiltWarning();
     void          rotatePlayerLamps();
     void          setBallSaveUsed(byte value);

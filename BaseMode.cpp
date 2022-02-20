@@ -16,14 +16,19 @@ int Base::run(byte switchHit) {
       g_selfTestAndAudit.setLastSelfTestChangedTime(g_machineState.currentTime());
       break;
     case SW_RIGHT_FLIPPER_BUTTON:
-      g_machineState.rotatePlayerLamps();
-      g_machineState.showPlayerLamps();
+      if (g_gameMode.firstSwitchHitTime() != 0) {
+        g_machineState.rotatePlayerLamps();
+        g_machineState.showPlayerLamps();
+      }
       break;
     case SW_LEFT_OUTLANE:
     case SW_LEFT_RETURN_LANE:
     case SW_RIGHT_OUTLANE:
     case SW_RIGHT_RETURN_LANE:
-      g_machineState.registerGuardianRollover(switchHit);
+    case SW_TOP_LEFT_LANE:
+    case SW_TOP_MIDDLE_LANE:
+    case SW_TOP_RIGHT_LANE:
+      g_machineState.registerRollover(switchHit);
       g_machineState.showPlayerLamps();
     case SW_10_POINT_REBOUND:
     case SW_1ST_INLINE_DROP_TARGET:
@@ -46,10 +51,7 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_THUMPER_BUMPER:
     case SW_R_DROP_TARGET:
     case SW_S_DROP_TARGET:
-    case SW_TOP_LEFT_LANE:
     case SW_TOP_LEFT_LANE_RO_BUTTON:
-    case SW_TOP_MIDDLE_LANE:
-    case SW_TOP_RIGHT_LANE:
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
       if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
@@ -78,5 +80,4 @@ int Base::run(byte switchHit) {
 
 void Base::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Base Mode\n\r");
-  g_machineState.showPlayerLamps();
 }

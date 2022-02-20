@@ -6,6 +6,7 @@
 class PlayerState {
   private:
     boolean       guardianLights_[4];
+    boolean       topLaneLights_[3];
     byte          bonusMultiplier_;
     byte          bonus_;
     unsigned long score_;
@@ -19,7 +20,7 @@ class PlayerState {
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
-    void          registerGuardianRollover(byte switchHit);
+    void          registerRollover(byte switchHit);
     void          resetPlayerState();
     void          rotatePlayerLamps();
     void          setBonus(byte value);
