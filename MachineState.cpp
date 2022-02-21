@@ -6,19 +6,20 @@ MachineState::MachineState(byte id) {
   player3_               = PlayerState();
   player4_               = PlayerState();
 
-  credits_               = 0;
-  currentBallInPlay_     = 0;
-  currentPlayerNumber_   = 0;
-  extraBallCollected_    = false;
-  freePlayMode_          = true;
-  highScore_             = 0;
-  lastScoreChangeTime_   = 0;
-  lastTiltWarningTime_   = 0;
-  machineStateChanged_   = true;
-  machineStateId_        = id;
-  numberOfPlayers_       = 0;
-  numberOfTiltWarnings_  = 0;
-  samePlayerShootsAgain_ = false;
+  credits_                     = 0;
+  currentBallInPlay_           = 0;
+  currentBallSwitchHitCounter_ = 0;
+  currentPlayerNumber_         = 0;
+  extraBallCollected_          = false;
+  freePlayMode_                = true;
+  highScore_                   = 0;
+  lastScoreChangeTime_         = 0;
+  lastTiltWarningTime_         = 0;
+  machineStateChanged_         = true;
+  machineStateId_              = id;
+  numberOfPlayers_             = 0;
+  numberOfTiltWarnings_        = 0;
+  samePlayerShootsAgain_       = false;
 }
 
 boolean MachineState::ballSaveUsed() {
@@ -107,13 +108,10 @@ byte MachineState::numberOfPlayers() {
 
 byte MachineState::incrementCurrentPlayer() {
   currentPlayerNumber_ += 1;
-
   if (currentPlayerNumber_ == numberOfPlayers_) {
     currentPlayerNumber_ = 0;
     currentBallInPlay_ += 1;
   }
-
-  setCurrentPlayer(currentPlayerNumber_);
 
   if (currentBallInPlay_ > BALLS_PER_GAME) {
     numberOfPlayers_ = 0;
@@ -127,7 +125,7 @@ int MachineState::initGamePlay() {
   if (DEBUG_MESSAGES) Serial.write("Initializing gameplay\n\r");
 
   currentBallInPlay_ = 1;
-  setCurrentPlayer(0);
+  currentPlayerNumber_ = 0;
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }
@@ -136,11 +134,13 @@ int MachineState::initNewBall(bool curStateChanged) {
   if (curStateChanged) {
     if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
 
-    ballSaveUsed_          = false;
-    extraBallCollected_    = false;
-    samePlayerShootsAgain_ = false;
-    scoreMultiplier_       = 1;
+    ballSaveUsed_                = false;
+    currentBallSwitchHitCounter_ = 0;
+    extraBallCollected_          = false;
+    samePlayerShootsAgain_       = false;
+    scoreMultiplier_             = 1;
 
+    setCurrentPlayer(currentPlayerNumber_);
     setBonus(0);
     setBonusMultiplier(1);
 
@@ -167,6 +167,10 @@ int MachineState::initNewBall(bool curStateChanged) {
 
 int MachineState::machineState() {
   return machineStateId_;
+}
+
+unsigned long MachineState::currentBallSwitchHitCounter() {
+  return currentBallSwitchHitCounter_;
 }
 
 unsigned long MachineState::currentTime() {
@@ -229,6 +233,10 @@ void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
 void MachineState::increaseScore(unsigned long amountToAdd) {
   lastScoreChangeTime_ = currentTime_;
   currentPlayer_->increaseScore(amountToAdd);
+}
+
+void MachineState::incrementCurrentBallSwitchHitCounter() {
+  currentBallSwitchHitCounter_ += 1;
 }
 
 void MachineState::readStoredParameters() {

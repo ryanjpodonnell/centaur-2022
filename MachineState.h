@@ -37,6 +37,7 @@ class MachineState {
     byte          numberOfTiltWarnings_;
     byte          scoreMultiplier_;
     int           machineStateId_;
+    unsigned long currentBallSwitchHitCounter_;
     unsigned long currentTime_;
     unsigned long highScore_;
     unsigned long lastScoreChangeTime_;
@@ -60,6 +61,7 @@ class MachineState {
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
     int           machineState();
+    unsigned long currentBallSwitchHitCounter();
     unsigned long currentTime();
     unsigned long highScore();
     unsigned long lastScoreChangeTime();
@@ -70,6 +72,7 @@ class MachineState {
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
+    void          incrementCurrentBallSwitchHitCounter();
     void          readStoredParameters();
     void          registerRollover(byte switchHit);
     void          registerTiltWarning();

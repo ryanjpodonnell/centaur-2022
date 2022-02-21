@@ -55,6 +55,12 @@ int Base::run(byte switchHit) {
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
       if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+
+      g_machineState.incrementCurrentBallSwitchHitCounter();
+      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
+        g_machineState.increaseBonus(1);
+      }
+
       break;
     case SW_COIN_1:
     case SW_COIN_2:
