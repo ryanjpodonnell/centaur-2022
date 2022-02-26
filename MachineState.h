@@ -74,8 +74,10 @@ class MachineState {
     void          increaseScore(unsigned long amountToAdd);
     void          incrementCurrentBallSwitchHitCounter();
     void          readStoredParameters();
+    void          registerDropTarget(byte switchHit);
     void          registerRollover(byte switchHit);
     void          registerTiltWarning();
+    void          resetDropTargets();
     void          rotatePlayerLamps();
     void          setBallSaveUsed(byte value);
     void          setBonus(byte value);

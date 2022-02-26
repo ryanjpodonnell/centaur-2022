@@ -244,6 +244,10 @@ void MachineState::readStoredParameters() {
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
 }
 
+void MachineState::registerDropTarget(byte switchHit) {
+  currentPlayer_->registerDropTarget(switchHit);
+}
+
 void MachineState::registerRollover(byte switchHit) {
   currentPlayer_->registerRollover(switchHit);
 }
@@ -260,6 +264,10 @@ void MachineState::registerTiltWarning() {
       BSOS_SetLampState(LAMP_TILT, 1);
     }
   }
+}
+
+void MachineState::resetDropTargets() {
+  currentPlayer_->resetDropTargets();
 }
 
 void MachineState::rotatePlayerLamps() {

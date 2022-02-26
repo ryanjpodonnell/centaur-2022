@@ -13,6 +13,11 @@ PlayerState::PlayerState() {
   topLaneLights_[0] = false;
   topLaneLights_[1] = false;
   topLaneLights_[2] = false;
+
+  orbsDropTargets_[0] = false;
+  orbsDropTargets_[1] = false;
+  orbsDropTargets_[2] = false;
+  orbsDropTargets_[3] = false;
 }
 
 byte PlayerState::bonus() {
@@ -47,6 +52,13 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
   score_ += amountToAdd;
 }
 
+void PlayerState::registerDropTarget(byte switchHit) {
+  if (switchHit == SW_O_DROP_TARGET) orbsDropTargets_[0] = true;
+  if (switchHit == SW_R_DROP_TARGET) orbsDropTargets_[1] = true;
+  if (switchHit == SW_B_DROP_TARGET) orbsDropTargets_[2] = true;
+  if (switchHit == SW_S_DROP_TARGET) orbsDropTargets_[3] = true;
+}
+
 void PlayerState::registerRollover(byte switchHit) {
   if (switchHit == SW_LEFT_OUTLANE)      guardianLights_[0] = true;
   if (switchHit == SW_LEFT_RETURN_LANE)  guardianLights_[1] = true;
@@ -68,6 +80,15 @@ void PlayerState::registerRollover(byte switchHit) {
     topLaneLights_[1] = false;
     topLaneLights_[2] = false;
   }
+}
+
+void PlayerState::resetDropTargets() {
+  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, g_machineState.currentTime() + 500);
+
+    orbsDropTargets_[0] = false;
+    orbsDropTargets_[1] = false;
+    orbsDropTargets_[2] = false;
+    orbsDropTargets_[3] = false;
 }
 
 void PlayerState::resetPlayerState() {
@@ -120,4 +141,16 @@ void PlayerState::showPlayerLamps() {
   topLaneLights_[0] ? g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER)   : g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
   topLaneLights_[1] ? g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
   topLaneLights_[2] ? g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
+
+  if (orbsDropTargets_[0] == true && orbsDropTargets_[1] == true && orbsDropTargets_[2] == true && orbsDropTargets_[3] == true) {
+    g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, true);
+    g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW, true);
+    g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW, true);
+    g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW, true);
+  } else {
+    orbsDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_O_DROP_TARGET_ARROW);
+    orbsDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_R_DROP_TARGET_ARROW);
+    orbsDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_B_DROP_TARGET_ARROW);
+    orbsDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_S_DROP_TARGET_ARROW);
+  }
 }

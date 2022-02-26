@@ -179,6 +179,7 @@ void DisplayHelper::showPlayerScore(byte playerNumber, byte playerIterator, bool
   unsigned long score = g_machineState.score(playerIterator);
 
   if (playerNumber == 0xFF || playerIterator == playerNumber || score > BALLY_STERN_OS_MAX_DISPLAY_SCORE) {
+    // blanks out score if iterator is greater than the number of players
     if (playerNumber == 0xFF && (playerIterator >= g_machineState.numberOfPlayers() && g_machineState.numberOfPlayers() != 0)) {
       BSOS_SetDisplayBlank(playerIterator, 0x00);
       return;

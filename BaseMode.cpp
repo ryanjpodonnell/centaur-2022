@@ -30,18 +30,52 @@ int Base::run(byte switchHit) {
     case SW_TOP_RIGHT_LANE:
       g_machineState.registerRollover(switchHit);
       g_machineState.showPlayerLamps();
+
+      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
+      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+
+      g_machineState.incrementCurrentBallSwitchHitCounter();
+      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
+        g_machineState.increaseBonus(1);
+      }
+      break;
+    case SW_O_DROP_TARGET:
+    case SW_R_DROP_TARGET:
+    case SW_B_DROP_TARGET:
+    case SW_S_DROP_TARGET:
+      g_machineState.registerDropTarget(switchHit);
+      g_machineState.showPlayerLamps();
+
+      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
+      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+
+      g_machineState.incrementCurrentBallSwitchHitCounter();
+      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
+        g_machineState.increaseBonus(1);
+      }
+      break;
+    case SW_ORBS_RIGHT_LANE_TARGET:
+      g_machineState.resetDropTargets();
+      g_machineState.showPlayerLamps();
+
+      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
+      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+
+      g_machineState.incrementCurrentBallSwitchHitCounter();
+      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
+        g_machineState.increaseBonus(1);
+      }
+      break;
+
     case SW_10_POINT_REBOUND:
     case SW_1ST_INLINE_DROP_TARGET:
     case SW_2ND_INLINE_DROP_TARGET:
     case SW_3RD_INLINE_DROP_TARGET:
     case SW_4TH_INLINE_DROP_TARGET:
-    case SW_B_DROP_TARGET:
     case SW_INLANE_BACK_TARGET:
     case SW_LEFT_SIDE_RO_BUTTON:
     case SW_LEFT_SLINGSHOT:
     case SW_LEFT_THUMPER_BUMPER:
-    case SW_ORBS_RIGHT_LANE_TARGET:
-    case SW_O_DROP_TARGET:
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
     case SW_RIGHT_4_DROP_TARGET_1:
     case SW_RIGHT_4_DROP_TARGET_2:
@@ -49,8 +83,6 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_4:
     case SW_RIGHT_SLINGSHOT:
     case SW_RIGHT_THUMPER_BUMPER:
-    case SW_R_DROP_TARGET:
-    case SW_S_DROP_TARGET:
     case SW_TOP_LEFT_LANE_RO_BUTTON:
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
