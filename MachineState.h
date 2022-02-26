@@ -92,7 +92,11 @@ class MachineState {
     void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
-    void          showPlayerLamps();
+    void          startQualifiedMode();
+    void          updateCaptiveOrbsLamps();
+    void          updateGuardianRolloverLamps();
+    void          updateOrbsDropTargetLamps();
+    void          updateTopRolloverLamps();
     void          writeCoinToAudit(byte switchHit);
 };
 

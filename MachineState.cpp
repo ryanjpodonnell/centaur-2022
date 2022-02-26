@@ -330,8 +330,24 @@ void MachineState::setScore(unsigned long value, byte player) {
   if (player == 3) player4_.setScore(value);
 }
 
-void MachineState::showPlayerLamps() {
-  currentPlayer_->showPlayerLamps();
+void MachineState::startQualifiedMode() {
+  currentPlayer_->startQualifiedMode();
+}
+
+void MachineState::updateCaptiveOrbsLamps() {
+  currentPlayer_->updateCaptiveOrbsLamps();
+}
+
+void MachineState::updateGuardianRolloverLamps() {
+  currentPlayer_->updateGuardianRolloverLamps();
+}
+
+void MachineState::updateOrbsDropTargetLamps() {
+  currentPlayer_->updateOrbsDropTargetLamps();
+}
+
+void MachineState::updateTopRolloverLamps() {
+  currentPlayer_->updateTopRolloverLamps();
 }
 
 void MachineState::writeCoinToAudit(byte switchHit) {

@@ -19,15 +19,18 @@ PlayerState::PlayerState() {
   orbsDropTargets_[2] = false;
   orbsDropTargets_[3] = false;
 
+  modeStatus_[0] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
-  modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
-  modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
 
 }
 
 boolean PlayerState::orbsDropTargetsCompleted() {
-  return orbsDropTargets_[0] == true && orbsDropTargets_[1] == true && orbsDropTargets_[2] == true && orbsDropTargets_[3] == true;
+  return orbsDropTargets_[0] == true &&
+         orbsDropTargets_[1] == true &&
+         orbsDropTargets_[2] == true &&
+         orbsDropTargets_[3] == true;
 }
 
 byte PlayerState::bonus() {
@@ -71,8 +74,6 @@ void PlayerState::registerDropTarget(byte switchHit) {
   if (switchHit == SW_R_DROP_TARGET) orbsDropTargets_[1] = true;
   if (switchHit == SW_B_DROP_TARGET) orbsDropTargets_[2] = true;
   if (switchHit == SW_S_DROP_TARGET) orbsDropTargets_[3] = true;
-
-  if (orbsDropTargetsCompleted()) qualifyMode();
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
@@ -81,7 +82,7 @@ void PlayerState::registerGuardianRollover(byte switchHit) {
   if (switchHit == SW_RIGHT_RETURN_LANE) guardianLights_[2] = true;
   if (switchHit == SW_RIGHT_OUTLANE)     guardianLights_[3] = true;
 
-  if (guardianLights_[0] == true && guardianLights_[1] == true && guardianLights_[2] == true && guardianLights_[3] == true) {
+  if (guardianRolloversCompleted()) {
     guardianLights_[0] = false;
     guardianLights_[1] = false;
     guardianLights_[2] = false;
@@ -90,11 +91,11 @@ void PlayerState::registerGuardianRollover(byte switchHit) {
 }
 
 void PlayerState::registerTopRollover(byte switchHit) {
-  if (switchHit == SW_TOP_LEFT_LANE)     topLaneLights_[0]  = true;
-  if (switchHit == SW_TOP_MIDDLE_LANE)   topLaneLights_[1]  = true;
-  if (switchHit == SW_TOP_RIGHT_LANE)    topLaneLights_[2]  = true;
+  if (switchHit == SW_TOP_LEFT_LANE)   topLaneLights_[0]  = true;
+  if (switchHit == SW_TOP_MIDDLE_LANE) topLaneLights_[1]  = true;
+  if (switchHit == SW_TOP_RIGHT_LANE)  topLaneLights_[2]  = true;
 
-  if (topLaneLights_[0] == true && topLaneLights_[1] == true && topLaneLights_[2] == true) {
+  if (topRolloversCompleted()) {
     topLaneLights_[0] = false;
     topLaneLights_[1] = false;
     topLaneLights_[2] = false;
@@ -151,16 +152,24 @@ void PlayerState::setScore(unsigned long value) {
   score_ = value;
 }
 
-void PlayerState::showPlayerLamps() {
+void PlayerState::startQualifiedMode() {
+  modeStatus_[0] = MODE_STATUS_STARTED;
+}
+
+void PlayerState::updateCaptiveOrbsLamps() {
+  if (modeStatus_[0] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(LAMP_1_CAPTIVE_ORBS);
+  if (modeStatus_[0] == MODE_STATUS_QUALIFIED)     g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS, true);
+  if (modeStatus_[0] == MODE_STATUS_STARTED)       g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
+}
+
+void PlayerState::updateGuardianRolloverLamps() {
   guardianLights_[0] ? g_lampsHelper.showLamp(LAMP_LEFT_OUT_ROLLOVER)     : g_lampsHelper.hideLamp(LAMP_LEFT_OUT_ROLLOVER);
   guardianLights_[1] ? g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
   guardianLights_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
   guardianLights_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER)    : g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
+}
 
-  topLaneLights_[0] ? g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER)   : g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
-  topLaneLights_[1] ? g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
-  topLaneLights_[2] ? g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
-
+void PlayerState::updateOrbsDropTargetLamps() {
   if (orbsDropTargetsCompleted()) {
     g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, true);
     g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW, true);
@@ -172,7 +181,26 @@ void PlayerState::showPlayerLamps() {
     orbsDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_B_DROP_TARGET_ARROW);
     orbsDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_S_DROP_TARGET_ARROW);
   }
+}
 
-  if (modeStatus_[0] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(LAMP_1_CAPTIVE_ORBS);
-  if (modeStatus_[0] == MODE_STATUS_QUALIFIED) g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS, true);
+void PlayerState::updateTopRolloverLamps() {
+  topLaneLights_[0] ? g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER)   : g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
+  topLaneLights_[1] ? g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
+  topLaneLights_[2] ? g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_TOP_RIGHT_ROLLOVER);
+}
+
+/*********************************************************************
+    Private
+*********************************************************************/
+boolean PlayerState::guardianRolloversCompleted() {
+  return guardianLights_[0] == true &&
+         guardianLights_[1] == true &&
+         guardianLights_[2] == true &&
+         guardianLights_[3] == true;
+}
+
+boolean PlayerState::topRolloversCompleted() {
+  return topLaneLights_[0] == true &&
+         topLaneLights_[1] == true &&
+         topLaneLights_[2] == true;
 }

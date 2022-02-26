@@ -18,6 +18,9 @@ class PlayerState {
     boolean       topLaneLights_[3];
     byte          modeStatus_[4];
 
+    boolean       guardianRolloversCompleted();
+    boolean       topRolloversCompleted();
+
   public:
     PlayerState();
     boolean       orbsDropTargetsCompleted();
@@ -38,7 +41,11 @@ class PlayerState {
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setScore(unsigned long value);
-    void          showPlayerLamps();
+    void          startQualifiedMode();
+    void          updateCaptiveOrbsLamps();
+    void          updateGuardianRolloverLamps();
+    void          updateOrbsDropTargetLamps();
+    void          updateTopRolloverLamps();
 };
 
 #endif

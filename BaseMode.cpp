@@ -20,7 +20,8 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
       if (g_gameMode.firstSwitchHitTime() != 0) {
         g_machineState.rotatePlayerLamps();
-        g_machineState.showPlayerLamps();
+        g_machineState.updateGuardianRolloverLamps();
+        g_machineState.updateTopRolloverLamps();
       }
 
       break;
@@ -29,16 +30,16 @@ int Base::run(byte switchHit) {
     case SW_LEFT_RETURN_LANE:
     case SW_RIGHT_OUTLANE:
     case SW_RIGHT_RETURN_LANE:
-      g_machineState.registerTopRollover(switchHit);
-      g_machineState.showPlayerLamps();
+      g_machineState.registerGuardianRollover(switchHit);
+      g_machineState.updateGuardianRolloverLamps();
       handleDefaultScoringLogic();
       break;
 
     case SW_TOP_LEFT_LANE:
     case SW_TOP_MIDDLE_LANE:
     case SW_TOP_RIGHT_LANE:
-      g_machineState.registerGuardianRollover(switchHit);
-      g_machineState.showPlayerLamps();
+      g_machineState.registerTopRollover(switchHit);
+      g_machineState.updateTopRolloverLamps();
       handleDefaultScoringLogic();
       break;
 
@@ -47,15 +48,22 @@ int Base::run(byte switchHit) {
     case SW_B_DROP_TARGET:
     case SW_S_DROP_TARGET:
       g_machineState.registerDropTarget(switchHit);
-      g_machineState.showPlayerLamps();
+      g_machineState.updateOrbsDropTargetLamps();
+
+      if (g_machineState.orbsDropTargetsCompleted()) {
+        g_machineState.qualifyMode();
+        g_machineState.updateCaptiveOrbsLamps();
+      }
+
       handleDefaultScoringLogic();
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
       if (g_machineState.orbsDropTargetsCompleted()) {
         g_machineState.resetDropTargets();
-        g_machineState.qualifyMode();
-        g_machineState.showPlayerLamps();
+        g_machineState.updateOrbsDropTargetLamps();
+        g_machineState.startQualifiedMode();
+        g_machineState.updateCaptiveOrbsLamps();
       }
       handleDefaultScoringLogic();
       break;
@@ -108,7 +116,15 @@ int Base::run(byte switchHit) {
 *********************************************************************/
 void Base::handleDefaultScoringLogic() {
       if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
-      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+
+      if (g_gameMode.firstSwitchHitTime() == 0) {
+        g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+
+        g_machineState.updateGuardianRolloverLamps();
+        g_machineState.updateTopRolloverLamps();
+        g_machineState.updateOrbsDropTargetLamps();
+        g_machineState.updateCaptiveOrbsLamps();
+      }
 
       g_machineState.incrementCurrentBallSwitchHitCounter();
       if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
