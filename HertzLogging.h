@@ -1,6 +1,8 @@
 #ifndef HERTZ_LOGGING_H
 #define HERTZ_LOGGING_H
 
+#define DEBUG_HERTZ 0
+
 class HertzLogging {
   private:
     unsigned long numLoops_ = 0;

@@ -53,6 +53,10 @@ boolean MachineState::machineStateChanged() {
   return machineStateChanged_;
 }
 
+boolean MachineState::orbsDropTargetsCompleted() {
+  return currentPlayer_->orbsDropTargetsCompleted();
+}
+
 boolean MachineState::resetPlayers() {
   if (credits_ < 1 && !freePlayMode_) return false;
 
@@ -239,6 +243,10 @@ void MachineState::incrementCurrentBallSwitchHitCounter() {
   currentBallSwitchHitCounter_ += 1;
 }
 
+void MachineState::qualifyMode() {
+  currentPlayer_->qualifyMode();
+}
+
 void MachineState::readStoredParameters() {
   setHighScore(BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, DEFAULT_HIGH_SCORE));
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
@@ -248,8 +256,8 @@ void MachineState::registerDropTarget(byte switchHit) {
   currentPlayer_->registerDropTarget(switchHit);
 }
 
-void MachineState::registerRollover(byte switchHit) {
-  currentPlayer_->registerRollover(switchHit);
+void MachineState::registerGuardianRollover(byte switchHit) {
+  currentPlayer_->registerGuardianRollover(switchHit);
 }
 
 void MachineState::registerTiltWarning() {
@@ -264,6 +272,10 @@ void MachineState::registerTiltWarning() {
       BSOS_SetLampState(LAMP_TILT, 1);
     }
   }
+}
+
+void MachineState::registerTopRollover(byte switchHit) {
+  currentPlayer_->registerTopRollover(switchHit);
 }
 
 void MachineState::resetDropTargets() {

@@ -11,60 +11,53 @@ int Base::run(byte switchHit) {
     case SW_TILT:
       g_machineState.registerTiltWarning();
       break;
+
     case SW_SELF_TEST_SWITCH:
       returnState = MACHINE_STATE_TEST_LIGHTS;
       g_selfTestAndAudit.setLastSelfTestChangedTime(g_machineState.currentTime());
       break;
+
     case SW_RIGHT_FLIPPER_BUTTON:
       if (g_gameMode.firstSwitchHitTime() != 0) {
         g_machineState.rotatePlayerLamps();
         g_machineState.showPlayerLamps();
       }
+
       break;
+
     case SW_LEFT_OUTLANE:
     case SW_LEFT_RETURN_LANE:
     case SW_RIGHT_OUTLANE:
     case SW_RIGHT_RETURN_LANE:
+      g_machineState.registerTopRollover(switchHit);
+      g_machineState.showPlayerLamps();
+      handleDefaultScoringLogic();
+      break;
+
     case SW_TOP_LEFT_LANE:
     case SW_TOP_MIDDLE_LANE:
     case SW_TOP_RIGHT_LANE:
-      g_machineState.registerRollover(switchHit);
+      g_machineState.registerGuardianRollover(switchHit);
       g_machineState.showPlayerLamps();
-
-      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
-      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
-
-      g_machineState.incrementCurrentBallSwitchHitCounter();
-      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
-        g_machineState.increaseBonus(1);
-      }
+      handleDefaultScoringLogic();
       break;
+
     case SW_O_DROP_TARGET:
     case SW_R_DROP_TARGET:
     case SW_B_DROP_TARGET:
     case SW_S_DROP_TARGET:
       g_machineState.registerDropTarget(switchHit);
       g_machineState.showPlayerLamps();
-
-      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
-      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
-
-      g_machineState.incrementCurrentBallSwitchHitCounter();
-      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
-        g_machineState.increaseBonus(1);
-      }
+      handleDefaultScoringLogic();
       break;
+
     case SW_ORBS_RIGHT_LANE_TARGET:
-      g_machineState.resetDropTargets();
-      g_machineState.showPlayerLamps();
-
-      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
-      if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
-
-      g_machineState.incrementCurrentBallSwitchHitCounter();
-      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
-        g_machineState.increaseBonus(1);
+      if (g_machineState.orbsDropTargetsCompleted()) {
+        g_machineState.resetDropTargets();
+        g_machineState.qualifyMode();
+        g_machineState.showPlayerLamps();
       }
+      handleDefaultScoringLogic();
       break;
 
     case SW_10_POINT_REBOUND:
@@ -85,6 +78,35 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_THUMPER_BUMPER:
     case SW_TOP_LEFT_LANE_RO_BUTTON:
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
+      handleDefaultScoringLogic();
+      break;
+
+    case SW_COIN_1:
+    case SW_COIN_2:
+    case SW_COIN_3:
+      g_machineState.writeCoinToAudit(switchHit);
+      g_machineState.increaseCredits(true, 1);
+      break;
+
+    case SW_CREDIT_BUTTON:
+      if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
+
+      if (g_machineState.currentBallInPlay() == 1) {
+        g_machineState.incrementNumberOfPlayers();
+      } else if (g_machineState.resetPlayers()) {
+        returnState = MACHINE_STATE_INIT_GAMEPLAY;
+      }
+
+      break;
+  }
+
+  return returnState;
+}
+
+/*********************************************************************
+    Private
+*********************************************************************/
+void Base::handleDefaultScoringLogic() {
       if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
       if (g_gameMode.firstSwitchHitTime() == 0) g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
 
@@ -92,28 +114,6 @@ int Base::run(byte switchHit) {
       if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
         g_machineState.increaseBonus(1);
       }
-
-      break;
-    case SW_COIN_1:
-    case SW_COIN_2:
-    case SW_COIN_3:
-      g_machineState.writeCoinToAudit(switchHit);
-      g_machineState.increaseCredits(true, 1);
-      break;
-    case SW_CREDIT_BUTTON:
-      if (DEBUG_MESSAGES) {
-        Serial.write("Start game button pressed\n\r");
-      }
-
-      if (g_machineState.currentBallInPlay() == 1) {
-        g_machineState.incrementNumberOfPlayers();
-      } else if (g_machineState.resetPlayers()) {
-        returnState = MACHINE_STATE_INIT_GAMEPLAY;
-      }
-      break;
-  }
-
-  return returnState;
 }
 
 void Base::handleNewMode() {

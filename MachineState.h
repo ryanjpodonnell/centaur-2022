@@ -49,6 +49,7 @@ class MachineState {
     boolean       currentPlayerTilted();
     boolean       incrementNumberOfPlayers();
     boolean       machineStateChanged();
+    boolean       orbsDropTargetsCompleted();
     boolean       resetPlayers();
     boolean       samePlayerShootsAgain();
     byte          bonus(byte player = 0xFF);
@@ -73,10 +74,12 @@ class MachineState {
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
     void          incrementCurrentBallSwitchHitCounter();
+    void          qualifyMode();
     void          readStoredParameters();
     void          registerDropTarget(byte switchHit);
-    void          registerRollover(byte switchHit);
+    void          registerGuardianRollover(byte switchHit);
     void          registerTiltWarning();
+    void          registerTopRollover(byte switchHit);
     void          resetDropTargets();
     void          rotatePlayerLamps();
     void          setBallSaveUsed(byte value);
