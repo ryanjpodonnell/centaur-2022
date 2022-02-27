@@ -51,7 +51,10 @@ int Base::run(byte switchHit) {
       g_machineState.updateOrbsDropTargetLamps();
 
       if (g_machineState.orbsDropTargetsCompleted()) {
-        g_machineState.qualifyMode();
+        if (!g_machineState.allModesQualified()) {
+          g_machineState.qualifyMode();
+        }
+
         g_machineState.updateCaptiveOrbsLamps();
       }
 
@@ -62,17 +65,26 @@ int Base::run(byte switchHit) {
       if (g_machineState.orbsDropTargetsCompleted()) {
         g_machineState.resetDropTargets();
         g_machineState.updateOrbsDropTargetLamps();
-        g_machineState.startQualifiedMode();
-        g_machineState.updateSelectedMode();
-        g_machineState.updateCaptiveOrbsLamps();
+
+        if (g_machineState.anyModeQualified()) {
+          g_machineState.startQualifiedMode();
+
+          if (!g_machineState.allModesQualified()) {
+            g_machineState.updateSelectedMode();
+          }
+
+          g_machineState.updateCaptiveOrbsLamps();
+        }
       }
       handleDefaultScoringLogic();
       break;
 
     case SW_LEFT_THUMPER_BUMPER:
     case SW_RIGHT_THUMPER_BUMPER:
-      g_machineState.rotateQualifiedMode();
-      g_machineState.updateCaptiveOrbsLamps();
+      if (g_machineState.anyModeQualified()) {
+        g_machineState.rotateQualifiedMode();
+        g_machineState.updateCaptiveOrbsLamps();
+      }
       handleDefaultScoringLogic();
       break;
 

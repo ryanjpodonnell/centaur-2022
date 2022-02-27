@@ -45,6 +45,8 @@ class MachineState {
 
   public:
     MachineState(byte id);
+    boolean       allModesQualified();
+    boolean       anyModeQualified();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
     boolean       incrementNumberOfPlayers();

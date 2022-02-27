@@ -26,13 +26,13 @@ class PlayerState {
     boolean       topLaneLights_[3];
     byte          modeStatus_[4];
 
-    boolean       allModesQualified();
-    boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();
     boolean       topRolloversCompleted();
 
   public:
     PlayerState();
+    boolean       allModesQualified();
+    boolean       anyModeQualified();
     boolean       orbsDropTargetsCompleted();
     byte          bonus();
     byte          bonusMultiplier();

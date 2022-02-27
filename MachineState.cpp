@@ -22,6 +22,14 @@ MachineState::MachineState(byte id) {
   samePlayerShootsAgain_       = false;
 }
 
+boolean MachineState::allModesQualified() {
+  return currentPlayer_->allModesQualified();
+}
+
+boolean MachineState::anyModeQualified() {
+  return currentPlayer_->anyModeQualified();
+}
+
 boolean MachineState::ballSaveUsed() {
   return ballSaveUsed_;
 }

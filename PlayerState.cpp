@@ -27,6 +27,20 @@ PlayerState::PlayerState() {
 
 }
 
+boolean PlayerState::allModesQualified() {
+  return modeStatus_[0] != MODE_STATUS_NOT_QUALIFIED &&
+         modeStatus_[1] != MODE_STATUS_NOT_QUALIFIED &&
+         modeStatus_[2] != MODE_STATUS_NOT_QUALIFIED &&
+         modeStatus_[3] != MODE_STATUS_NOT_QUALIFIED;
+}
+
+boolean PlayerState::anyModeQualified() {
+  return modeStatus_[0] == MODE_STATUS_QUALIFIED ||
+         modeStatus_[1] == MODE_STATUS_QUALIFIED ||
+         modeStatus_[2] == MODE_STATUS_QUALIFIED ||
+         modeStatus_[3] == MODE_STATUS_QUALIFIED;
+}
+
 boolean PlayerState::orbsDropTargetsCompleted() {
   return orbsDropTargets_[0] == true &&
          orbsDropTargets_[1] == true &&
@@ -67,8 +81,6 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
 }
 
 void PlayerState::qualifyMode() {
-  if (allModesQualified()) return;
-
   modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
 }
 
@@ -143,8 +155,6 @@ void PlayerState::rotatePlayerLamps() {
 }
 
 void PlayerState::rotateQualifiedMode() {
-  if (allModesQualified() || !anyModeQualified()) return;
-
   byte moddedModeIterator = 0;
   for (byte modeIterator = (selectedMode_ + 1); modeIterator <= (selectedMode_ + 4); modeIterator++) {
     moddedModeIterator = modeIterator % 4;
@@ -173,8 +183,6 @@ void PlayerState::setScore(unsigned long value) {
 }
 
 void PlayerState::startQualifiedMode() {
-  if (!anyModeQualified()) return;
-
   modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
 }
 
@@ -208,8 +216,6 @@ void PlayerState::updateOrbsDropTargetLamps() {
 }
 
 void PlayerState::updateSelectedMode() {
-  if (allModesQualified()) return;
-
   for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
     if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) {
       selectedMode_ = modeIterator;
@@ -228,20 +234,6 @@ void PlayerState::updateTopRolloverLamps() {
 /*********************************************************************
     Private
 *********************************************************************/
-boolean PlayerState::allModesQualified() {
-  return modeStatus_[0] != MODE_STATUS_NOT_QUALIFIED &&
-         modeStatus_[1] != MODE_STATUS_NOT_QUALIFIED &&
-         modeStatus_[2] != MODE_STATUS_NOT_QUALIFIED &&
-         modeStatus_[3] != MODE_STATUS_NOT_QUALIFIED;
-}
-
-boolean PlayerState::anyModeQualified() {
-  return modeStatus_[0] == MODE_STATUS_QUALIFIED ||
-         modeStatus_[1] == MODE_STATUS_QUALIFIED ||
-         modeStatus_[2] == MODE_STATUS_QUALIFIED ||
-         modeStatus_[3] == MODE_STATUS_QUALIFIED;
-}
-
 boolean PlayerState::guardianRolloversCompleted() {
   return guardianLights_[0] == true &&
          guardianLights_[1] == true &&
