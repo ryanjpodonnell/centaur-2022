@@ -3,6 +3,7 @@
 PlayerState::PlayerState() {
   bonusMultiplier_ = 1;
   bonus_           = 0;
+  selectedMode_    = 0;
   score_           = 0;
 
   guardianLights_[0] = false;
@@ -22,7 +23,7 @@ PlayerState::PlayerState() {
   modeStatus_[0] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
-  modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
 
 }
 
@@ -66,7 +67,9 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
 }
 
 void PlayerState::qualifyMode() {
-  modeStatus_[0] = MODE_STATUS_QUALIFIED;
+  if (allModesQualified()) return;
+
+  modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
 }
 
 void PlayerState::registerDropTarget(byte switchHit) {
@@ -139,6 +142,23 @@ void PlayerState::rotatePlayerLamps() {
   topLaneLights_[0] = tempLight;
 }
 
+void PlayerState::rotateQualifiedMode() {
+  if (allModesQualified() || !anyModeQualified()) return;
+
+  byte moddedModeIterator = 0;
+  for (byte modeIterator = (selectedMode_ + 1); modeIterator <= (selectedMode_ + 4); modeIterator++) {
+    moddedModeIterator = modeIterator % 4;
+
+    if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
+      modeStatus_[moddedModeIterator] = MODE_STATUS_QUALIFIED;
+      modeStatus_[selectedMode_]      = MODE_STATUS_NOT_QUALIFIED;
+      selectedMode_                   = moddedModeIterator;
+
+      return;
+    }
+  }
+}
+
 void PlayerState::setBonus(byte value) {
   bonus_ = value;
 }
@@ -153,13 +173,17 @@ void PlayerState::setScore(unsigned long value) {
 }
 
 void PlayerState::startQualifiedMode() {
-  modeStatus_[0] = MODE_STATUS_STARTED;
+  if (!anyModeQualified()) return;
+
+  modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
 }
 
 void PlayerState::updateCaptiveOrbsLamps() {
-  if (modeStatus_[0] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(LAMP_1_CAPTIVE_ORBS);
-  if (modeStatus_[0] == MODE_STATUS_QUALIFIED)     g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS, true);
-  if (modeStatus_[0] == MODE_STATUS_STARTED)       g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
+  for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
+    if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(captiveOrbsLamps_[modeIterator]);
+    if (modeStatus_[modeIterator] == MODE_STATUS_QUALIFIED)     g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator], true);
+    if (modeStatus_[modeIterator] == MODE_STATUS_STARTED)       g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator]);
+  }
 }
 
 void PlayerState::updateGuardianRolloverLamps() {
@@ -183,6 +207,18 @@ void PlayerState::updateOrbsDropTargetLamps() {
   }
 }
 
+void PlayerState::updateSelectedMode() {
+  if (allModesQualified()) return;
+
+  for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
+    if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) {
+      selectedMode_ = modeIterator;
+
+      return;
+    }
+  }
+}
+
 void PlayerState::updateTopRolloverLamps() {
   topLaneLights_[0] ? g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER)   : g_lampsHelper.hideLamp(LAMP_TOP_LEFT_ROLLOVER);
   topLaneLights_[1] ? g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_TOP_MIDDLE_ROLLOVER);
@@ -192,6 +228,20 @@ void PlayerState::updateTopRolloverLamps() {
 /*********************************************************************
     Private
 *********************************************************************/
+boolean PlayerState::allModesQualified() {
+  return modeStatus_[0] != MODE_STATUS_NOT_QUALIFIED &&
+         modeStatus_[1] != MODE_STATUS_NOT_QUALIFIED &&
+         modeStatus_[2] != MODE_STATUS_NOT_QUALIFIED &&
+         modeStatus_[3] != MODE_STATUS_NOT_QUALIFIED;
+}
+
+boolean PlayerState::anyModeQualified() {
+  return modeStatus_[0] == MODE_STATUS_QUALIFIED ||
+         modeStatus_[1] == MODE_STATUS_QUALIFIED ||
+         modeStatus_[2] == MODE_STATUS_QUALIFIED ||
+         modeStatus_[3] == MODE_STATUS_QUALIFIED;
+}
+
 boolean PlayerState::guardianRolloversCompleted() {
   return guardianLights_[0] == true &&
          guardianLights_[1] == true &&

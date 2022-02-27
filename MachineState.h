@@ -82,6 +82,7 @@ class MachineState {
     void          registerTopRollover(byte switchHit);
     void          resetDropTargets();
     void          rotatePlayerLamps();
+    void          rotateQualifiedMode();
     void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
@@ -96,6 +97,7 @@ class MachineState {
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();
+    void          updateSelectedMode();
     void          updateTopRolloverLamps();
     void          writeCoinToAudit(byte switchHit);
 };

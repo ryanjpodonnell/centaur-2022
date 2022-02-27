@@ -286,6 +286,10 @@ void MachineState::rotatePlayerLamps() {
   currentPlayer_->rotatePlayerLamps();
 }
 
+void MachineState::rotateQualifiedMode() {
+  currentPlayer_->rotateQualifiedMode();
+}
+
 void MachineState::setBallSaveUsed(byte value) {
   ballSaveUsed_ = value;
 }
@@ -344,6 +348,10 @@ void MachineState::updateGuardianRolloverLamps() {
 
 void MachineState::updateOrbsDropTargetLamps() {
   currentPlayer_->updateOrbsDropTargetLamps();
+}
+
+void MachineState::updateSelectedMode() {
+  currentPlayer_->updateSelectedMode();
 }
 
 void MachineState::updateTopRolloverLamps() {

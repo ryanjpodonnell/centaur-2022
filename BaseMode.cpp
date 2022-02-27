@@ -63,8 +63,16 @@ int Base::run(byte switchHit) {
         g_machineState.resetDropTargets();
         g_machineState.updateOrbsDropTargetLamps();
         g_machineState.startQualifiedMode();
+        g_machineState.updateSelectedMode();
         g_machineState.updateCaptiveOrbsLamps();
       }
+      handleDefaultScoringLogic();
+      break;
+
+    case SW_LEFT_THUMPER_BUMPER:
+    case SW_RIGHT_THUMPER_BUMPER:
+      g_machineState.rotateQualifiedMode();
+      g_machineState.updateCaptiveOrbsLamps();
       handleDefaultScoringLogic();
       break;
 
@@ -76,14 +84,12 @@ int Base::run(byte switchHit) {
     case SW_INLANE_BACK_TARGET:
     case SW_LEFT_SIDE_RO_BUTTON:
     case SW_LEFT_SLINGSHOT:
-    case SW_LEFT_THUMPER_BUMPER:
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
     case SW_RIGHT_4_DROP_TARGET_1:
     case SW_RIGHT_4_DROP_TARGET_2:
     case SW_RIGHT_4_DROP_TARGET_3:
     case SW_RIGHT_4_DROP_TARGET_4:
     case SW_RIGHT_SLINGSHOT:
-    case SW_RIGHT_THUMPER_BUMPER:
     case SW_TOP_LEFT_LANE_RO_BUTTON:
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       handleDefaultScoringLogic();

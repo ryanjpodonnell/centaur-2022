@@ -7,10 +7,18 @@
 #define MODE_STATUS_STARTED       2
 #define MODE_STATUS_COMPLETED     3
 
+static byte captiveOrbsLamps_[] = {
+  LAMP_1_CAPTIVE_ORBS,
+  LAMP_2_CAPTIVE_ORBS,
+  LAMP_3_CAPTIVE_ORBS,
+  LAMP_4_CAPTIVE_ORBS
+};
+
 class PlayerState {
   private:
     byte          bonusMultiplier_;
     byte          bonus_;
+    byte          selectedMode_;
     unsigned long score_;
 
     boolean       guardianLights_[4];
@@ -18,6 +26,8 @@ class PlayerState {
     boolean       topLaneLights_[3];
     byte          modeStatus_[4];
 
+    boolean       allModesQualified();
+    boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();
     boolean       topRolloversCompleted();
 
@@ -38,6 +48,7 @@ class PlayerState {
     void          resetDropTargets();
     void          resetPlayerState();
     void          rotatePlayerLamps();
+    void          rotateQualifiedMode();
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setScore(unsigned long value);
@@ -45,6 +56,7 @@ class PlayerState {
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();
+    void          updateSelectedMode();
     void          updateTopRolloverLamps();
 };
 
