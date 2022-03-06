@@ -56,6 +56,15 @@ byte PlayerState::bonusMultiplier() {
   return bonusMultiplier_;
 }
 
+byte PlayerState::startQualifiedMode() {
+  modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
+
+  if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
+  if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
+  if (selectedMode_ == 2) return GAME_MODE_ORBS_3;
+  if (selectedMode_ == 3) return GAME_MODE_ORBS_4;
+}
+
 unsigned long PlayerState::score() {
   return score_;
 }
@@ -180,10 +189,6 @@ void PlayerState::setBonusMultiplier(byte value) {
 
 void PlayerState::setScore(unsigned long value) {
   score_ = value;
-}
-
-void PlayerState::startQualifiedMode() {
-  modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
 }
 
 void PlayerState::updateCaptiveOrbsLamps() {

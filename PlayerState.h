@@ -7,13 +7,6 @@
 #define MODE_STATUS_STARTED       2
 #define MODE_STATUS_COMPLETED     3
 
-static byte captiveOrbsLamps_[] = {
-  LAMP_1_CAPTIVE_ORBS,
-  LAMP_2_CAPTIVE_ORBS,
-  LAMP_3_CAPTIVE_ORBS,
-  LAMP_4_CAPTIVE_ORBS
-};
-
 class PlayerState {
   private:
     byte          bonusMultiplier_;
@@ -37,6 +30,7 @@ class PlayerState {
     byte          bonus();
     byte          bonusMultiplier();
     byte          playerNumber();
+    byte          startQualifiedMode();
     unsigned long score();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
@@ -52,7 +46,6 @@ class PlayerState {
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setScore(unsigned long value);
-    void          startQualifiedMode();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();

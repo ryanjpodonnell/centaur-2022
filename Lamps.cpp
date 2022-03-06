@@ -111,6 +111,9 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
     case LAMP_COLLECTION_ALL_ROLLOVERS:
       pointer = allRolloverLamps_;
       break;
+    case LAMP_COLLECTION_CAPTIVE_ORBS:
+      pointer = captiveOrbsLamps_;
+      break;
   }
 
   return pointer;

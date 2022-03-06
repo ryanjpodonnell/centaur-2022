@@ -1,13 +1,12 @@
 #include "SharedVariables.h"
 
-GameMode::GameMode(byte id) {
+GameMode::GameMode() {
   ballTimeInTrough_   = 0;
   firstSwitchHitTime_ = 0;
   gameModeChanged_    = true;
   savingBall_         = false;
   scoreIncreased_     = false;
-
-  setGameMode(id);
+  gameModeId_         = GAME_MODE_INITIALIZE;
 }
 
 boolean GameMode::scoreIncreased() {
@@ -20,6 +19,7 @@ int GameMode::run(boolean curStateChanged) {
 
   handlePlayerScore();
   g_lampsHelper.showBonusLamps(g_machineState.currentPlayerNumber());
+  if (!ballSaveActive()) g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
 
   if (g_machineState.currentPlayerTilted()) {
     returnState = manageTilt();
@@ -106,8 +106,7 @@ int GameMode::manageBallInTrough() {
 
 int GameMode::manageGameModes() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-
-  if (!ballSaveActive()) g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
+  boolean executedSwitchStack = false;
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
@@ -120,7 +119,10 @@ int GameMode::manageGameModes() {
     manageGameMode(switchHit);
     returnState = g_base.run(switchHit);
     scoreIncreased_ = false;
+    executedSwitchStack = true;
   }
+
+  if (!executedSwitchStack) manageGameMode(0xFF);
 
   return returnState;
 }
@@ -154,8 +156,7 @@ int GameMode::manageTilt() {
 
 void GameMode::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
-  manageGameMode(0xFF);
-  g_base.run(0xFF);
+  setGameMode(GAME_MODE_SKILL_SHOT);
 }
 
 void GameMode::handlePlayerScore() {
@@ -171,13 +172,17 @@ void GameMode::manageGameMode(byte switchHit) {
     case GAME_MODE_SKILL_SHOT:
       newGameMode = g_skillShot.run(gameModeChanged_, switchHit);
       break;
-    case GAME_MODE_INITIALIZE:
-      newGameMode = GAME_MODE_INITIALIZE;
-      break;
     case GAME_MODE_UNSTRUCTURED_PLAY:
       newGameMode = g_unstructuredPlay.run(gameModeChanged_, switchHit);
+      break;
+    case GAME_MODE_ORBS_1:
+    case GAME_MODE_ORBS_2:
+    case GAME_MODE_ORBS_3:
+    case GAME_MODE_ORBS_4:
+      newGameMode = g_orbMode1.run(gameModeChanged_, switchHit);
       break;
   }
 
   setGameMode(newGameMode);
+  if(gameModeChanged_) manageGameMode(switchHit);
 }

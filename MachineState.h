@@ -44,7 +44,7 @@ class MachineState {
     unsigned long lastTiltWarningTime_;
 
   public:
-    MachineState(byte id);
+    MachineState();
     boolean       allModesQualified();
     boolean       anyModeQualified();
     boolean       ballSaveUsed();
@@ -61,6 +61,7 @@ class MachineState {
     byte          currentPlayerNumber();
     byte          incrementCurrentPlayer();
     byte          numberOfPlayers();
+    byte          startQualifiedMode();
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
     int           machineState();
@@ -72,6 +73,7 @@ class MachineState {
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
+    void          hideAllPlayerLamps();
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
@@ -95,7 +97,6 @@ class MachineState {
     void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
-    void          startQualifiedMode();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();

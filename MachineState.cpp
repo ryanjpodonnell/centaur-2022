@@ -1,6 +1,6 @@
 #include "SharedVariables.h"
 
-MachineState::MachineState(byte id) {
+MachineState::MachineState() {
   player1_               = PlayerState();
   player2_               = PlayerState();
   player3_               = PlayerState();
@@ -16,7 +16,7 @@ MachineState::MachineState(byte id) {
   lastScoreChangeTime_         = 0;
   lastTiltWarningTime_         = 0;
   machineStateChanged_         = true;
-  machineStateId_              = id;
+  machineStateId_              = MACHINE_STATE_DEBUG;
   numberOfPlayers_             = 0;
   numberOfTiltWarnings_        = 0;
   samePlayerShootsAgain_       = false;
@@ -133,6 +133,10 @@ byte MachineState::incrementCurrentPlayer() {
   }
 }
 
+byte MachineState::startQualifiedMode() {
+  return currentPlayer_->startQualifiedMode();
+}
+
 int MachineState::initGamePlay() {
   if (DEBUG_MESSAGES) Serial.write("Initializing gameplay\n\r");
 
@@ -164,7 +168,6 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
 
     g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
-    g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
     if (BALL_SAVE_NUMBER_OF_SECONDS) g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
@@ -172,7 +175,6 @@ int MachineState::initNewBall(bool curStateChanged) {
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
     return MACHINE_STATE_INIT_NEW_BALL;
   } else {
-    g_gameMode.setGameMode(GAME_MODE_SKILL_SHOT);
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
 }
@@ -228,6 +230,11 @@ void MachineState::awardExtraBall() {
 
 void MachineState::decreaseBonus(byte amountToSubtract) {
   currentPlayer_->decreaseBonus(amountToSubtract);
+}
+
+void MachineState::hideAllPlayerLamps() {
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_CAPTIVE_ORBS);
 }
 
 void MachineState::increaseBonus(byte amountToAdd) {
@@ -340,10 +347,6 @@ void MachineState::setScore(unsigned long value, byte player) {
   if (player == 1) player2_.setScore(value);
   if (player == 2) player3_.setScore(value);
   if (player == 3) player4_.setScore(value);
-}
-
-void MachineState::startQualifiedMode() {
-  currentPlayer_->startQualifiedMode();
 }
 
 void MachineState::updateCaptiveOrbsLamps() {

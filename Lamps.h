@@ -82,6 +82,7 @@
 #define LAMP_COLLECTION_RING_14           13
 #define LAMP_COLLECTION_TOP_ROLLOVERS     14
 #define LAMP_COLLECTION_ALL_ROLLOVERS     15
+#define LAMP_COLLECTION_CAPTIVE_ORBS      16
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -231,6 +232,13 @@ static byte allRolloverLamps_[] = {
   LAMP_RIGHT_RETURN_ROLLOVER,
   LAMP_RIGHT_OUT_ROLLOVER,
   LAMP_TERMINATOR
+};
+
+static byte captiveOrbsLamps_[] = {
+  LAMP_1_CAPTIVE_ORBS,
+  LAMP_2_CAPTIVE_ORBS,
+  LAMP_3_CAPTIVE_ORBS,
+  LAMP_4_CAPTIVE_ORBS
 };
 
 static byte descendingBonusValues_[] = {

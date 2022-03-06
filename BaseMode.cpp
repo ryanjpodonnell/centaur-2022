@@ -4,7 +4,6 @@ Base::Base() {
 }
 
 int Base::run(byte switchHit) {
-  if (switchHit == 0xFF) handleNewMode();
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
   switch (switchHit) {
@@ -76,23 +75,14 @@ int Base::run(byte switchHit) {
     Private
 *********************************************************************/
 void Base::handleDefaultScoringLogic() {
-      if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
+  if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
 
-      if (g_gameMode.firstSwitchHitTime() == 0) {
-        g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+  if (g_gameMode.firstSwitchHitTime() == 0) {
+    g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+  }
 
-        g_machineState.updateGuardianRolloverLamps();
-        g_machineState.updateTopRolloverLamps();
-        g_machineState.updateOrbsDropTargetLamps();
-        g_machineState.updateCaptiveOrbsLamps();
-      }
-
-      g_machineState.incrementCurrentBallSwitchHitCounter();
-      if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
-        g_machineState.increaseBonus(1);
-      }
-}
-
-void Base::handleNewMode() {
-  if (DEBUG_MESSAGES) Serial.write("Entering Base Mode\n\r");
+  g_machineState.incrementCurrentBallSwitchHitCounter();
+  if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
+    g_machineState.increaseBonus(1);
+  }
 }

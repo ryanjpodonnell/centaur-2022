@@ -9,6 +9,7 @@
 #include "GameMode.h"
 #include "HertzLogging.h"
 #include "Lamps.h"
+#include "OrbMode1.h"
 #include "PinballMachineBase.h"
 #include "SelfTestAndAudit.h"
 #include "SkillShotMode.h"
@@ -32,6 +33,7 @@ extern GameMode         g_gameMode;
 extern HertzLogging     g_hertzLogging;
 extern LampsHelper      g_lampsHelper;
 extern MachineState     g_machineState;
+extern OrbMode1         g_orbMode1;
 extern SelfTestAndAudit g_selfTestAndAudit;
 extern SkillShot        g_skillShot;
 extern UnstructuredPlay g_unstructuredPlay;

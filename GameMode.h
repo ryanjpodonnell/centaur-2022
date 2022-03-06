@@ -3,6 +3,10 @@
 
 #define GAME_MODE_SKILL_SHOT        0
 #define GAME_MODE_UNSTRUCTURED_PLAY 1
+#define GAME_MODE_ORBS_1            2
+#define GAME_MODE_ORBS_2            3
+#define GAME_MODE_ORBS_3            4
+#define GAME_MODE_ORBS_4            5
 #define GAME_MODE_INITIALIZE        255
 
 class GameMode {
@@ -24,7 +28,7 @@ class GameMode {
     void    manageGameMode(byte switchHit);
 
   public:
-    GameMode(byte id);
+    GameMode();
 
     boolean       scoreIncreased();
     int           run(boolean curStateChanged);

@@ -55,7 +55,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.updateOrbsDropTargetLamps();
 
         if (g_machineState.anyModeQualified()) {
-          g_machineState.startQualifiedMode();
+          returnState = g_machineState.startQualifiedMode();
 
           if (!g_machineState.allModesQualified()) {
             g_machineState.updateSelectedMode();
@@ -83,4 +83,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 *********************************************************************/
 void UnstructuredPlay::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
+  g_machineState.updateGuardianRolloverLamps();
+  g_machineState.updateTopRolloverLamps();
+  g_machineState.updateOrbsDropTargetLamps();
+  g_machineState.updateCaptiveOrbsLamps();
 }

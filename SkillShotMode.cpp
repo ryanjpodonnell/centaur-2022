@@ -73,11 +73,10 @@ byte SkillShot::checkRollover(byte switchHit) {
 
 void SkillShot::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Skill Shot Mode\n\r");
+  g_machineState.hideAllPlayerLamps();
 
   bonusValue_ = 100;
   scoreValue_ = 100;
-
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
 
   long randomNumber = random(3);
   if (randomNumber == 0) {

@@ -4,7 +4,6 @@
 class Base {
   private:
     void handleDefaultScoringLogic();
-    void handleNewMode();
 
   public:
     Base();
