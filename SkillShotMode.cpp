@@ -36,6 +36,11 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
       newGameMode = checkRollover(SW_TOP_RIGHT_LANE);
       break;
 
+    case SW_TILT:
+    case SW_SELF_TEST_SWITCH:
+    case SW_COIN_1:
+    case SW_COIN_2:
+    case SW_COIN_3:
     case SW_CREDIT_BUTTON:
     case SW_OUTHOLE:
     case 0xFF:

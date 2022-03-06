@@ -63,6 +63,7 @@ void GameMode::setScoreIncreased(boolean value) {
     Private
 *********************************************************************/
 boolean GameMode::ballSaveActive() {
+  if (g_machineState.currentPlayerTilted()) return false;
   if (!firstSwitchHitTime_) return true;
 
   return (g_machineState.currentTime() - firstSwitchHitTime_) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
@@ -76,7 +77,7 @@ int GameMode::manageBallInTrough() {
   if ((currentTime - ballTimeInTrough_) <= 500) return MACHINE_STATE_NORMAL_GAMEPLAY;
   if (savingBall_) return MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  if (firstSwitchHitTime_ == 0) {
+  if (!firstSwitchHitTime_ && !g_machineState.currentPlayerTilted()) {
     // no switches hit. return ball to shooter lane
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
 
@@ -127,6 +128,8 @@ int GameMode::manageGameModes() {
 int GameMode::manageTilt() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
   unsigned long currentTime = g_machineState.currentTime();
+
+  g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
