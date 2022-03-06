@@ -18,10 +18,7 @@ int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) handleNewMode();
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  // flashes or dashes the current score
-  boolean shouldFlashScore = (firstSwitchHitTime_ == 0) ? true : false;
-  boolean shouldDashScore  = (firstSwitchHitTime_ > 0 && ((g_machineState.currentTime() - g_machineState.lastScoreChangeTime()) > 2000)) ? true : false;
-  g_displayHelper.showPlayerScores(g_machineState.currentPlayerNumber(), shouldFlashScore, shouldDashScore);
+  handlePlayerScore();
   g_lampsHelper.showBonusLamps(g_machineState.currentPlayerNumber());
 
   if (g_machineState.currentPlayerTilted()) {
@@ -158,6 +155,12 @@ void GameMode::handleNewMode() {
   g_base.run(0xFF);
 }
 
+void GameMode::handlePlayerScore() {
+  boolean shouldFlashScore = (firstSwitchHitTime_ == 0) ? true : false;
+  boolean shouldDashScore  = (firstSwitchHitTime_ > 0 && ((g_machineState.currentTime() - g_machineState.lastScoreChangeTime()) > 2000)) ? true : false;
+  g_displayHelper.showPlayerScores(g_machineState.currentPlayerNumber(), shouldFlashScore, shouldDashScore);
+}
+
 void GameMode::manageGameMode(byte switchHit) {
   byte newGameMode = gameModeId_;
 
@@ -169,7 +172,7 @@ void GameMode::manageGameMode(byte switchHit) {
       newGameMode = GAME_MODE_INITIALIZE;
       break;
     case GAME_MODE_UNSTRUCTURED_PLAY:
-      newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
+      newGameMode = g_unstructuredPlay.run(gameModeChanged_, switchHit);
       break;
   }
 

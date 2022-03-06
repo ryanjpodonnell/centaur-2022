@@ -6,11 +6,12 @@ CountdownBonus   g_countdownBonus;
 Debug            g_debug;
 DisplayHelper    g_displayHelper;
 GameMode         g_gameMode(GAME_MODE_INITIALIZE);
+HertzLogging     g_hertzLogging;
 LampsHelper      g_lampsHelper;
 MachineState     g_machineState(MACHINE_STATE_DEBUG);
 SelfTestAndAudit g_selfTestAndAudit;
 SkillShot        g_skillShot;
-HertzLogging     g_hertzLogging;
+UnstructuredPlay g_unstructuredPlay;
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLINGSHOT, SOL_RIGHT_SLINGSHOT, 4},

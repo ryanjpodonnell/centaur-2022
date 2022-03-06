@@ -51,6 +51,9 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
   return newGameMode;
 }
 
+/*********************************************************************
+    Private
+*********************************************************************/
 byte SkillShot::checkRollover(byte switchHit) {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
 
@@ -64,7 +67,7 @@ byte SkillShot::checkRollover(byte switchHit) {
 }
 
 void SkillShot::handleNewMode() {
-  if (DEBUG_MESSAGES) Serial.write("Entering SkillShot Mode\n\r");
+  if (DEBUG_MESSAGES) Serial.write("Entering Skill Shot Mode\n\r");
 
   bonusValue_ = 100;
   scoreValue_ = 100;

@@ -13,6 +13,7 @@
 #include "SelfTestAndAudit.h"
 #include "SkillShotMode.h"
 #include "Sound.h"
+#include "UnstructuredPlay.h"
 
 #include "PlayerState.h"
 #include "MachineState.h"
@@ -33,5 +34,6 @@ extern LampsHelper      g_lampsHelper;
 extern MachineState     g_machineState;
 extern SelfTestAndAudit g_selfTestAndAudit;
 extern SkillShot        g_skillShot;
+extern UnstructuredPlay g_unstructuredPlay;
 
 #endif

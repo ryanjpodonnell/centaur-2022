@@ -20,6 +20,7 @@ class GameMode {
     int     manageGameModes();
     int     manageTilt();
     void    handleNewMode();
+    void    handlePlayerScore();
     void    manageGameMode(byte switchHit);
 
   public:
