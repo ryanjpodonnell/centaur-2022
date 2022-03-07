@@ -148,6 +148,11 @@ void PlayerState::resetPlayerState() {
   topLaneLights_[0] = false;
   topLaneLights_[1] = false;
   topLaneLights_[2] = false;
+
+  modeStatus_[0] = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
 }
 
 void PlayerState::rotatePlayerLamps() {
