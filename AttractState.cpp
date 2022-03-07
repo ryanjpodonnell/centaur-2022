@@ -52,7 +52,7 @@ void Attract::handleNewState() {
   score3_ = g_machineState.score(2);
   score4_ = g_machineState.score(3);
 
-  BSOS_SetDisplayCredits(g_machineState.credits(), true);
+  BSOS_SetDisplayCredits(g_machineState.credits());
 }
 
 void Attract::handleLightShow() {

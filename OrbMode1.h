@@ -3,6 +3,10 @@
 
 class OrbMode1 {
   private:
+    byte secondsRemaining_;
+    byte totalSeconds_;
+    unsigned long modeStartedTime_;
+
     void handleNewMode();
 
   public:

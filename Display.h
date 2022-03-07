@@ -27,6 +27,7 @@ class DisplayHelper {
   public:
     DisplayHelper();
 
+    void overrideCredits(byte value);
     void overrideScoreDisplay(byte playerNumber, unsigned long score);
     void showPlayerScores(byte playerNumber, boolean flashCurrent = false, boolean dashCurrent = false);
 };

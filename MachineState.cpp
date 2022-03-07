@@ -166,6 +166,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
     BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
+    BSOS_SetDisplayCredits(credits_);
 
     g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
     if (BALL_SAVE_NUMBER_OF_SECONDS) g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
