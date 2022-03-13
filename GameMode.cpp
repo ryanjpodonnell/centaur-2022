@@ -19,7 +19,7 @@ int GameMode::run(boolean curStateChanged) {
 
   handlePlayerScore();
   handlePlayerBonusLamps();
-  if (!ballSaveActive()) g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
+  if (!ballSaveLampActive()) g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
 
   if (g_machineState.currentPlayerTilted()) {
     returnState = manageTilt();
@@ -41,8 +41,16 @@ unsigned long GameMode::firstSwitchHitTime() {
   return firstSwitchHitTime_;
 }
 
+unsigned long GameMode::mostRecentSwitchHitTime() {
+  return mostRecentSwitchHitTime_;
+}
+
 void GameMode::setFirstSwitchHitTime(unsigned long value) {
   firstSwitchHitTime_ = value;
+}
+
+void GameMode::setMostRecentSwitchHitTime(unsigned long value) {
+  mostRecentSwitchHitTime_ = value;
 }
 
 void GameMode::setGameMode(byte id) {
@@ -66,29 +74,34 @@ boolean GameMode::ballSaveActive() {
   if (g_machineState.currentPlayerTilted()) return false;
   if (!firstSwitchHitTime_) return true;
 
+  return (mostRecentSwitchHitTime_ - firstSwitchHitTime_) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
+}
+
+boolean GameMode::ballSaveLampActive() {
+  if (g_machineState.currentPlayerTilted()) return false;
+  if (!firstSwitchHitTime_) return true;
+
   return (g_machineState.currentTime() - firstSwitchHitTime_) < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
 }
 
-
 int GameMode::manageBallInTrough() {
-  unsigned long currentTime = g_machineState.currentTime();
+  if (ballTimeInTrough_ == 0) ballTimeInTrough_ = g_machineState.currentTime();
 
-  if (ballTimeInTrough_ == 0) ballTimeInTrough_ = currentTime;
-  if ((currentTime - ballTimeInTrough_) <= 500) return MACHINE_STATE_NORMAL_GAMEPLAY;
+  if ((g_machineState.currentTime() - ballTimeInTrough_) <= 500) return MACHINE_STATE_NORMAL_GAMEPLAY;
   if (savingBall_) return MACHINE_STATE_NORMAL_GAMEPLAY;
 
   if (!firstSwitchHitTime_ && !g_machineState.currentPlayerTilted()) {
     // no switches hit. return ball to shooter lane
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 100);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 100);
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
     // ball save active. return ball to shooter lane
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, currentTime + 100);
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 4, currentTime + 1000);
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime + 1000);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, g_machineState.currentTime() + 100);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 4, g_machineState.currentTime() + 1000);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 1000);
 
     g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
     g_machineState.setBallSaveUsed(true);
