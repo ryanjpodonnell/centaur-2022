@@ -1,15 +1,25 @@
 #include "SharedVariables.h"
 
 CountdownBonus::CountdownBonus() {
+  stepDuration_     = 100; // .10 seconds
+
   countdownEndTime_ = 0;
   lastDecrease_     = 0;
+  stateStartedTime_ = 0;
   stateStartedTime_ = 0;
 }
 
 int CountdownBonus::run(boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
-  unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
+  unsigned long timeSinceStateStarted         = g_machineState.currentTime() - stateStartedTime_;
+  unsigned long timeSinceStepDuractionChanged = g_machineState.currentTime() - stepDurationChangedTime_;
+
+  if (timeSinceStepDuractionChanged > 3000) {
+    stepDuration_ = stepDuration_ / 2;
+    stepDurationChangedTime_ = g_machineState.currentTime();
+  }
+
   if (timeSinceStateStarted > 1000) countdownBonusStep();
 
   g_machineState.updatePlayerScore();
@@ -26,7 +36,8 @@ void CountdownBonus::addBonusToScore() {
 }
 
 void CountdownBonus::countdownBonusStep() {
-  unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
+  unsigned long seed = g_machineState.currentTime() / stepDuration_;
+
   if (seed != lastDecrease_) {
     lastDecrease_ = seed;
 
@@ -46,9 +57,13 @@ void CountdownBonus::handleNewState() {
 
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
+  BSOS_SetDisplayCredits(g_machineState.credits());
   g_lampsHelper.hideAllLamps();
 
-  countdownEndTime_ = 0;
-  lastDecrease_     = 0;
-  stateStartedTime_ = g_machineState.currentTime();
+  stepDuration_            = 100;
+
+  countdownEndTime_        = 0;
+  lastDecrease_            = 0;
+  stateStartedTime_        = g_machineState.currentTime();
+  stepDurationChangedTime_ = g_machineState.currentTime();
 }
