@@ -28,7 +28,6 @@ PlayerState::PlayerState(byte displayNumber) {
   modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
-
 }
 
 boolean PlayerState::allModesQualified() {
@@ -143,11 +142,17 @@ void PlayerState::resetPlayerState() {
   bonusMultiplier_ = 1;
   bonus_           = 0;
   score_           = 0;
+  selectedMode_    = 0;
 
   guardianLights_[0] = false;
   guardianLights_[1] = false;
   guardianLights_[2] = false;
   guardianLights_[3] = false;
+
+  orbsDropTargets_[0] = false;
+  orbsDropTargets_[1] = false;
+  orbsDropTargets_[2] = false;
+  orbsDropTargets_[3] = false;
 
   topLaneLights_[0] = false;
   topLaneLights_[1] = false;
