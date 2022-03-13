@@ -11,7 +11,9 @@ class PlayerState {
   private:
     byte          bonusMultiplier_;
     byte          bonus_;
+    byte          displayNumber_;
     byte          selectedMode_;
+
     unsigned long score_;
 
     boolean       guardianLights_[4];
@@ -24,14 +26,18 @@ class PlayerState {
 
   public:
     PlayerState();
+    PlayerState(byte displayNumber);
+
     boolean       allModesQualified();
     boolean       anyModeQualified();
     boolean       orbsDropTargetsCompleted();
+
     byte          bonus();
     byte          bonusMultiplier();
-    byte          playerNumber();
     byte          startQualifiedMode();
+
     unsigned long score();
+
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
@@ -46,9 +52,11 @@ class PlayerState {
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setScore(unsigned long value);
+    void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();
+    void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
 };

@@ -1,24 +1,28 @@
 #include "SharedVariables.h"
 
 PlayerState::PlayerState() {
+}
+
+PlayerState::PlayerState(byte displayNumber) {
   bonusMultiplier_ = 1;
   bonus_           = 0;
-  selectedMode_    = 0;
+  displayNumber_   = displayNumber;
   score_           = 0;
+  selectedMode_    = 0;
 
   guardianLights_[0] = false;
   guardianLights_[1] = false;
   guardianLights_[2] = false;
   guardianLights_[3] = false;
 
-  topLaneLights_[0] = false;
-  topLaneLights_[1] = false;
-  topLaneLights_[2] = false;
-
   orbsDropTargets_[0] = false;
   orbsDropTargets_[1] = false;
   orbsDropTargets_[2] = false;
   orbsDropTargets_[3] = false;
+
+  topLaneLights_[0] = false;
+  topLaneLights_[1] = false;
+  topLaneLights_[2] = false;
 
   modeStatus_[0] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
@@ -196,6 +200,10 @@ void PlayerState::setScore(unsigned long value) {
   score_ = value;
 }
 
+void PlayerState::updateBonusLamps() {
+  g_lampsHelper.showBonusLamps(bonus_);
+}
+
 void PlayerState::updateCaptiveOrbsLamps() {
   for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
     if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(captiveOrbsLamps_[modeIterator]);
@@ -223,6 +231,10 @@ void PlayerState::updateOrbsDropTargetLamps() {
     orbsDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_B_DROP_TARGET_ARROW);
     orbsDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_S_DROP_TARGET_ARROW);
   }
+}
+
+void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
+  g_displayHelper.showPlayerScores(displayNumber_, flashCurrent, dashCurrent);
 }
 
 void PlayerState::updateSelectedMode() {

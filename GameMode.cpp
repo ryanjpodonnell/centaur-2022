@@ -18,7 +18,7 @@ int GameMode::run(boolean curStateChanged) {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
   handlePlayerScore();
-  g_lampsHelper.showBonusLamps(g_machineState.currentPlayerNumber());
+  handlePlayerBonusLamps();
   if (!ballSaveActive()) g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
 
   if (g_machineState.currentPlayerTilted()) {
@@ -159,10 +159,14 @@ void GameMode::handleNewMode() {
   setGameMode(GAME_MODE_SKILL_SHOT);
 }
 
+void GameMode::handlePlayerBonusLamps() {
+  g_machineState.updateBonusLamps();
+}
+
 void GameMode::handlePlayerScore() {
   boolean shouldFlashScore = (firstSwitchHitTime_ == 0) ? true : false;
   boolean shouldDashScore  = (firstSwitchHitTime_ > 0 && ((g_machineState.currentTime() - g_machineState.lastScoreChangeTime()) > 2000)) ? true : false;
-  g_displayHelper.showPlayerScores(g_machineState.currentPlayerNumber(), shouldFlashScore, shouldDashScore);
+  g_machineState.updatePlayerScore(shouldFlashScore, shouldDashScore);
 }
 
 void GameMode::manageGameMode(byte switchHit) {

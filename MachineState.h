@@ -24,19 +24,22 @@ class MachineState {
     PlayerState   player2_;
     PlayerState   player3_;
     PlayerState   player4_;
+
     boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
     boolean       freePlayMode_;
     boolean       machineStateChanged_;
     boolean       samePlayerShootsAgain_;
-    byte          ballsPerGame_;
+
     byte          credits_;
     byte          currentBallInPlay_;
     byte          currentPlayerNumber_;
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     byte          scoreMultiplier_;
+
     int           machineStateId_;
+
     unsigned long currentBallSwitchHitCounter_;
     unsigned long currentTime_;
     unsigned long highScore_;
@@ -54,6 +57,7 @@ class MachineState {
     boolean       orbsDropTargetsCompleted();
     boolean       resetPlayers();
     boolean       samePlayerShootsAgain();
+
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
     byte          credits();
@@ -62,15 +66,18 @@ class MachineState {
     byte          incrementCurrentPlayer();
     byte          numberOfPlayers();
     byte          startQualifiedMode();
+
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
     int           machineState();
+
     unsigned long currentBallSwitchHitCounter();
     unsigned long currentTime();
     unsigned long highScore();
     unsigned long lastScoreChangeTime();
     unsigned long lastTiltWarningTime();
     unsigned long score(byte player = 0xFF);
+
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          hideAllPlayerLamps();
@@ -97,9 +104,11 @@ class MachineState {
     void          setMachineState(int id);
     void          setNumberOfPlayers(byte value);
     void          setScore(unsigned long value, byte player = 0xFF);
+    void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();
+    void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
     void          writeCoinToAudit(byte switchHit);

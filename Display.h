@@ -17,19 +17,19 @@ class DisplayHelper {
     byte getDisplayMask(byte numDigits);
     byte magnitudeOfScore(unsigned long score);
     byte numberOfDigits(unsigned long score);
-    void dashScore(byte playerNumber, unsigned long score);
-    void flashScore(byte playerNumber, unsigned long score);
-    void scrollScore(byte playerNumber, unsigned long score);
-    void showAnimatedPlayerScore(byte playerNumber, unsigned long score);
-    void showPlayerScore(byte playerNumber, byte playerIterator = 0xFF, boolean flashCurrent = false, boolean dashCurrent = false);
-    void showScoreOverride(byte playerNumber);
+    void dashScore(byte displayNumber, unsigned long score);
+    void flashScore(byte displayNumber, unsigned long score);
+    void scrollScore(byte displayNumber, unsigned long score);
+    void showAnimatedPlayerScore(byte displayNumber, unsigned long score);
+    void showPlayerScore(byte displayNumber, byte playerIterator = 0xFF, boolean flashCurrent = false, boolean dashCurrent = false);
+    void showScoreOverride(byte displayNumber);
 
   public:
     DisplayHelper();
 
     void overrideCredits(byte value);
-    void overrideScoreDisplay(byte playerNumber, unsigned long score);
-    void showPlayerScores(byte playerNumber, boolean flashCurrent = false, boolean dashCurrent = false);
+    void overrideScoreDisplay(byte displayNumber, unsigned long score);
+    void showPlayerScores(byte displayNumber, boolean flashCurrent = false, boolean dashCurrent = false);
 };
 
 #endif

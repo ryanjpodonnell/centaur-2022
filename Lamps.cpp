@@ -24,13 +24,11 @@ void LampsHelper::showAllLamps() {
   }
 }
 
-void LampsHelper::showBonusLamps(byte playerNumber) {
-  byte bonus = g_machineState.bonus(playerNumber);
-
+void LampsHelper::showBonusLamps(byte value) {
   for(byte itr = 0; itr < sizeof(descendingBonusValues_); itr++) {
-    if (bonus >= descendingBonusValues_[itr]) {
+    if (value >= descendingBonusValues_[itr]) {
       showLamp(descendingBonusLamps_[itr]);
-      bonus -= descendingBonusValues_[itr];
+      value -= descendingBonusValues_[itr];
     } else {
       hideLamp(descendingBonusLamps_[itr]);
     }

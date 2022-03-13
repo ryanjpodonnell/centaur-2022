@@ -1,25 +1,31 @@
 #include "SharedVariables.h"
 
 MachineState::MachineState() {
-  player1_               = PlayerState();
-  player2_               = PlayerState();
-  player3_               = PlayerState();
-  player4_               = PlayerState();
+  player1_                     = PlayerState(0);
+  player2_                     = PlayerState(1);
+  player3_                     = PlayerState(2);
+  player4_                     = PlayerState(3);
+
+  ballSaveUsed_                = false;
+  extraBallCollected_          = false;
+  freePlayMode_                = true;
+  machineStateChanged_         = true;
+  samePlayerShootsAgain_       = false;
 
   credits_                     = 0;
   currentBallInPlay_           = 0;
-  currentBallSwitchHitCounter_ = 0;
   currentPlayerNumber_         = 0;
-  extraBallCollected_          = false;
-  freePlayMode_                = true;
+  numberOfPlayers_             = 0;
+  numberOfTiltWarnings_        = 0;
+  scoreMultiplier_             = 1;
+
+  machineStateId_              = MACHINE_STATE_DEBUG;
+
+  currentBallSwitchHitCounter_ = 0;
+  currentTime_                 = 0;
   highScore_                   = 0;
   lastScoreChangeTime_         = 0;
   lastTiltWarningTime_         = 0;
-  machineStateChanged_         = true;
-  machineStateId_              = MACHINE_STATE_DEBUG;
-  numberOfPlayers_             = 0;
-  numberOfTiltWarnings_        = 0;
-  samePlayerShootsAgain_       = false;
 }
 
 boolean MachineState::allModesQualified() {
@@ -350,6 +356,10 @@ void MachineState::setScore(unsigned long value, byte player) {
   if (player == 3) player4_.setScore(value);
 }
 
+void MachineState::updateBonusLamps() {
+  currentPlayer_->updateBonusLamps();
+}
+
 void MachineState::updateCaptiveOrbsLamps() {
   currentPlayer_->updateCaptiveOrbsLamps();
 }
@@ -360,6 +370,10 @@ void MachineState::updateGuardianRolloverLamps() {
 
 void MachineState::updateOrbsDropTargetLamps() {
   currentPlayer_->updateOrbsDropTargetLamps();
+}
+
+void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
+  currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
 }
 
 void MachineState::updateSelectedMode() {
