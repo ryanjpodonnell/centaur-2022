@@ -169,6 +169,8 @@ int GameMode::manageTilt() {
 
 void GameMode::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
+  while (BSOS_PullFirstFromSwitchStack() != SWITCH_STACK_EMPTY) {}
+
   setGameMode(GAME_MODE_SKILL_SHOT);
 }
 

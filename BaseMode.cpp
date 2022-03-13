@@ -79,6 +79,9 @@ void Base::handleDefaultScoringLogic() {
 
   if (g_gameMode.firstSwitchHitTime() == 0) {
     g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
+    g_gameMode.setMostRecentSwitchHitTime(g_machineState.currentTime());
+  } else {
+    g_gameMode.setMostRecentSwitchHitTime(g_machineState.currentTime());
   }
 
   g_machineState.incrementCurrentBallSwitchHitCounter();
