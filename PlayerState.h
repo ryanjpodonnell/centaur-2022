@@ -1,7 +1,8 @@
 #ifndef PLAYER_STATE_H
 #define PLAYER_STATE_H
 
-#define MAX_DISPLAY_BONUS     175
+#define MAX_BONUS_MULTIPLIER      5
+#define MAX_DISPLAY_BONUS         175
 #define MODE_STATUS_NOT_QUALIFIED 0
 #define MODE_STATUS_QUALIFIED     1
 #define MODE_STATUS_STARTED       2
@@ -35,6 +36,7 @@ class PlayerState {
     byte          bonus();
     byte          bonusMultiplier();
     byte          startQualifiedMode();
+    void          increaseBonusMultiplier();
 
     unsigned long score();
 

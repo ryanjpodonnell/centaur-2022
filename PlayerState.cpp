@@ -126,6 +126,8 @@ void PlayerState::registerTopRollover(byte switchHit) {
     topLaneLights_[0] = false;
     topLaneLights_[1] = false;
     topLaneLights_[2] = false;
+
+    increaseBonusMultiplier();
   }
 }
 
@@ -197,7 +199,7 @@ void PlayerState::setBonus(byte value) {
 }
 
 void PlayerState::setBonusMultiplier(byte value) {
-  if (value > 4) value = 4;
+  if (value > MAX_BONUS_MULTIPLIER) value = MAX_BONUS_MULTIPLIER;
   bonusMultiplier_ = value;
 }
 
@@ -207,6 +209,7 @@ void PlayerState::setScore(unsigned long value) {
 
 void PlayerState::updateBonusLamps() {
   g_lampsHelper.showBonusLamps(bonus_);
+  g_lampsHelper.showBonusMultiplierLamps(bonusMultiplier_);
 }
 
 void PlayerState::updateCaptiveOrbsLamps() {
@@ -272,4 +275,9 @@ boolean PlayerState::topRolloversCompleted() {
   return topLaneLights_[0] == true &&
          topLaneLights_[1] == true &&
          topLaneLights_[2] == true;
+}
+
+void PlayerState::increaseBonusMultiplier() {
+  byte value = bonusMultiplier_ + 1;
+  setBonusMultiplier(value);
 }

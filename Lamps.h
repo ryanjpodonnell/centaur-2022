@@ -285,6 +285,7 @@ class LampsHelper {
     void hideLamps(byte lampCollection);
     void showAllLamps();
     void showBonusLamps(byte value);
+    void showBonusMultiplierLamps(byte value);
     void showLamp(byte lamp, bool flash = false, bool clearAllLamps = false);
     void showLamps(byte lampCollection, bool clearAllLamps = false);
 };
