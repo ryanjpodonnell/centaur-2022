@@ -67,6 +67,22 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.registerRightDropTarget(switchHit);
       g_machineState.updateRightDropTargetLamps();
 
+      if (g_machineState.rightDropTargetsCompleted()) {
+        g_machineState.qualifyModeMultiplier();
+        g_machineState.updateRightDropTargetLamps();
+      }
+
+      break;
+
+    case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
+      if (g_machineState.modeMultiplierQualified()) {
+        g_machineState.increaseModeMultiplier();
+        g_machineState.updateModeMultiplierLamps();
+
+        g_machineState.resetRightDropTargets(true);
+        g_machineState.updateRightDropTargetLamps();
+      }
+
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
@@ -105,6 +121,7 @@ void UnstructuredPlay::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
   g_machineState.updateCaptiveOrbsLamps();
   g_machineState.updateGuardianRolloverLamps();
+  g_machineState.updateModeMultiplierLamps();
   g_machineState.updateOrbsDropTargetLamps();
   g_machineState.updateRightDropTargetLamps();
   g_machineState.updateTopRolloverLamps();

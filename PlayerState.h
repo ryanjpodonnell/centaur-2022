@@ -3,6 +3,8 @@
 
 #define MAX_BONUS_MULTIPLIER      5
 #define MAX_DISPLAY_BONUS         175
+#define MAX_MODE_MULTIPLIER       5
+
 #define MODE_STATUS_NOT_QUALIFIED 0
 #define MODE_STATUS_QUALIFIED     1
 #define MODE_STATUS_STARTED       2
@@ -10,9 +12,12 @@
 
 class PlayerState {
   private:
+    boolean       modeMultiplierQualified_;
+
     byte          bonusMultiplier_;
     byte          bonus_;
     byte          displayNumber_;
+    byte          modeMultiplier_;
     byte          selectedMode_;
 
     unsigned long score_;
@@ -31,6 +36,7 @@ class PlayerState {
     boolean       allModesQualified();
     boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();
+    boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsCompleted();
     boolean       rightDropTargetsCompleted();
     boolean       topRolloversCompleted();
@@ -44,8 +50,10 @@ class PlayerState {
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
+    void          increaseModeMultiplier();
     void          increaseScore(unsigned long amountToAdd);
     void          qualifyMode();
+    void          qualifyModeMultiplier();
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
     void          registerRightDropTarget(byte switchHit);
@@ -64,6 +72,7 @@ class PlayerState {
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
+    void          updateModeMultiplierLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateRightDropTargetLamps();

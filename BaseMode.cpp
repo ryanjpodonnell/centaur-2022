@@ -27,7 +27,7 @@ int Base::run(byte switchHit) {
       if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
 
       if (g_machineState.currentBallInPlay() == 1) {
-        g_machineState.incrementNumberOfPlayers();
+        g_machineState.increaseNumberOfPlayers();
       } else if (g_machineState.resetPlayers()) {
         returnState = MACHINE_STATE_INIT_GAMEPLAY;
       }
@@ -84,7 +84,7 @@ void Base::handleDefaultScoringLogic() {
     g_gameMode.setMostRecentSwitchHitTime(g_machineState.currentTime());
   }
 
-  g_machineState.incrementCurrentBallSwitchHitCounter();
+  g_machineState.increaseCurrentBallSwitchHitCounter();
   if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {
     g_machineState.increaseBonus(1);
   }

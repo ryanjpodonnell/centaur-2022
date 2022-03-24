@@ -13,6 +13,7 @@
 #define BALLS_PER_GAME                  3
 #define BALL_SAVE_NUMBER_OF_SECONDS     5
 #define DEFAULT_HIGH_SCORE              10000
+#define MAXIMUM_NUMBER_OF_BALLS_IN_PLAY 5
 #define MAXIMUM_NUMBER_OF_CREDITS       99
 #define MAXIMUM_NUMBER_OF_TILT_WARNINGS 2
 #define TILT_WARNING_DEBOUNCE_TIME      1000
@@ -34,6 +35,7 @@ class MachineState {
     byte          credits_;
     byte          currentBallInPlay_;
     byte          currentPlayerNumber_;
+    byte          numberOfBallsInPlay_;
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     byte          scoreMultiplier_;
@@ -53,10 +55,12 @@ class MachineState {
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
     boolean       guardianRolloversCompleted();
-    boolean       incrementNumberOfPlayers();
+    boolean       increaseNumberOfPlayers();
     boolean       machineStateChanged();
+    boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsCompleted();
     boolean       resetPlayers();
+    boolean       rightDropTargetsCompleted();
     boolean       samePlayerShootsAgain();
     boolean       topRolloversCompleted();
 
@@ -65,7 +69,8 @@ class MachineState {
     byte          credits();
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
-    byte          incrementCurrentPlayer();
+    byte          increaseCurrentPlayer();
+    byte          numberOfBallsInPlay();
     byte          numberOfPlayers();
     byte          startQualifiedMode();
 
@@ -82,13 +87,17 @@ class MachineState {
 
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
+    void          decreaseNumberOfBallsInPlay();
     void          hideAllPlayerLamps();
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
+    void          increaseCurrentBallSwitchHitCounter();
+    void          increaseModeMultiplier();
+    void          increaseNumberOfBallsInPlay();
     void          increaseScore(unsigned long amountToAdd);
-    void          incrementCurrentBallSwitchHitCounter();
     void          qualifyMode();
+    void          qualifyModeMultiplier();
     void          readStoredParameters();
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
@@ -114,6 +123,7 @@ class MachineState {
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
+    void          updateModeMultiplierLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateRightDropTargetLamps();

@@ -108,6 +108,11 @@ int GameMode::manageBallInTrough() {
     savingBall_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+  } else if (g_machineState.numberOfBallsInPlay() > 1) {
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 1000);
+    g_machineState.decreaseNumberOfBallsInPlay();
+
+    return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else {
     // end ball
     setGameMode(GAME_MODE_INITIALIZE);

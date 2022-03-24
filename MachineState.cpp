@@ -15,6 +15,7 @@ MachineState::MachineState() {
   credits_                     = 0;
   currentBallInPlay_           = 0;
   currentPlayerNumber_         = 0;
+  numberOfBallsInPlay_         = 1;
   numberOfPlayers_             = 0;
   numberOfTiltWarnings_        = 0;
   scoreMultiplier_             = 1;
@@ -48,7 +49,7 @@ boolean MachineState::guardianRolloversCompleted() {
   return currentPlayer_->guardianRolloversCompleted();
 }
 
-boolean MachineState::incrementNumberOfPlayers() {
+boolean MachineState::increaseNumberOfPlayers() {
   if (credits_ < 1 && !freePlayMode_) return false;
   if (numberOfPlayers_ >= 4) return false;
 
@@ -69,6 +70,10 @@ boolean MachineState::incrementNumberOfPlayers() {
 
 boolean MachineState::machineStateChanged() {
   return machineStateChanged_;
+}
+
+boolean MachineState::modeMultiplierQualified() {
+  return currentPlayer_->modeMultiplierQualified();
 }
 
 boolean MachineState::orbsDropTargetsCompleted() {
@@ -94,6 +99,10 @@ boolean MachineState::resetPlayers() {
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
+}
+
+boolean MachineState::rightDropTargetsCompleted() {
+  return currentPlayer_->rightDropTargetsCompleted();
 }
 
 boolean MachineState::samePlayerShootsAgain() {
@@ -128,11 +137,15 @@ byte MachineState::currentPlayerNumber() {
   return currentPlayerNumber_;
 }
 
+byte MachineState::numberOfBallsInPlay() {
+  return numberOfBallsInPlay_;
+}
+
 byte MachineState::numberOfPlayers() {
   return numberOfPlayers_;
 }
 
-byte MachineState::incrementCurrentPlayer() {
+byte MachineState::increaseCurrentPlayer() {
   currentPlayerNumber_ += 1;
   if (currentPlayerNumber_ == numberOfPlayers_) {
     currentPlayerNumber_ = 0;
@@ -247,6 +260,12 @@ void MachineState::decreaseBonus(byte amountToSubtract) {
   currentPlayer_->decreaseBonus(amountToSubtract);
 }
 
+void MachineState::decreaseNumberOfBallsInPlay() {
+  if (numberOfBallsInPlay_ == 1) return;
+
+  numberOfBallsInPlay_ -= 1;
+}
+
 void MachineState::hideAllPlayerLamps() {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_CAPTIVE_ORBS);
@@ -268,17 +287,31 @@ void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
   BSOS_SetDisplayCredits(credits_);
 }
 
+void MachineState::increaseCurrentBallSwitchHitCounter() {
+  currentBallSwitchHitCounter_ += 1;
+}
+
+void MachineState::increaseModeMultiplier() {
+  currentPlayer_->increaseModeMultiplier();
+}
+
+void MachineState::increaseNumberOfBallsInPlay() {
+  if (numberOfBallsInPlay_ == MAXIMUM_NUMBER_OF_BALLS_IN_PLAY) return;
+
+  numberOfBallsInPlay_ += 1;
+}
+
 void MachineState::increaseScore(unsigned long amountToAdd) {
   lastScoreChangeTime_ = currentTime_;
   currentPlayer_->increaseScore(amountToAdd);
 }
 
-void MachineState::incrementCurrentBallSwitchHitCounter() {
-  currentBallSwitchHitCounter_ += 1;
-}
-
 void MachineState::qualifyMode() {
   currentPlayer_->qualifyMode();
+}
+
+void MachineState::qualifyModeMultiplier() {
+  currentPlayer_->qualifyModeMultiplier();
 }
 
 void MachineState::readStoredParameters() {
@@ -394,6 +427,10 @@ void MachineState::updateCaptiveOrbsLamps() {
 
 void MachineState::updateGuardianRolloverLamps() {
   currentPlayer_->updateGuardianRolloverLamps();
+}
+
+void MachineState::updateModeMultiplierLamps() {
+  currentPlayer_->updateModeMultiplierLamps();
 }
 
 void MachineState::updateOrbsDropTargetLamps() {
