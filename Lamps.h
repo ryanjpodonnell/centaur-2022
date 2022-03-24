@@ -66,23 +66,24 @@
 #define LAMP_QUEENS_CHAMBER_GI_3        70
 #define LAMP_QUEENS_CHAMBER_GI_4        71
 
-#define LAMP_COLLECTION_BONUS_ALL         0
-#define LAMP_COLLECTION_BONUS_MIDDLE_RING 1
-#define LAMP_COLLECTION_BONUS_OUTER_RING  2
-#define LAMP_COLLECTION_RING_4            3
-#define LAMP_COLLECTION_RING_5            4
-#define LAMP_COLLECTION_RING_6            5
-#define LAMP_COLLECTION_RING_7            6
-#define LAMP_COLLECTION_RING_8            7
-#define LAMP_COLLECTION_RING_9            8
-#define LAMP_COLLECTION_RING_10           9
-#define LAMP_COLLECTION_RING_11           10
-#define LAMP_COLLECTION_RING_12           11
-#define LAMP_COLLECTION_RING_13           12
-#define LAMP_COLLECTION_RING_14           13
-#define LAMP_COLLECTION_TOP_ROLLOVERS     14
-#define LAMP_COLLECTION_ALL_ROLLOVERS     15
-#define LAMP_COLLECTION_CAPTIVE_ORBS      16
+#define LAMP_COLLECTION_BONUS_ALL                0
+#define LAMP_COLLECTION_BONUS_MIDDLE_RING        1
+#define LAMP_COLLECTION_BONUS_OUTER_RING         2
+#define LAMP_COLLECTION_RING_4                   3
+#define LAMP_COLLECTION_RING_5                   4
+#define LAMP_COLLECTION_RING_6                   5
+#define LAMP_COLLECTION_RING_7                   6
+#define LAMP_COLLECTION_RING_8                   7
+#define LAMP_COLLECTION_RING_9                   8
+#define LAMP_COLLECTION_RING_10                  9
+#define LAMP_COLLECTION_RING_11                  10
+#define LAMP_COLLECTION_RING_12                  11
+#define LAMP_COLLECTION_RING_13                  12
+#define LAMP_COLLECTION_RING_14                  13
+#define LAMP_COLLECTION_TOP_ROLLOVERS            14
+#define LAMP_COLLECTION_ALL_ROLLOVERS            15
+#define LAMP_COLLECTION_CAPTIVE_ORBS             16
+#define LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS 17
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -238,7 +239,16 @@ static byte captiveOrbsLamps_[] = {
   LAMP_1_CAPTIVE_ORBS,
   LAMP_2_CAPTIVE_ORBS,
   LAMP_3_CAPTIVE_ORBS,
-  LAMP_4_CAPTIVE_ORBS
+  LAMP_4_CAPTIVE_ORBS,
+  LAMP_TERMINATOR
+};
+
+static byte rightDropTargetArrowsLamps_[] = {
+  LAMP_RIGHT_DROP_TARGET_10_ARROW,
+  LAMP_RIGHT_DROP_TARGET_20_ARROW,
+  LAMP_RIGHT_DROP_TARGET_40_ARROW,
+  LAMP_RIGHT_DROP_TARGET_80_ARROW,
+  LAMP_TERMINATOR
 };
 
 static byte descendingBonusValues_[] = {

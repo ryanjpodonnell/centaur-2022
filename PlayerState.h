@@ -28,6 +28,8 @@ class PlayerState {
     boolean       topLaneLights_[3];
     byte          modeStatus_[4];
 
+    boolean       anyModeStarted();
+
 
   public:
     PlayerState();
@@ -48,6 +50,7 @@ class PlayerState {
     unsigned long score();
 
     void          decreaseBonus(byte amountToSubtract = 1);
+    void          decreaseModeMultiplier();
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseModeMultiplier();

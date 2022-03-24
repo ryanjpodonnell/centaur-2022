@@ -87,6 +87,7 @@ class MachineState {
 
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
+    void          decreaseModeMultiplier();
     void          decreaseNumberOfBallsInPlay();
     void          hideAllPlayerLamps();
     void          increaseBonus(byte amountToAdd = 1);

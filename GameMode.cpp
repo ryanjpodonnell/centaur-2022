@@ -100,7 +100,7 @@ int GameMode::manageBallInTrough() {
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
     BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, g_machineState.currentTime() + 100);
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 4, g_machineState.currentTime() + 1000);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, g_machineState.currentTime() + 1000);
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 1000);
 
     g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
@@ -109,8 +109,13 @@ int GameMode::manageBallInTrough() {
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else if (g_machineState.numberOfBallsInPlay() > 1) {
+    if (DEBUG_MESSAGES) Serial.write("Multiball Drained\n\r");
+
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 1000);
     g_machineState.decreaseNumberOfBallsInPlay();
+    g_machineState.decreaseModeMultiplier();
+    g_machineState.updateModeMultiplierLamps();
+    savingBall_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else {

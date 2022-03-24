@@ -119,6 +119,9 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
     case LAMP_COLLECTION_CAPTIVE_ORBS:
       pointer = captiveOrbsLamps_;
       break;
+    case LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS:
+      pointer = rightDropTargetArrowsLamps_;
+      break;
   }
 
   return pointer;

@@ -260,6 +260,10 @@ void MachineState::decreaseBonus(byte amountToSubtract) {
   currentPlayer_->decreaseBonus(amountToSubtract);
 }
 
+void MachineState::decreaseModeMultiplier() {
+  currentPlayer_->decreaseModeMultiplier();
+}
+
 void MachineState::decreaseNumberOfBallsInPlay() {
   if (numberOfBallsInPlay_ == 1) return;
 
@@ -269,6 +273,8 @@ void MachineState::decreaseNumberOfBallsInPlay() {
 void MachineState::hideAllPlayerLamps() {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_CAPTIVE_ORBS);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
+  g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
 }
 
 void MachineState::increaseBonus(byte amountToAdd) {
