@@ -19,11 +19,10 @@ class PlayerState {
 
     boolean       guardianLights_[4];
     boolean       orbsDropTargets_[4];
+    boolean       rightDropTargets_[4];
     boolean       topLaneLights_[3];
     byte          modeStatus_[4];
 
-    boolean       guardianRolloversCompleted();
-    boolean       topRolloversCompleted();
 
   public:
     PlayerState();
@@ -31,24 +30,32 @@ class PlayerState {
 
     boolean       allModesQualified();
     boolean       anyModeQualified();
+    boolean       guardianRolloversCompleted();
     boolean       orbsDropTargetsCompleted();
+    boolean       rightDropTargetsCompleted();
+    boolean       topRolloversCompleted();
 
     byte          bonus();
     byte          bonusMultiplier();
     byte          startQualifiedMode();
-    void          increaseBonusMultiplier();
 
     unsigned long score();
 
     void          decreaseBonus(byte amountToSubtract = 1);
     void          increaseBonus(byte amountToAdd = 1);
+    void          increaseBonusMultiplier();
     void          increaseScore(unsigned long amountToAdd);
     void          qualifyMode();
-    void          registerDropTarget(byte switchHit);
     void          registerGuardianRollover(byte switchHit);
+    void          registerOrbsDropTarget(byte switchHit);
+    void          registerRightDropTarget(byte switchHit);
     void          registerTopRollover(byte switchHit);
-    void          resetDropTargets();
+    void          resetGuardianRollovers();
+    void          resetModeStatus();
+    void          resetOrbsDropTargets(boolean activateSolenoid = false);
     void          resetPlayerState();
+    void          resetRightDropTargets(boolean activateSolenoid = false);
+    void          resetTopRollovers();
     void          rotatePlayerLamps();
     void          rotateQualifiedMode();
     void          setBonus(byte value);
@@ -59,6 +66,7 @@ class PlayerState {
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
+    void          updateRightDropTargetLamps();
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
 };

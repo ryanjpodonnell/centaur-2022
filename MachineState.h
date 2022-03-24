@@ -52,11 +52,13 @@ class MachineState {
     boolean       anyModeQualified();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
+    boolean       guardianRolloversCompleted();
     boolean       incrementNumberOfPlayers();
     boolean       machineStateChanged();
     boolean       orbsDropTargetsCompleted();
     boolean       resetPlayers();
     boolean       samePlayerShootsAgain();
+    boolean       topRolloversCompleted();
 
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
@@ -82,16 +84,21 @@ class MachineState {
     void          decreaseBonus(byte amountToSubtract = 1);
     void          hideAllPlayerLamps();
     void          increaseBonus(byte amountToAdd = 1);
+    void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseScore(unsigned long amountToAdd);
     void          incrementCurrentBallSwitchHitCounter();
     void          qualifyMode();
     void          readStoredParameters();
-    void          registerDropTarget(byte switchHit);
     void          registerGuardianRollover(byte switchHit);
+    void          registerOrbsDropTarget(byte switchHit);
+    void          registerRightDropTarget(byte switchHit);
     void          registerTiltWarning();
     void          registerTopRollover(byte switchHit);
-    void          resetDropTargets();
+    void          resetGuardianRollovers();
+    void          resetOrbsDropTargets(boolean activateSolenoid = false);
+    void          resetRightDropTargets(boolean activateSolenoid = false);
+    void          resetTopRollovers();
     void          rotatePlayerLamps();
     void          rotateQualifiedMode();
     void          setBallSaveUsed(byte value);
@@ -109,6 +116,7 @@ class MachineState {
     void          updateGuardianRolloverLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
+    void          updateRightDropTargetLamps();
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
     void          writeCoinToAudit(byte switchHit);

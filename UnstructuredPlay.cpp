@@ -23,6 +23,10 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_RIGHT_RETURN_LANE:
       g_machineState.registerGuardianRollover(switchHit);
       g_machineState.updateGuardianRolloverLamps();
+
+      if (g_machineState.guardianRolloversCompleted()) {
+        g_machineState.resetGuardianRollovers();
+      }
       break;
 
     case SW_TOP_LEFT_LANE:
@@ -30,13 +34,20 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_TOP_RIGHT_LANE:
       g_machineState.registerTopRollover(switchHit);
       g_machineState.updateTopRolloverLamps();
+
+      if (g_machineState.topRolloversCompleted() &&
+          g_machineState.bonusMultiplier() < MAX_BONUS_MULTIPLIER) {
+        g_machineState.resetTopRollovers();
+        g_machineState.updateTopRolloverLamps();
+        g_machineState.increaseBonusMultiplier();
+      }
       break;
 
     case SW_O_DROP_TARGET:
     case SW_R_DROP_TARGET:
     case SW_B_DROP_TARGET:
     case SW_S_DROP_TARGET:
-      g_machineState.registerDropTarget(switchHit);
+      g_machineState.registerOrbsDropTarget(switchHit);
       g_machineState.updateOrbsDropTargetLamps();
 
       if (g_machineState.orbsDropTargetsCompleted()) {
@@ -49,9 +60,18 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       break;
 
+    case SW_RIGHT_4_DROP_TARGET_1:
+    case SW_RIGHT_4_DROP_TARGET_2:
+    case SW_RIGHT_4_DROP_TARGET_3:
+    case SW_RIGHT_4_DROP_TARGET_4:
+      g_machineState.registerRightDropTarget(switchHit);
+      g_machineState.updateRightDropTargetLamps();
+
+      break;
+
     case SW_ORBS_RIGHT_LANE_TARGET:
       if (g_machineState.orbsDropTargetsCompleted()) {
-        g_machineState.resetDropTargets();
+        g_machineState.resetOrbsDropTargets(true);
         g_machineState.updateOrbsDropTargetLamps();
 
         if (g_machineState.anyModeQualified()) {
@@ -83,8 +103,9 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 *********************************************************************/
 void UnstructuredPlay::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
-  g_machineState.updateGuardianRolloverLamps();
-  g_machineState.updateTopRolloverLamps();
-  g_machineState.updateOrbsDropTargetLamps();
   g_machineState.updateCaptiveOrbsLamps();
+  g_machineState.updateGuardianRolloverLamps();
+  g_machineState.updateOrbsDropTargetLamps();
+  g_machineState.updateRightDropTargetLamps();
+  g_machineState.updateTopRolloverLamps();
 }

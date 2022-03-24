@@ -44,6 +44,10 @@ boolean MachineState::currentPlayerTilted() {
   return numberOfTiltWarnings_ > MAXIMUM_NUMBER_OF_TILT_WARNINGS;
 }
 
+boolean MachineState::guardianRolloversCompleted() {
+  return currentPlayer_->guardianRolloversCompleted();
+}
+
 boolean MachineState::incrementNumberOfPlayers() {
   if (credits_ < 1 && !freePlayMode_) return false;
   if (numberOfPlayers_ >= 4) return false;
@@ -94,6 +98,10 @@ boolean MachineState::resetPlayers() {
 
 boolean MachineState::samePlayerShootsAgain() {
   return samePlayerShootsAgain_;
+}
+
+boolean MachineState::topRolloversCompleted() {
+  return currentPlayer_->topRolloversCompleted();
 }
 
 byte MachineState::bonus(byte player) {
@@ -248,6 +256,10 @@ void MachineState::increaseBonus(byte amountToAdd) {
   currentPlayer_->increaseBonus(amountToAdd);
 }
 
+void MachineState::increaseBonusMultiplier() {
+  currentPlayer_->increaseBonusMultiplier();
+}
+
 void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
   credits_ += numToAdd;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
@@ -274,12 +286,16 @@ void MachineState::readStoredParameters() {
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
 }
 
-void MachineState::registerDropTarget(byte switchHit) {
-  currentPlayer_->registerDropTarget(switchHit);
-}
-
 void MachineState::registerGuardianRollover(byte switchHit) {
   currentPlayer_->registerGuardianRollover(switchHit);
+}
+
+void MachineState::registerOrbsDropTarget(byte switchHit) {
+  currentPlayer_->registerOrbsDropTarget(switchHit);
+}
+
+void MachineState::registerRightDropTarget(byte switchHit) {
+  currentPlayer_->registerRightDropTarget(switchHit);
 }
 
 void MachineState::registerTiltWarning() {
@@ -300,8 +316,20 @@ void MachineState::registerTopRollover(byte switchHit) {
   currentPlayer_->registerTopRollover(switchHit);
 }
 
-void MachineState::resetDropTargets() {
-  currentPlayer_->resetDropTargets();
+void MachineState::resetGuardianRollovers() {
+  currentPlayer_->resetGuardianRollovers();
+}
+
+void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
+  currentPlayer_->resetOrbsDropTargets(activateSolenoid);
+}
+
+void MachineState::resetRightDropTargets(boolean activateSolenoid) {
+  currentPlayer_->resetRightDropTargets(activateSolenoid);
+}
+
+void MachineState::resetTopRollovers() {
+  currentPlayer_->resetTopRollovers();
 }
 
 void MachineState::rotatePlayerLamps() {
@@ -374,6 +402,10 @@ void MachineState::updateOrbsDropTargetLamps() {
 
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
   currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
+}
+
+void MachineState::updateRightDropTargetLamps() {
+  currentPlayer_->updateRightDropTargetLamps();
 }
 
 void MachineState::updateSelectedMode() {
