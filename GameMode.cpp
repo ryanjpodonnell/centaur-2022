@@ -76,6 +76,7 @@ int GameMode::manageBallInTrough() {
   if (!g_machineState.playfieldValidated() && !g_machineState.currentPlayerTilted()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Returned To Shooter Lane\n\r");
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 100);
+    pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
@@ -84,19 +85,20 @@ int GameMode::manageBallInTrough() {
     BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, g_machineState.currentTime() + 100);
     BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, g_machineState.currentTime() + 1000);
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 1000);
+    pushingBallFromOutlane_ = true;
 
     g_machineState.setBallSaveUsed(true);
-    pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else if (g_machineState.numberOfBallsInPlay() > 1) {
     if (DEBUG_MESSAGES) Serial.write("Multiball Drained\n\r");
 
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, g_machineState.currentTime() + 1000);
+    pushingBallFromOutlane_ = true;
+
     g_machineState.decreaseNumberOfBallsInPlay();
     g_machineState.decreaseModeMultiplier();
     g_machineState.updateModeMultiplierLamps();
-    pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else {

@@ -66,6 +66,7 @@ int Base::run(byte switchHit) {
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       g_machineState.setMostRecentSwitchHitTime();
       if (!g_machineState.playfieldValidated()) {
+        g_machineState.setPlayfieldValidated();
         g_machineState.setCurrentBallFirstSwitchHitTime();
       }
 
