@@ -6,11 +6,8 @@ MachineState::MachineState() {
   player3_                     = PlayerState(2);
   player4_                     = PlayerState(3);
 
-  ballSaveUsed_                = false;
-  extraBallCollected_          = false;
-  freePlayMode_                = true;
+  machineStateId_              = MACHINE_STATE_DEBUG;
   machineStateChanged_         = true;
-  samePlayerShootsAgain_       = false;
 
   credits_                     = 0;
   currentBallInPlay_           = 0;
@@ -18,15 +15,15 @@ MachineState::MachineState() {
   numberOfBallsInPlay_         = 1;
   numberOfPlayers_             = 0;
   numberOfTiltWarnings_        = 0;
-  scoreMultiplier_             = 1;
 
-  machineStateId_              = MACHINE_STATE_DEBUG;
-
-  currentBallSwitchHitCounter_ = 0;
-  currentTime_                 = 0;
   highScore_                   = 0;
-  lastScoreChangeTime_         = 0;
+
+  currentTime_                 = 0;
+  ballEnteredTroughTime_       = 0;
   lastTiltWarningTime_         = 0;
+  mostRecentSwitchHitTime_     = 0;
+
+  resetMachineState();
 }
 
 boolean MachineState::allModesQualified() {
@@ -35,6 +32,10 @@ boolean MachineState::allModesQualified() {
 
 boolean MachineState::anyModeQualified() {
   return currentPlayer_->anyModeQualified();
+}
+
+boolean MachineState::ballSaveActivated() {
+  return ballSaveActivated_;
 }
 
 boolean MachineState::ballSaveUsed() {
@@ -50,10 +51,10 @@ boolean MachineState::guardianRolloversCompleted() {
 }
 
 boolean MachineState::increaseNumberOfPlayers() {
-  if (credits_ < 1 && !freePlayMode_) return false;
+  if (credits_ < 1 && !FREE_PLAY) return false;
   if (numberOfPlayers_ >= 4) return false;
 
-  if (!freePlayMode_) {
+  if (!FREE_PLAY) {
     credits_ -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
     BSOS_SetDisplayCredits(credits_);
@@ -80,10 +81,14 @@ boolean MachineState::orbsDropTargetsCompleted() {
   return currentPlayer_->orbsDropTargetsCompleted();
 }
 
-boolean MachineState::resetPlayers() {
-  if (credits_ < 1 && !freePlayMode_) return false;
+boolean MachineState::playfieldValidated() {
+  return playfieldValidated_;
+}
 
-  if (!freePlayMode_) {
+boolean MachineState::resetPlayers() {
+  if (credits_ < 1 && !FREE_PLAY) return false;
+
+  if (!FREE_PLAY) {
     credits_ -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
     BSOS_SetDisplayCredits(credits_);
@@ -111,6 +116,10 @@ boolean MachineState::samePlayerShootsAgain() {
 
 boolean MachineState::topRolloversCompleted() {
   return currentPlayer_->topRolloversCompleted();
+}
+
+boolean MachineState::troughSwitchActivated() {
+  return troughSwitchActivated_;
 }
 
 byte MachineState::bonus(byte player) {
@@ -177,12 +186,7 @@ int MachineState::initNewBall(bool curStateChanged) {
   if (curStateChanged) {
     if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
 
-    ballSaveUsed_                = false;
-    currentBallSwitchHitCounter_ = 0;
-    extraBallCollected_          = false;
-    samePlayerShootsAgain_       = false;
-    scoreMultiplier_             = 1;
-
+    resetMachineState();
     setCurrentPlayer(currentPlayerNumber_);
     setBonus(0);
     setBonusMultiplier(1);
@@ -196,7 +200,6 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_SetDisplayCredits(credits_);
 
     g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
-    if (BALL_SAVE_NUMBER_OF_SECONDS) g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
 
@@ -215,6 +218,14 @@ unsigned long MachineState::currentBallSwitchHitCounter() {
   return currentBallSwitchHitCounter_;
 }
 
+unsigned long MachineState::ballEnteredTroughTime() {
+  return ballEnteredTroughTime_;
+}
+
+unsigned long MachineState::currentBallFirstSwitchHitTime() {
+  return currentBallFirstSwitchHitTime_;
+}
+
 unsigned long MachineState::currentTime() {
   return currentTime_;
 }
@@ -227,16 +238,16 @@ unsigned long MachineState::lastTiltWarningTime() {
   return lastTiltWarningTime_;
 }
 
+unsigned long MachineState::mostRecentSwitchHitTime() {
+  return mostRecentSwitchHitTime_;
+}
+
 unsigned long MachineState::score(byte player) {
   if (player == 0xFF) player = currentPlayerNumber();
   if (player == 0) return player1_.score();
   if (player == 1) return player2_.score();
   if (player == 2) return player3_.score();
   if (player == 3) return player4_.score();
-}
-
-unsigned long MachineState::lastScoreChangeTime() {
-  return lastScoreChangeTime_;
 }
 
 void MachineState::setMachineState(int id) {
@@ -246,6 +257,10 @@ void MachineState::setMachineState(int id) {
   } else {
     machineStateChanged_ = false;
   }
+}
+
+void MachineState::setMostRecentSwitchHitTime() {
+  mostRecentSwitchHitTime_ = currentTime_;
 }
 
 void MachineState::awardExtraBall() {
@@ -308,7 +323,6 @@ void MachineState::increaseNumberOfBallsInPlay() {
 }
 
 void MachineState::increaseScore(unsigned long amountToAdd) {
-  lastScoreChangeTime_ = currentTime_;
   currentPlayer_->increaseScore(amountToAdd);
 }
 
@@ -379,6 +393,14 @@ void MachineState::rotateQualifiedMode() {
   currentPlayer_->rotateQualifiedMode();
 }
 
+void MachineState::setBallEnteredTroughTime() {
+  ballEnteredTroughTime_ = currentTime_;
+}
+
+void MachineState::setBallSaveActivated() {
+  ballSaveActivated_ = true;
+}
+
 void MachineState::setBallSaveUsed(byte value) {
   ballSaveUsed_ = value;
 }
@@ -394,6 +416,10 @@ void MachineState::setBonusMultiplier(byte value) {
 void MachineState::setCredits(byte value) {
   credits_ = value;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
+}
+
+void MachineState::setCurrentBallFirstSwitchHitTime() {
+  currentBallFirstSwitchHitTime_ = currentTime_;
 }
 
 void MachineState::setCurrentPlayer(byte value) {
@@ -415,12 +441,20 @@ void MachineState::setNumberOfPlayers(byte value) {
   numberOfPlayers_ = value;
 }
 
+void MachineState::setPlayfieldValidated() {
+  playfieldValidated_ = true;
+}
+
 void MachineState::setScore(unsigned long value, byte player) {
   if (player == 0xFF) player = currentPlayerNumber();
   if (player == 0) player1_.setScore(value);
   if (player == 1) player2_.setScore(value);
   if (player == 2) player3_.setScore(value);
   if (player == 3) player4_.setScore(value);
+}
+
+void MachineState::setTroughSwitchActivated(boolean value) {
+  troughSwitchActivated_ = value;
 }
 
 void MachineState::updateBonusLamps() {
@@ -471,4 +505,22 @@ void MachineState::writeCoinToAudit(byte switchHit) {
   if (coinAuditStartByte) {
     BSOS_WriteULToEEProm(coinAuditStartByte, BSOS_ReadULFromEEProm(coinAuditStartByte) + 1);
   }
+}
+
+
+/*********************************************************************
+    Private
+*********************************************************************/
+void MachineState::resetMachineState() {
+  ballSaveActivated_           = false;
+  ballSaveUsed_                = false;
+  extraBallCollected_          = false;
+  playfieldValidated_          = false;
+  samePlayerShootsAgain_       = false;
+  troughSwitchActivated_       = false;
+
+  currentBallFirstSwitchHitTime_ = 0;
+  currentBallSwitchHitCounter_   = 0;
+
+  scoreMultiplier_               = 1;
 }

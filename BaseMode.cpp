@@ -64,7 +64,13 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_SLINGSHOT:
     case SW_TOP_LEFT_LANE_RO_BUTTON:
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
+      g_machineState.setMostRecentSwitchHitTime();
+      if (!g_machineState.playfieldValidated()) {
+        g_machineState.setCurrentBallFirstSwitchHitTime();
+      }
+
       handleDefaultScoringLogic();
+
       break;
   }
 
@@ -76,13 +82,6 @@ int Base::run(byte switchHit) {
 *********************************************************************/
 void Base::handleDefaultScoringLogic() {
   if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(10);
-
-  if (g_gameMode.firstSwitchHitTime() == 0) {
-    g_gameMode.setFirstSwitchHitTime(g_machineState.currentTime());
-    g_gameMode.setMostRecentSwitchHitTime(g_machineState.currentTime());
-  } else {
-    g_gameMode.setMostRecentSwitchHitTime(g_machineState.currentTime());
-  }
 
   g_machineState.increaseCurrentBallSwitchHitCounter();
   if (g_machineState.currentBallSwitchHitCounter() % 5 == 0) {

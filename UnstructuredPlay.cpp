@@ -9,7 +9,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
   switch (switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
-      if (g_gameMode.firstSwitchHitTime() != 0) {
+      if (g_machineState.playfieldValidated()) {
         g_machineState.rotatePlayerLamps();
         g_machineState.updateGuardianRolloverLamps();
         g_machineState.updateTopRolloverLamps();
@@ -108,6 +108,9 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.rotateQualifiedMode();
         g_machineState.updateCaptiveOrbsLamps();
       }
+      break;
+
+    case 0xFF:
       break;
   }
 

@@ -113,8 +113,7 @@ void DisplayHelper::flashScore(byte displayNumber, unsigned long score) {
 }
 
 void DisplayHelper::scrollScore(byte displayNumber, unsigned long score) {
-  unsigned long lastTimeScoreChanged     = g_machineState.lastScoreChangeTime();
-  unsigned long timeSinceLastScoreChange = g_machineState.currentTime() - lastTimeScoreChanged;
+  unsigned long timeSinceLastScoreChange = g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime();
   byte displayMask                       = 0x7F;
   byte scrollPhaseChanged                = false;
 
@@ -124,7 +123,7 @@ void DisplayHelper::scrollScore(byte displayNumber, unsigned long score) {
     scrollPhaseChanged = true;
   }
 
-  if ((g_machineState.currentTime() - lastTimeScoreChanged) < 4000) {
+  if (timeSinceLastScoreChange < 4000) {
     BSOS_SetDisplay(displayNumber, score % (BALLY_STERN_OS_MAX_DISPLAY_SCORE + 1), false);
     BSOS_SetDisplayBlank(displayNumber, BALLY_STERN_OS_ALL_DIGITS_MASK);
   } else {

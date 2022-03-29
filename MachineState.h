@@ -18,6 +18,8 @@
 #define MAXIMUM_NUMBER_OF_TILT_WARNINGS 2
 #define TILT_WARNING_DEBOUNCE_TIME      1000
 
+#define FREE_PLAY                       1
+
 class MachineState {
   private:
     PlayerState*  currentPlayer_;
@@ -25,13 +27,13 @@ class MachineState {
     PlayerState   player2_;
     PlayerState   player3_;
     PlayerState   player4_;
-
+    boolean       ballSaveActivated_;
     boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
-    boolean       freePlayMode_;
     boolean       machineStateChanged_;
+    boolean       playfieldValidated_;
     boolean       samePlayerShootsAgain_;
-
+    boolean       troughSwitchActivated_;
     byte          credits_;
     byte          currentBallInPlay_;
     byte          currentPlayerNumber_;
@@ -39,19 +41,22 @@ class MachineState {
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     byte          scoreMultiplier_;
-
     int           machineStateId_;
-
+    unsigned long ballEnteredTroughTime_;
+    unsigned long currentBallFirstSwitchHitTime_;
     unsigned long currentBallSwitchHitCounter_;
     unsigned long currentTime_;
     unsigned long highScore_;
-    unsigned long lastScoreChangeTime_;
     unsigned long lastTiltWarningTime_;
+    unsigned long mostRecentSwitchHitTime_;
+
+    void          resetMachineState();
 
   public:
     MachineState();
     boolean       allModesQualified();
     boolean       anyModeQualified();
+    boolean       ballSaveActivated();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
     boolean       guardianRolloversCompleted();
@@ -59,11 +64,12 @@ class MachineState {
     boolean       machineStateChanged();
     boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsCompleted();
+    boolean       playfieldValidated();
     boolean       resetPlayers();
     boolean       rightDropTargetsCompleted();
     boolean       samePlayerShootsAgain();
     boolean       topRolloversCompleted();
-
+    boolean       troughSwitchActivated();
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
     byte          credits();
@@ -73,18 +79,17 @@ class MachineState {
     byte          numberOfBallsInPlay();
     byte          numberOfPlayers();
     byte          startQualifiedMode();
-
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
     int           machineState();
-
+    unsigned long ballEnteredTroughTime();
+    unsigned long currentBallFirstSwitchHitTime();
     unsigned long currentBallSwitchHitCounter();
     unsigned long currentTime();
     unsigned long highScore();
-    unsigned long lastScoreChangeTime();
     unsigned long lastTiltWarningTime();
+    unsigned long mostRecentSwitchHitTime();
     unsigned long score(byte player = 0xFF);
-
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          decreaseModeMultiplier();
@@ -111,16 +116,22 @@ class MachineState {
     void          resetTopRollovers();
     void          rotatePlayerLamps();
     void          rotateQualifiedMode();
+    void          setBallEnteredTroughTime();
+    void          setBallSaveActivated();
     void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setCredits(byte value);
+    void          setCurrentBallFirstSwitchHitTime();
     void          setCurrentPlayer(byte value);
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
     void          setMachineState(int id);
+    void          setMostRecentSwitchHitTime();
     void          setNumberOfPlayers(byte value);
+    void          setPlayfieldValidated();
     void          setScore(unsigned long value, byte player = 0xFF);
+    void          setTroughSwitchActivated(boolean value);
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
