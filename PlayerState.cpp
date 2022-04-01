@@ -29,6 +29,10 @@ boolean PlayerState::allModesQualified() {
          modeStatus_[3] != MODE_STATUS_NOT_QUALIFIED;
 }
 
+boolean PlayerState::allowRightDropTargetProgress() {
+  return modeMultiplier_ != MAX_MODE_MULTIPLIER && !modeMultiplierQualified_;
+}
+
 boolean PlayerState::anyModeQualified() {
   return modeStatus_[0] == MODE_STATUS_QUALIFIED ||
          modeStatus_[1] == MODE_STATUS_QUALIFIED ||
@@ -174,6 +178,28 @@ void PlayerState::registerRightDropTarget(byte switchHit) {
   if (switchHit == SW_RIGHT_4_DROP_TARGET_2) rightDropTargets_[1] = true;
   if (switchHit == SW_RIGHT_4_DROP_TARGET_3) rightDropTargets_[2] = true;
   if (switchHit == SW_RIGHT_4_DROP_TARGET_4) rightDropTargets_[3] = true;
+
+  if (switchHit == 0xFF) {
+    if (rightDropTargets_[0] == false) {
+      BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, 4, g_machineState.currentTime() + 500);
+      return;
+    }
+
+    if (rightDropTargets_[1] == false) {
+      BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, 4, g_machineState.currentTime() + 500);
+      return;
+    }
+
+    if (rightDropTargets_[2] == false) {
+      BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, 4, g_machineState.currentTime() + 500);
+      return;
+    }
+
+    if (rightDropTargets_[3] == false) {
+      BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, 4, g_machineState.currentTime() + 500);
+      return;
+    }
+  }
 }
 
 void PlayerState::registerTopRollover(byte switchHit) {
@@ -198,7 +224,7 @@ void PlayerState::resetModeStatus() {
 
 void PlayerState::resetOrbsDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) {
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, g_machineState.currentTime() + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 8, g_machineState.currentTime() + 500);
   }
 
   orbsDropTargets_[0] = false;
@@ -227,7 +253,7 @@ void PlayerState::resetPlayerState() {
 
 void PlayerState::resetRightDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) {
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, g_machineState.currentTime() + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, g_machineState.currentTime() + 500);
   }
 
   rightDropTargets_[0] = false;
@@ -360,6 +386,14 @@ void PlayerState::updateRightDropTargetResetLamp() {
     g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW, true);
   } else {
     g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
+  }
+}
+
+void PlayerState::updateRightDropTargetSpotLamp() {
+  if (allowRightDropTargetProgress() && !rightDropTargetsCompleted()) {
+    g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
+  } else {
+    g_lampsHelper.hideLamp(LAMP_SPOT_1_THROUGH_4);
   }
 }
 

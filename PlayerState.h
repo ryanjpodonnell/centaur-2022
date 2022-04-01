@@ -32,6 +32,7 @@ class PlayerState {
     PlayerState();
     PlayerState(byte displayNumber);
     boolean       allModesQualified();
+    boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();
     boolean       modeMultiplierQualified();
@@ -75,6 +76,7 @@ class PlayerState {
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateRightDropTargetLamps();
     void          updateRightDropTargetResetLamp();
+    void          updateRightDropTargetSpotLamp();
     void          updateRightOrbsReleaseLamp();
     void          updateSelectedMode();
     void          updateTopRolloverLamps();

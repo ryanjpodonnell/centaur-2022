@@ -30,6 +30,10 @@ boolean MachineState::allModesQualified() {
   return currentPlayer_->allModesQualified();
 }
 
+boolean MachineState::allowRightDropTargetProgress() {
+  return currentPlayer_->allowRightDropTargetProgress();
+}
+
 boolean MachineState::anyModeQualified() {
   return currentPlayer_->anyModeQualified();
 }
@@ -201,9 +205,9 @@ int MachineState::initNewBall(bool curStateChanged) {
 
     BSOS_EnableSolenoidStack();
     BSOS_SetDisableFlippers(false);
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 10, currentTime_ + 500);
-    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 10, currentTime_ + 500);
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 10, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 8, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 8, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, currentTime_ + 500);
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
 
@@ -476,6 +480,7 @@ void MachineState::showAllPlayerLamps() {
   updateTopRolloverLamps();
 
   updateRightDropTargetResetLamp();
+  updateRightDropTargetSpotLamp();
   if (modeMultiplierQualified()) {
     flashRightDropTargetLamps();
   } else {
@@ -520,6 +525,10 @@ void MachineState::updateRightDropTargetLamps() {
 
 void MachineState::updateRightDropTargetResetLamp() {
   currentPlayer_->updateRightDropTargetResetLamp();
+}
+
+void MachineState::updateRightDropTargetSpotLamp() {
+  currentPlayer_->updateRightDropTargetSpotLamp();
 }
 
 void MachineState::updateRightOrbsReleaseLamp() {

@@ -55,6 +55,7 @@ class MachineState {
   public:
     MachineState();
     boolean       allModesQualified();
+    boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
     boolean       ballSaveActivated();
     boolean       ballSaveUsed();
@@ -143,6 +144,7 @@ class MachineState {
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateRightDropTargetLamps();
     void          updateRightDropTargetResetLamp();
+    void          updateRightDropTargetSpotLamp();
     void          updateRightOrbsReleaseLamp();
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
