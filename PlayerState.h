@@ -13,15 +13,12 @@
 class PlayerState {
   private:
     boolean       modeMultiplierQualified_;
-
     byte          bonusMultiplier_;
     byte          bonus_;
     byte          displayNumber_;
     byte          modeMultiplier_;
     byte          selectedMode_;
-
     unsigned long score_;
-
     boolean       guardianLights_[4];
     boolean       orbsDropTargets_[4];
     boolean       rightDropTargets_[4];
@@ -29,34 +26,32 @@ class PlayerState {
     byte          modeStatus_[4];
 
     boolean       anyModeStarted();
-
+    void          launchLockedBallsIntoPlay();
 
   public:
     PlayerState();
     PlayerState(byte displayNumber);
-
     boolean       allModesQualified();
     boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();
     boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsCompleted();
+    boolean       qualifyMode();
+    boolean       qualifyModeMultiplier();
     boolean       rightDropTargetsCompleted();
     boolean       topRolloversCompleted();
-
     byte          bonus();
     byte          bonusMultiplier();
     byte          startQualifiedMode();
-
     unsigned long score();
-
     void          decreaseBonus(byte amountToSubtract = 1);
     void          decreaseModeMultiplier();
+    void          flashOrbsDropTargetLamps();
+    void          flashRightDropTargetLamps();
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseModeMultiplier();
     void          increaseScore(unsigned long amountToAdd);
-    void          qualifyMode();
-    void          qualifyModeMultiplier();
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
     void          registerRightDropTarget(byte switchHit);
@@ -79,6 +74,8 @@ class PlayerState {
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateRightDropTargetLamps();
+    void          updateRightDropTargetResetLamp();
+    void          updateRightOrbsReleaseLamp();
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
 };

@@ -54,6 +54,22 @@ boolean PlayerState::orbsDropTargetsCompleted() {
          orbsDropTargets_[3] == true;
 }
 
+boolean PlayerState::qualifyMode() {
+  if (allModesQualified()) return false;
+
+  modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
+
+  return true;
+}
+
+boolean PlayerState::qualifyModeMultiplier() {
+  if (modeMultiplier_ == MAX_MODE_MULTIPLIER) return false;
+
+  modeMultiplierQualified_ = true;
+
+  return true;
+}
+
 boolean PlayerState::rightDropTargetsCompleted() {
   return rightDropTargets_[0] == true &&
          rightDropTargets_[1] == true &&
@@ -76,17 +92,9 @@ byte PlayerState::bonusMultiplier() {
 }
 
 byte PlayerState::startQualifiedMode() {
+  launchLockedBallsIntoPlay();
+
   modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
-
-  int lag = 0;
-  for (byte iterator = 1; iterator < modeMultiplier_; iterator++) {
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, g_machineState.currentTime() + 100 + lag);
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, g_machineState.currentTime() + 1000 + lag);
-    lag += 2000;
-
-    g_machineState.increaseNumberOfBallsInPlay();
-  }
-
   if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
   if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
   if (selectedMode_ == 2) return GAME_MODE_ORBS_3;
@@ -113,6 +121,20 @@ void PlayerState::decreaseModeMultiplier() {
   modeMultiplier_ -= 1;
 }
 
+void PlayerState::flashOrbsDropTargetLamps() {
+  g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, true);
+  g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW, true);
+  g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW, true);
+  g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW, true);
+}
+
+void PlayerState::flashRightDropTargetLamps() {
+  g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
+  g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
+  g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
+  g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW, true);
+}
+
 void PlayerState::increaseBonus(byte amountToAdd) {
   bonus_ += amountToAdd;
 
@@ -131,16 +153,6 @@ void PlayerState::increaseModeMultiplier() {
 
 void PlayerState::increaseScore(unsigned long amountToAdd) {
   score_ += amountToAdd;
-}
-
-void PlayerState::qualifyMode() {
-  modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
-}
-
-void PlayerState::qualifyModeMultiplier() {
-  if (modeMultiplier_ == MAX_MODE_MULTIPLIER) return;
-
-  modeMultiplierQualified_ = true;
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
@@ -326,17 +338,10 @@ void PlayerState::updateModeMultiplierLamps() {
 }
 
 void PlayerState::updateOrbsDropTargetLamps() {
-  if (orbsDropTargetsCompleted()) {
-    g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, true);
-    g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW, true);
-    g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW, true);
-    g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW, true);
-  } else {
-    orbsDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_O_DROP_TARGET_ARROW);
-    orbsDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_R_DROP_TARGET_ARROW);
-    orbsDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_B_DROP_TARGET_ARROW);
-    orbsDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_S_DROP_TARGET_ARROW);
-  }
+  orbsDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_O_DROP_TARGET_ARROW);
+  orbsDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_R_DROP_TARGET_ARROW);
+  orbsDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_B_DROP_TARGET_ARROW);
+  orbsDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW) : g_lampsHelper.hideLamp(LAMP_S_DROP_TARGET_ARROW);
 }
 
 void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
@@ -344,26 +349,31 @@ void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
 }
 
 void PlayerState::updateRightDropTargetLamps() {
+  rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+  rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+  rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+  rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+}
+
+void PlayerState::updateRightDropTargetResetLamp() {
   if (modeMultiplierQualified_) {
     g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW, true);
   } else {
     g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
   }
+}
 
-  if (rightDropTargetsCompleted()) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
-    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
-    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
-    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW, true);
+void PlayerState::updateRightOrbsReleaseLamp() {
+  if (anyModeQualified()) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_RELEASE_ORBS, true);
   } else {
-    rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
-    rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
-    rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
-    rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
   }
 }
 
 void PlayerState::updateSelectedMode() {
+  if (allModesQualified()) return;
+
   for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
     if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) {
       selectedMode_ = modeIterator;
@@ -387,4 +397,16 @@ boolean PlayerState::anyModeStarted() {
          modeStatus_[1] == MODE_STATUS_STARTED ||
          modeStatus_[2] == MODE_STATUS_STARTED ||
          modeStatus_[3] == MODE_STATUS_STARTED;
+}
+
+void PlayerState::launchLockedBallsIntoPlay() {
+  int lag = 0;
+
+  for (byte iterator = 1; iterator < modeMultiplier_; iterator++) {
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, g_machineState.currentTime() + 100 + lag);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, g_machineState.currentTime() + 1000 + lag);
+    lag += 2000;
+
+    g_machineState.increaseNumberOfBallsInPlay();
+  }
 }

@@ -50,12 +50,10 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.registerOrbsDropTarget(switchHit);
       g_machineState.updateOrbsDropTargetLamps();
 
-      if (g_machineState.orbsDropTargetsCompleted()) {
-        if (!g_machineState.allModesQualified()) {
-          g_machineState.qualifyMode();
-        }
-
+      if (g_machineState.orbsDropTargetsCompleted() && g_machineState.qualifyMode()) {
+        g_machineState.flashOrbsDropTargetLamps();
         g_machineState.updateCaptiveOrbsLamps();
+        g_machineState.updateRightOrbsReleaseLamp();
       }
 
       break;
@@ -67,9 +65,9 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.registerRightDropTarget(switchHit);
       g_machineState.updateRightDropTargetLamps();
 
-      if (g_machineState.rightDropTargetsCompleted()) {
-        g_machineState.qualifyModeMultiplier();
-        g_machineState.updateRightDropTargetLamps();
+      if (g_machineState.rightDropTargetsCompleted() && g_machineState.qualifyModeMultiplier()) {
+        g_machineState.flashRightDropTargetLamps();
+        g_machineState.updateRightDropTargetResetLamp();
       }
 
       break;
@@ -81,24 +79,19 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
         g_machineState.resetRightDropTargets(true);
         g_machineState.updateRightDropTargetLamps();
+        g_machineState.updateRightDropTargetResetLamp();
       }
 
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
-      if (g_machineState.orbsDropTargetsCompleted()) {
-        g_machineState.resetOrbsDropTargets(true);
-        g_machineState.updateOrbsDropTargetLamps();
+      if (g_machineState.anyModeQualified()) {
+        g_machineState.resetOrbsDropTargets(false);
+        returnState = g_machineState.startQualifiedMode();
 
-        if (g_machineState.anyModeQualified()) {
-          returnState = g_machineState.startQualifiedMode();
-
-          if (!g_machineState.allModesQualified()) {
-            g_machineState.updateSelectedMode();
-          }
-
-          g_machineState.updateCaptiveOrbsLamps();
-        }
+        g_machineState.updateModeMultiplierLamps();
+        g_machineState.updateRightOrbsReleaseLamp();
+        g_machineState.updateSelectedMode();
       }
       break;
 
@@ -122,10 +115,5 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 *********************************************************************/
 void UnstructuredPlay::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
-  g_machineState.updateCaptiveOrbsLamps();
-  g_machineState.updateGuardianRolloverLamps();
-  g_machineState.updateModeMultiplierLamps();
-  g_machineState.updateOrbsDropTargetLamps();
-  g_machineState.updateRightDropTargetLamps();
-  g_machineState.updateTopRolloverLamps();
+  g_machineState.showAllPlayerLamps();
 }

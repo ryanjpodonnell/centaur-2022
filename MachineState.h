@@ -65,6 +65,8 @@ class MachineState {
     boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsCompleted();
     boolean       playfieldValidated();
+    boolean       qualifyMode();
+    boolean       qualifyModeMultiplier();
     boolean       resetPlayers();
     boolean       rightDropTargetsCompleted();
     boolean       samePlayerShootsAgain();
@@ -94,6 +96,8 @@ class MachineState {
     void          decreaseBonus(byte amountToSubtract = 1);
     void          decreaseModeMultiplier();
     void          decreaseNumberOfBallsInPlay();
+    void          flashOrbsDropTargetLamps();
+    void          flashRightDropTargetLamps();
     void          hideAllPlayerLamps();
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
@@ -102,8 +106,6 @@ class MachineState {
     void          increaseModeMultiplier();
     void          increaseNumberOfBallsInPlay();
     void          increaseScore(unsigned long amountToAdd);
-    void          qualifyMode();
-    void          qualifyModeMultiplier();
     void          readStoredParameters();
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
@@ -132,6 +134,7 @@ class MachineState {
     void          setPlayfieldValidated();
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
+    void          showAllPlayerLamps();
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
@@ -139,6 +142,8 @@ class MachineState {
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateRightDropTargetLamps();
+    void          updateRightDropTargetResetLamp();
+    void          updateRightOrbsReleaseLamp();
     void          updateSelectedMode();
     void          updateTopRolloverLamps();
     void          writeCoinToAudit(byte switchHit);

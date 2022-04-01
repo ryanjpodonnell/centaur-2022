@@ -85,6 +85,14 @@ boolean MachineState::playfieldValidated() {
   return playfieldValidated_;
 }
 
+boolean MachineState::qualifyMode() {
+  return currentPlayer_->qualifyMode();
+}
+
+boolean MachineState::qualifyModeMultiplier() {
+  return currentPlayer_->qualifyModeMultiplier();
+}
+
 boolean MachineState::resetPlayers() {
   if (credits_ < 1 && !FREE_PLAY) return false;
 
@@ -200,6 +208,8 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_SetDisplayCredits(credits_);
 
     g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
+    g_lampsHelper.showLamp(LAMP_RIGHT_THUMPER_BUMPER);
+    g_lampsHelper.showLamp(LAMP_LEFT_THUMPER_BUMPER);
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
 
@@ -285,11 +295,21 @@ void MachineState::decreaseNumberOfBallsInPlay() {
   numberOfBallsInPlay_ -= 1;
 }
 
+void MachineState::flashOrbsDropTargetLamps() {
+  currentPlayer_->flashOrbsDropTargetLamps();
+}
+
+void MachineState::flashRightDropTargetLamps() {
+  currentPlayer_->flashRightDropTargetLamps();
+}
+
 void MachineState::hideAllPlayerLamps() {
+  g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
+  g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_CAPTIVE_ORBS);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
-  g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
 }
 
 void MachineState::increaseBonus(byte amountToAdd) {
@@ -324,14 +344,6 @@ void MachineState::increaseNumberOfBallsInPlay() {
 
 void MachineState::increaseScore(unsigned long amountToAdd) {
   currentPlayer_->increaseScore(amountToAdd);
-}
-
-void MachineState::qualifyMode() {
-  currentPlayer_->qualifyMode();
-}
-
-void MachineState::qualifyModeMultiplier() {
-  currentPlayer_->qualifyModeMultiplier();
 }
 
 void MachineState::readStoredParameters() {
@@ -457,6 +469,27 @@ void MachineState::setTroughSwitchActivated(boolean value) {
   troughSwitchActivated_ = value;
 }
 
+void MachineState::showAllPlayerLamps() {
+  updateCaptiveOrbsLamps();
+  updateGuardianRolloverLamps();
+  updateModeMultiplierLamps();
+  updateTopRolloverLamps();
+
+  updateRightDropTargetResetLamp();
+  if (modeMultiplierQualified()) {
+    flashRightDropTargetLamps();
+  } else {
+    updateRightDropTargetLamps();
+  }
+
+  updateRightOrbsReleaseLamp();
+  if (anyModeQualified()) {
+    flashOrbsDropTargetLamps();
+  } else {
+    updateOrbsDropTargetLamps();
+  }
+}
+
 void MachineState::updateBonusLamps() {
   currentPlayer_->updateBonusLamps();
 }
@@ -483,6 +516,14 @@ void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) 
 
 void MachineState::updateRightDropTargetLamps() {
   currentPlayer_->updateRightDropTargetLamps();
+}
+
+void MachineState::updateRightDropTargetResetLamp() {
+  currentPlayer_->updateRightDropTargetResetLamp();
+}
+
+void MachineState::updateRightOrbsReleaseLamp() {
+  currentPlayer_->updateRightOrbsReleaseLamp();
 }
 
 void MachineState::updateSelectedMode() {

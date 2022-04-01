@@ -36,10 +36,10 @@ void LampsHelper::showBonusLamps(byte value) {
 }
 
 void LampsHelper::showBonusMultiplierLamps(byte value) {
-  if (value == 2) showLamp(LAMP_2X_BONUS);
-  if (value == 3) showLamp(LAMP_3X_BONUS);
-  if (value == 4) showLamp(LAMP_4X_BONUS);
-  if (value == 5) showLamp(LAMP_5X_BONUS);
+  if (value >= 2) showLamp(LAMP_2X_BONUS);
+  if (value >= 3) showLamp(LAMP_3X_BONUS);
+  if (value >= 4) showLamp(LAMP_4X_BONUS);
+  if (value >= 5) showLamp(LAMP_5X_BONUS);
 }
 
 void LampsHelper::showLamp(byte lamp, bool flash, bool clearAllLamps) {
@@ -121,6 +121,9 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
       break;
     case LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS:
       pointer = rightDropTargetArrowsLamps_;
+      break;
+    case LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS:
+      pointer = orbsDropTargetArrowsLamps_;
       break;
   }
 

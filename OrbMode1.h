@@ -1,6 +1,8 @@
 #ifndef ORB_MODE_1_H
 #define ORB_MODE_1_H
 
+#define ORB_MODE_1_TOTAL_SECONDS 30
+
 class OrbMode1 {
   private:
     byte secondsRemaining_;

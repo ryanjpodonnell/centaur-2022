@@ -149,7 +149,7 @@ int GameMode::runGameModes() {
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
-    if (DEBUG_MESSAGES) {
+    if (DEBUG_MESSAGES && switchHit != 20) {
       char buf[128];
       sprintf(buf, "Switch Hit = %d\n", switchHit);
       Serial.write(buf);
