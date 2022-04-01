@@ -26,6 +26,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       if (g_machineState.guardianRolloversCompleted()) {
         g_machineState.resetGuardianRollovers();
+        /* g_machineState.overridePlayerScore(100000); */
       }
       break;
 

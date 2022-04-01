@@ -53,6 +53,7 @@ class PlayerState {
     void          increaseBonusMultiplier();
     void          increaseModeMultiplier();
     void          increaseScore(unsigned long amountToAdd);
+    void          overridePlayerScore(unsigned long value);
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
     void          registerRightDropTarget(byte switchHit);

@@ -107,6 +107,7 @@ class MachineState {
     void          increaseModeMultiplier();
     void          increaseNumberOfBallsInPlay();
     void          increaseScore(unsigned long amountToAdd);
+    void          overridePlayerScore(unsigned long value);
     void          readStoredParameters();
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);

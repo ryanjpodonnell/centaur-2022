@@ -159,6 +159,10 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
   score_ += amountToAdd;
 }
 
+void PlayerState::overridePlayerScore(unsigned long value) {
+  g_displayHelper.overrideScoreDisplay(displayNumber_, value);
+}
+
 void PlayerState::registerGuardianRollover(byte switchHit) {
   if (switchHit == SW_LEFT_OUTLANE)      guardianLights_[0] = true;
   if (switchHit == SW_LEFT_RETURN_LANE)  guardianLights_[1] = true;

@@ -350,6 +350,10 @@ void MachineState::increaseScore(unsigned long amountToAdd) {
   currentPlayer_->increaseScore(amountToAdd);
 }
 
+void MachineState::overridePlayerScore(unsigned long value) {
+  currentPlayer_->overridePlayerScore(value);
+}
+
 void MachineState::readStoredParameters() {
   setHighScore(BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, DEFAULT_HIGH_SCORE));
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
