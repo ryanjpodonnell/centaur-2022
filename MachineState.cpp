@@ -54,6 +54,10 @@ boolean MachineState::guardianRolloversCompleted() {
   return currentPlayer_->guardianRolloversCompleted();
 }
 
+boolean MachineState::hurryUpActivated() {
+  return hurryUpActivated_;
+}
+
 boolean MachineState::increaseNumberOfPlayers() {
   if (credits_ < 1 && !FREE_PLAY) return false;
   if (numberOfPlayers_ >= 4) return false;
@@ -210,6 +214,8 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, currentTime_ + 500);
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
+
+    g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
 
     g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
     g_lampsHelper.showLamp(LAMP_RIGHT_THUMPER_BUMPER);
@@ -499,6 +505,16 @@ void MachineState::showAllPlayerLamps() {
   }
 }
 
+void MachineState::startHurryUp(unsigned long value, int seconds) {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
+  hurryUpActivated_           = true;
+  hurryUpCurrentValue_        = value;
+  hurryUpInitialValue_        = value;
+  hurryUpStartedTime_         = currentTime_;
+  hurryUpEndTime_             = currentTime_ + (1000 * seconds);
+  hurryUpValuePerMillisecond_ = value / (1000 * seconds);
+}
+
 void MachineState::updateBonusLamps() {
   currentPlayer_->updateBonusLamps();
 }
@@ -511,6 +527,19 @@ void MachineState::updateGuardianRolloverLamps() {
   currentPlayer_->updateGuardianRolloverLamps();
 }
 
+void MachineState::updateHurryUpValue() {
+  unsigned long timeSinceHurryUpStarted = currentTime_ - hurryUpStartedTime_;
+  hurryUpCurrentValue_ = hurryUpInitialValue_ - (hurryUpValuePerMillisecond_ * timeSinceHurryUpStarted);
+
+  if (currentTime_ >= hurryUpEndTime_) {
+    if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
+    hurryUpActivated_ = false;
+    g_displayHelper.showPlayerScores(0xFF);
+    resetGuardianRollovers();
+    updateGuardianRolloverLamps();
+  }
+}
+
 void MachineState::updateModeMultiplierLamps() {
   currentPlayer_->updateModeMultiplierLamps();
 }
@@ -520,7 +549,11 @@ void MachineState::updateOrbsDropTargetLamps() {
 }
 
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
-  currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
+  if (hurryUpActivated_) {
+    currentPlayer_->overridePlayerScore(hurryUpCurrentValue_);
+  } else {
+    currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
+  }
 }
 
 void MachineState::updateRightDropTargetLamps() {
@@ -566,12 +599,13 @@ void MachineState::writeCoinToAudit(byte switchHit) {
     Private
 *********************************************************************/
 void MachineState::resetMachineState() {
-  ballSaveActivated_           = false;
-  ballSaveUsed_                = false;
-  extraBallCollected_          = false;
-  playfieldValidated_          = false;
-  samePlayerShootsAgain_       = false;
-  troughSwitchActivated_       = false;
+  ballSaveActivated_     = false;
+  ballSaveUsed_          = false;
+  extraBallCollected_    = false;
+  playfieldValidated_    = false;
+  samePlayerShootsAgain_ = false;
+  troughSwitchActivated_ = false;
+  hurryUpActivated_      = false;
 
   currentBallFirstSwitchHitTime_ = 0;
   currentBallSwitchHitCounter_   = 0;

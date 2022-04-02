@@ -24,6 +24,7 @@ class GameMode {
     int     manageTilt();
     int     runGameLoop();
     int     runGameModes();
+    void    handleHurryUp();
     void    handleNewMode();
     void    handlePlayerBonusLamps();
     void    handlePlayerScore();

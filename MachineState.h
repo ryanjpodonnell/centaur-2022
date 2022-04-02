@@ -30,6 +30,7 @@ class MachineState {
     boolean       ballSaveActivated_;
     boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
+    boolean       hurryUpActivated_;
     boolean       machineStateChanged_;
     boolean       playfieldValidated_;
     boolean       samePlayerShootsAgain_;
@@ -47,6 +48,11 @@ class MachineState {
     unsigned long currentBallSwitchHitCounter_;
     unsigned long currentTime_;
     unsigned long highScore_;
+    unsigned long hurryUpCurrentValue_;
+    unsigned long hurryUpEndTime_;
+    unsigned long hurryUpInitialValue_;
+    unsigned long hurryUpStartedTime_;
+    unsigned long hurryUpValuePerMillisecond_;
     unsigned long lastTiltWarningTime_;
     unsigned long mostRecentSwitchHitTime_;
 
@@ -61,6 +67,7 @@ class MachineState {
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
     boolean       guardianRolloversCompleted();
+    boolean       hurryUpActivated();
     boolean       increaseNumberOfPlayers();
     boolean       machineStateChanged();
     boolean       modeMultiplierQualified();
@@ -137,9 +144,11 @@ class MachineState {
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();
+    void          startHurryUp(unsigned long value, int seconds);
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
+    void          updateHurryUpValue();
     void          updateModeMultiplierLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);

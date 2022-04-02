@@ -15,6 +15,7 @@ boolean GameMode::scoreIncreased() {
 int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) handleNewMode();
 
+  handleHurryUp();
   handlePlayerScore();
   handlePlayerBonusLamps();
   handleShootAgainLamp();
@@ -103,7 +104,6 @@ int GameMode::manageBallInTrough() {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
-    setGameMode(GAME_MODE_INITIALIZE);
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
@@ -141,6 +141,8 @@ int GameMode::runGameLoop() {
   } else {
     returnState = runGameModes();
   }
+
+  return returnState;
 }
 
 int GameMode::runGameModes() {
@@ -164,6 +166,10 @@ int GameMode::runGameModes() {
   if (!executedSwitchStack) runGameMode(0xFF);
 
   return returnState;
+}
+
+void GameMode::handleHurryUp() {
+  if (g_machineState.hurryUpActivated()) g_machineState.updateHurryUpValue();
 }
 
 void GameMode::handleNewMode() {
