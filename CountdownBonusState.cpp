@@ -32,7 +32,8 @@ int CountdownBonus::run(boolean curStateChanged) {
 void CountdownBonus::addBonusToScore() {
   unsigned long bonusMultiplier = (unsigned long)g_machineState.bonusMultiplier();
   unsigned long bonusValue = bonusMultiplier * 1000;
-  g_machineState.increaseScore(bonusValue);
+
+  g_machineState.setScore(g_machineState.score() + bonusValue);
 }
 
 void CountdownBonus::countdownBonusStep() {

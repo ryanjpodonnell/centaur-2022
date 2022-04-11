@@ -18,7 +18,9 @@ class PlayerState {
     byte          displayNumber_;
     byte          modeMultiplier_;
     byte          selectedMode_;
+    unsigned long lastFlash_;
     unsigned long score_;
+    unsigned long tempScore_;
     boolean       guardianLights_[4];
     boolean       orbsDropTargets_[4];
     boolean       rightDropTargets_[4];

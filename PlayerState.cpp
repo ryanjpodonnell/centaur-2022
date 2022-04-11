@@ -12,6 +12,7 @@ PlayerState::PlayerState(byte displayNumber) {
   modeMultiplier_          = 1;
   score_                   = 0;
   selectedMode_            = 0;
+  tempScore_               = 0;
 
   resetGuardianRollovers();
   resetTopRollovers();
@@ -156,7 +157,7 @@ void PlayerState::increaseModeMultiplier() {
 }
 
 void PlayerState::increaseScore(unsigned long amountToAdd) {
-  score_ += amountToAdd;
+  tempScore_ += amountToAdd;
 }
 
 void PlayerState::overridePlayerScore(unsigned long value) {
@@ -245,6 +246,7 @@ void PlayerState::resetPlayerState() {
   modeMultiplier_          = 1;
   score_                   = 0;
   selectedMode_            = 0;
+  tempScore_               = 0;
 
   resetGuardianRollovers();
   resetTopRollovers();
@@ -312,7 +314,8 @@ void PlayerState::setBonusMultiplier(byte value) {
 }
 
 void PlayerState::setScore(unsigned long value) {
-  score_ = value;
+  score_     = value;
+  tempScore_ = value;
 }
 
 void PlayerState::updateBonusLamps() {
@@ -375,6 +378,22 @@ void PlayerState::updateOrbsDropTargetLamps() {
 }
 
 void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
+  unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
+
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+
+    if (tempScore_ > score_) {
+      unsigned long diff = tempScore_ - score_;
+      unsigned long valueToIncrease = 1;
+
+      while((valueToIncrease * 10) < diff) {
+        valueToIncrease *= 10;
+      }
+      score_ += valueToIncrease;
+    }
+  }
+
   g_displayHelper.showPlayerScores(displayNumber_, flashCurrent, dashCurrent);
 }
 
