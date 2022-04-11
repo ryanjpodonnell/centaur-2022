@@ -15,7 +15,6 @@ boolean GameMode::scoreIncreased() {
 int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) handleNewMode();
 
-  handleHurryUp();
   handlePlayerScore();
   handlePlayerBonusLamps();
   handleShootAgainLamp();
@@ -166,10 +165,6 @@ int GameMode::runGameModes() {
   if (!executedSwitchStack) runGameMode(0xFF);
 
   return returnState;
-}
-
-void GameMode::handleHurryUp() {
-  if (g_machineState.hurryUpActivated()) g_machineState.updateHurryUpValue();
 }
 
 void GameMode::handleNewMode() {

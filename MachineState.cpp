@@ -217,9 +217,9 @@ int MachineState::initNewBall(bool curStateChanged) {
 
     g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
 
-    g_lampsHelper.showLamp(LAMP_PLAYFIELD_GI, false, true);
-    g_lampsHelper.showLamp(LAMP_RIGHT_THUMPER_BUMPER);
-    g_lampsHelper.showLamp(LAMP_LEFT_THUMPER_BUMPER);
+    BSOS_TurnOffAllLamps();
+    g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
+
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
 
@@ -252,6 +252,10 @@ unsigned long MachineState::currentTime() {
 
 unsigned long MachineState::highScore() {
   return highScore_;
+}
+
+unsigned long MachineState::hurryUpValue() {
+  return hurryUpValue_;
 }
 
 unsigned long MachineState::lastTiltWarningTime() {
@@ -463,6 +467,14 @@ void MachineState::setHighScore(unsigned long value) {
   highScore_ = value;
 }
 
+void MachineState::setHurryUpActivated(boolean value) {
+  hurryUpActivated_ = value;
+}
+
+void MachineState::setHurryUpValue(unsigned long value) {
+  hurryUpValue_ = value;
+}
+
 void MachineState::setNumberOfPlayers(byte value) {
   numberOfPlayers_ = value;
 }
@@ -505,16 +517,6 @@ void MachineState::showAllPlayerLamps() {
   }
 }
 
-void MachineState::startHurryUp(unsigned long value, int seconds) {
-  if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
-  hurryUpActivated_           = true;
-  hurryUpCurrentValue_        = value;
-  hurryUpInitialValue_        = value;
-  hurryUpStartedTime_         = currentTime_;
-  hurryUpEndTime_             = currentTime_ + (1000 * seconds);
-  hurryUpValuePerMillisecond_ = value / (1000 * seconds);
-}
-
 void MachineState::updateBonusLamps() {
   currentPlayer_->updateBonusLamps();
 }
@@ -527,19 +529,6 @@ void MachineState::updateGuardianRolloverLamps() {
   currentPlayer_->updateGuardianRolloverLamps();
 }
 
-void MachineState::updateHurryUpValue() {
-  unsigned long timeSinceHurryUpStarted = currentTime_ - hurryUpStartedTime_;
-  hurryUpCurrentValue_ = hurryUpInitialValue_ - (hurryUpValuePerMillisecond_ * timeSinceHurryUpStarted);
-
-  if (currentTime_ >= hurryUpEndTime_) {
-    if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
-    hurryUpActivated_ = false;
-    g_displayHelper.showPlayerScores(0xFF);
-    resetGuardianRollovers();
-    updateGuardianRolloverLamps();
-  }
-}
-
 void MachineState::updateModeMultiplierLamps() {
   currentPlayer_->updateModeMultiplierLamps();
 }
@@ -550,7 +539,7 @@ void MachineState::updateOrbsDropTargetLamps() {
 
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
   if (hurryUpActivated_) {
-    currentPlayer_->overridePlayerScore(hurryUpCurrentValue_);
+    currentPlayer_->overridePlayerScore(hurryUpValue_);
   } else {
     currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
   }

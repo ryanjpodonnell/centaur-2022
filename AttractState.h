@@ -3,16 +3,15 @@
 
 class Attract {
   private:
-    boolean updateScores_;
+    boolean       updateScores_;
     unsigned long currentFlashCycle_;
     unsigned long lastFlash_;
     unsigned long score1_;
     unsigned long score2_;
     unsigned long score3_;
     unsigned long score4_;
-
-    void handleLightShow();
-    void handleNewState();
+    void          handleLightShow();
+    void          handleNewState();
 
   public:
     Attract();

@@ -48,11 +48,7 @@ class MachineState {
     unsigned long currentBallSwitchHitCounter_;
     unsigned long currentTime_;
     unsigned long highScore_;
-    unsigned long hurryUpCurrentValue_;
-    unsigned long hurryUpEndTime_;
-    unsigned long hurryUpInitialValue_;
-    unsigned long hurryUpStartedTime_;
-    unsigned long hurryUpValuePerMillisecond_;
+    unsigned long hurryUpValue_;
     unsigned long lastTiltWarningTime_;
     unsigned long mostRecentSwitchHitTime_;
 
@@ -97,6 +93,7 @@ class MachineState {
     unsigned long currentBallSwitchHitCounter();
     unsigned long currentTime();
     unsigned long highScore();
+    unsigned long hurryUpValue();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentSwitchHitTime();
     unsigned long score(byte player = 0xFF);
@@ -137,6 +134,8 @@ class MachineState {
     void          setCurrentPlayer(byte value);
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
+    void          setHurryUpActivated(boolean value);
+    void          setHurryUpValue(unsigned long value);
     void          setMachineState(int id);
     void          setMostRecentSwitchHitTime();
     void          setNumberOfPlayers(byte value);
@@ -144,11 +143,9 @@ class MachineState {
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();
-    void          startHurryUp(unsigned long value, int seconds);
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
-    void          updateHurryUpValue();
     void          updateModeMultiplierLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);

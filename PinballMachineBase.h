@@ -25,7 +25,7 @@
 #define SW_1ST_BALL_TROUGH                    16
 #define SW_LEFT_SIDE_RO_BUTTON                17
 #define SW_ORBS_RIGHT_LANE_TARGET             18
-#define SW_INLANE_BACK_TARGET                 19
+#define SW_INLINE_BACK_TARGET                 19
 #define SW_LEFT_FLIPPER_BUTTON                20
 #define SW_RIGHT_FLIPPER_BUTTON               20
 #define SW_RESET_1_THROUGH_4_TARGETS_TARGET   21

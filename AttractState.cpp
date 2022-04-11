@@ -56,8 +56,8 @@ void Attract::handleNewState() {
 }
 
 void Attract::handleLightShow() {
-  unsigned long seed        = g_machineState.currentTime() / 100;   // .10 seconds
-  unsigned long cycleSeed   = g_machineState.currentTime() / 10000; // 10 seconds
+  unsigned long seed      = g_machineState.currentTime() / 100;   // .10 seconds
+  unsigned long cycleSeed = g_machineState.currentTime() / 10000; // 10 seconds
 
   if (cycleSeed != currentFlashCycle_) {
     currentFlashCycle_ = cycleSeed;

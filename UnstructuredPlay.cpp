@@ -1,11 +1,15 @@
 #include "SharedVariables.h"
 
 UnstructuredPlay::UnstructuredPlay() {
+  currentFlashCycle_ = 0;
+  lastFlash_         = 0;
 }
 
 byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) handleNewMode();
   int returnState = GAME_MODE_UNSTRUCTURED_PLAY;
+
+  handleHurryUp();
 
   switch (switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
@@ -25,7 +29,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.updateGuardianRolloverLamps();
 
       if (g_machineState.guardianRolloversCompleted()) {
-        g_machineState.startHurryUp(100000, 10);
+        startHurryUp(100000, 10);
       }
       break;
 
@@ -92,6 +96,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
     case SW_ORBS_RIGHT_LANE_TARGET:
       if (g_machineState.anyModeQualified()) {
+        if (g_machineState.hurryUpActivated()) endHurryUp();
+
         g_machineState.resetOrbsDropTargets(false);
         returnState = g_machineState.startQualifiedMode();
 
@@ -115,6 +121,17 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       }
       break;
 
+    case SW_1ST_INLINE_DROP_TARGET:
+    case SW_2ND_INLINE_DROP_TARGET:
+    case SW_3RD_INLINE_DROP_TARGET:
+    case SW_4TH_INLINE_DROP_TARGET:
+    case SW_INLINE_BACK_TARGET:
+      if (g_machineState.hurryUpActivated()) {
+        endHurryUp();
+        g_machineState.increaseScore(g_machineState.hurryUpValue());
+      }
+      break;
+
     case 0xFF:
       break;
   }
@@ -125,7 +142,58 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 /*********************************************************************
     Private
 *********************************************************************/
+void UnstructuredPlay::endHurryUp() {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
+
+  g_machineState.setHurryUpActivated(false);
+  g_displayHelper.showPlayerScores(0xFF);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+  g_machineState.resetGuardianRollovers();
+  g_machineState.updateGuardianRolloverLamps();
+}
+
+void UnstructuredPlay::handleHurryUp() {
+  if (!g_machineState.hurryUpActivated()) return;
+  updateHurryUpValue();
+
+  unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+    byte numberOfSteps = 5;
+    byte currentStep = seed % numberOfSteps;
+
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
+    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
+    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
+    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40_CHAMBER);
+    if (currentStep == 4) g_lampsHelper.showLamp(LAMP_50_CHAMBER);
+  }
+}
+
 void UnstructuredPlay::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
   g_machineState.showAllPlayerLamps();
+}
+
+void UnstructuredPlay::startHurryUp(unsigned long value, int seconds) {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
+  g_machineState.setHurryUpActivated(true);
+  g_machineState.setHurryUpValue(value);
+  hurryUpInitialValue_        = value;
+  hurryUpStartedTime_         = g_machineState.currentTime();
+  hurryUpEndTime_             = g_machineState.currentTime() + (1000 * seconds) + HURRY_UP_GRACE_PERIOD;
+  hurryUpValuePerMillisecond_ = value / (1000 * seconds);
+}
+
+void UnstructuredPlay::updateHurryUpValue() {
+  unsigned long timeSinceHurryUpStarted = g_machineState.currentTime() - hurryUpStartedTime_;
+  if (timeSinceHurryUpStarted < HURRY_UP_GRACE_PERIOD) return;
+
+  unsigned long value = hurryUpValuePerMillisecond_ * (timeSinceHurryUpStarted - HURRY_UP_GRACE_PERIOD);
+  g_machineState.setHurryUpValue(hurryUpInitialValue_ - value);
+
+  if (g_machineState.currentTime() >= hurryUpEndTime_) {
+    endHurryUp();
+  }
 }

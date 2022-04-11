@@ -125,6 +125,12 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
     case LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS:
       pointer = orbsDropTargetArrowsLamps_;
       break;
+    case LAMP_COLLECTION_GENERAL_ILLUMINATION:
+      pointer = playfieldGeneralIllumination_;
+      break;
+    case LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP:
+      pointer = queensChamberHurryUpCollection_;
+      break;
   }
 
   return pointer;
