@@ -33,10 +33,10 @@
 #define SOUND_PHASER_1                 40
 #define SOUND_PLACEHOLDER_6            42
 #define SOUND_PLACEHOLDER_7            44
-#define SOUND_TWO_X_COMPLETED          48
-#define SOUND_THREE_X_COMPLETED        49
-#define SOUND_FOUR_X_COMPLETED         50
-#define SOUND_FIVE_X_COMPLETED         51
+#define SOUND_2X_COMPLETED             48
+#define SOUND_3X_COMPLETED             49
+#define SOUND_4X_COMPLETED             50
+#define SOUND_5X_COMPLETED             51
 #define SOUND_COMPLETED                52
 #define SOUND_POWER_ORBS               53
 #define SOUND_PLACEHOLDER_8            54
@@ -164,8 +164,8 @@ class SoundHelper {
   public:
     SoundHelper();
 
-    void PlaySound(byte soundEffectNum);
-    void StopAudio();
+    void playSound(byte soundEffectNum);
+    void stopAudio();
 };
 
 #endif

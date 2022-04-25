@@ -35,6 +35,7 @@ extern MachineState     g_machineState;
 extern OrbMode1         g_orbMode1;
 extern SelfTestAndAudit g_selfTestAndAudit;
 extern SkillShot        g_skillShot;
+extern SoundHelper      g_soundHelper;
 extern UnstructuredPlay g_unstructuredPlay;
 
 #endif

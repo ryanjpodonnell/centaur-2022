@@ -3,7 +3,7 @@
 SoundHelper::SoundHelper() {
 }
 
-void SoundHelper::PlaySound(byte soundEffectNum) {
+void SoundHelper::playSound(byte soundEffectNum) {
   if (DEBUG_MESSAGES) {
     char buf[129];
     sprintf(buf, "Sound # %d\n", soundEffectNum);
@@ -13,6 +13,6 @@ void SoundHelper::PlaySound(byte soundEffectNum) {
   BSOS_PlaySoundSquawkAndTalk(soundEffectNum);
 }
 
-void SoundHelper::StopAudio() {
+void SoundHelper::stopAudio() {
   BSOS_PlaySoundSquawkAndTalk(5);
 }
