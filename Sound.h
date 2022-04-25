@@ -53,8 +53,8 @@
 #define SOUND_RELEASE_TARGET_ACTIVATED          65
 #define SOUND_SEQUENCE                          66
 #define SOUND_ONLY_SINGLE_VALUE                 67
-#define SOUND_PLACEHOLDER_8                     68
-#define SOUND_PLACEHOLDER_9                     69
+#define SOUND_SIDE_ORBITS_DOUBLE                68
+#define SOUND_TRY                               69
 #define SOUND_DOUBLE_QUEENS_CHAMBER             70
 #define SOUND_NO_CLASS_HUMAN                    71
 #define SOUND_CHALLENGE_ME                      72
