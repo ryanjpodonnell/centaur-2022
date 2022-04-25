@@ -178,6 +178,7 @@ void UnstructuredPlay::handleNewMode() {
 
 void UnstructuredPlay::startHurryUp(unsigned long value, int seconds) {
   if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
+  g_soundHelper.playSound(SOUND_SIREN_2);
   g_machineState.setHurryUpActivated(true);
   g_machineState.setHurryUpValue(value);
   hurryUpInitialValue_        = value;
