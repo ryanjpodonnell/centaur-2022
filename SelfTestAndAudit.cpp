@@ -1,17 +1,21 @@
 #include "SharedVariables.h"
 
 SelfTestAndAudit::SelfTestAndAudit() {
-  lastSolTestTime_       = 0;
+  lastResetPress_        = 0;
   lastSelfTestChange_    = 0;
-  savedValue_            = 0;
-  resetHold_             = 0;
+  lastSolTestTime_       = 0;
+  nextSoundPlayTime_     = 0;
   nextSpeedyValueChange_ = 0;
   numSpeedyChanges_      = 0;
-  lastResetPress_        = 0;
+  resetHold_             = 0;
+  savedValue_            = 0;
+
   curValue_              = 0;
   curSound_              = 0x01;
   soundPlaying_          = 0;
+
   solenoidCycle_         = true;
+  currentSoundChanged_   = true;
 }
 
 int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetSwitch, byte slamSwitch) {
@@ -164,12 +168,22 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
   } else if (curState==MACHINE_STATE_TEST_SOUNDS) {
     BSOS_SetDisplayCredits(0);
     BSOS_SetDisplayBallInPlay(5);
-    byte soundToPlay = ((currentTime-lastSelfTestChange_)/2000)%256;
+    byte soundToPlay = ((currentTime-lastSelfTestChange_)/6000)%85;
+
     if (soundPlaying_!=soundToPlay) {
-      BSOS_PlaySoundSquawkAndTalk(soundToPlay);
-      soundPlaying_ = soundToPlay;
-      BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
-      lastSolTestTime_ = currentTime; // Time the sound started to play
+      if (currentSoundChanged_) {
+        BSOS_PlaySoundSquawkAndTalk(5);
+        nextSoundPlayTime_ = currentTime + 1000;
+        currentSoundChanged_ = false;
+      }
+
+      if (currentTime > nextSoundPlayTime_) {
+        BSOS_PlaySoundSquawkAndTalk(soundToPlay);
+        soundPlaying_ = soundToPlay;
+        BSOS_SetDisplay(0, (unsigned long)soundToPlay, true);
+        lastSolTestTime_ = currentTime; // Time the sound started to play
+        currentSoundChanged_ = true;
+      }
     }
   } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_1) {
     savedScoreStartByte = BSOS_AWARD_SCORE_1_EEPROM_START_BYTE;

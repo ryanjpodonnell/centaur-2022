@@ -12,6 +12,7 @@ MachineState     g_machineState;
 OrbMode1         g_orbMode1;
 SelfTestAndAudit g_selfTestAndAudit;
 SkillShot        g_skillShot;
+SoundHelper      g_soundHelper;
 UnstructuredPlay g_unstructuredPlay;
 
 struct PlayfieldAndCabinetSwitch g_solenoidAssociatedSwitches[] = {

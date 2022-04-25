@@ -21,16 +21,18 @@
 
 class SelfTestAndAudit {
   private:
-    unsigned long lastSolTestTime_;
+    unsigned long lastResetPress_;
     unsigned long lastSelfTestChange_;
-    unsigned long savedValue_;
-    unsigned long resetHold_;
+    unsigned long lastSolTestTime_;
+    unsigned long nextSoundPlayTime_;
     unsigned long nextSpeedyValueChange_;
     unsigned long numSpeedyChanges_;
-    unsigned long lastResetPress_;
+    unsigned long resetHold_;
+    unsigned long savedValue_;
     byte          curValue_;
     byte          curSound_;
     byte          soundPlaying_;
+    boolean       currentSoundChanged_;
     boolean       solenoidCycle_;
 
   public:
