@@ -1,6 +1,8 @@
 #ifndef LAMPS_H
 #define LAMPS_H
 
+#define FLASH_FREQUENCY                 100
+
 #define LAMP_TERMINATOR                 255
 #define LAMP_PLAYFIELD_GI               0
 #define LAMP_RELEASE_ORB                1
@@ -87,6 +89,11 @@
 #define LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS  18
 #define LAMP_COLLECTION_GENERAL_ILLUMINATION     19
 #define LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP  20
+#define LAMP_COLLECTION_ORB_FEATURE              21
+#define LAMP_COLLECTION_SEQUENCE_FEATURE         22
+#define LAMP_COLLECTION_CHAMBER_FEATURE          23
+#define LAMP_COLLECTION_GUARDIAN_FEATURE         24
+#define LAMP_COLLECTION_BONUS_FEATURE            25
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -262,6 +269,83 @@ static byte orbsDropTargetArrowsLamps_[] = {
   LAMP_TERMINATOR
 };
 
+static byte queensChamberHurryUpLamps_[] = {
+  LAMP_10_CHAMBER,
+  LAMP_20_CHAMBER,
+  LAMP_30_CHAMBER,
+  LAMP_40_CHAMBER,
+  LAMP_50_CHAMBER,
+  LAMP_TERMINATOR
+};
+
+static byte orbFeatureLamps_[] = {
+  LAMP_1_CAPTIVE_ORBS,
+  LAMP_2_CAPTIVE_ORBS,
+  LAMP_3_CAPTIVE_ORBS,
+  LAMP_4_CAPTIVE_ORBS,
+  LAMP_B_DROP_TARGET_ARROW,
+  LAMP_O_DROP_TARGET_ARROW,
+  LAMP_R_DROP_TARGET_ARROW,
+  LAMP_S_DROP_TARGET_ARROW,
+  LAMP_TERMINATOR
+};
+
+static byte sequenceFeatureLamps_[] = {
+  LAMP_RESET_1_THROUGH_4_ARROW,
+  LAMP_RIGHT_DROP_TARGET_10_ARROW,
+  LAMP_RIGHT_DROP_TARGET_20_ARROW,
+  LAMP_RIGHT_DROP_TARGET_40_ARROW,
+  LAMP_RIGHT_DROP_TARGET_80_ARROW,
+  LAMP_SPOT_1_THROUGH_4,
+  LAMP_TERMINATOR
+};
+
+static byte chamberFeatureLamps_[] = {
+  LAMP_10_CHAMBER,
+  LAMP_20_CHAMBER,
+  LAMP_30_CHAMBER,
+  LAMP_40_CHAMBER,
+  LAMP_50_CHAMBER,
+  LAMP_QUEENS_CHAMBER_GI_1,
+  LAMP_QUEENS_CHAMBER_GI_2,
+  LAMP_QUEENS_CHAMBER_GI_3,
+  LAMP_QUEENS_CHAMBER_GI_4,
+  LAMP_TERMINATOR
+};
+
+static byte guardianFeatureLamps_[] = {
+  LAMP_LEFT_OUT_ROLLOVER,
+  LAMP_LEFT_RETURN_ROLLOVER,
+  LAMP_RELEASE_ORB,
+  LAMP_RIGHT_OUT_ROLLOVER,
+  LAMP_RIGHT_RETURN_ROLLOVER,
+  LAMP_TERMINATOR
+};
+
+static byte bonusFeatureLamps_[] = {
+  LAMP_1K_BONUS,
+  LAMP_2K_BONUS,
+  LAMP_3K_BONUS,
+  LAMP_4K_BONUS,
+  LAMP_5K_BONUS,
+  LAMP_6K_BONUS,
+  LAMP_7K_BONUS,
+  LAMP_8K_BONUS,
+  LAMP_9K_BONUS,
+  LAMP_10K_BONUS,
+  LAMP_20K_BONUS,
+  LAMP_40K_BONUS,
+  LAMP_60K_BONUS,
+  LAMP_2X_BONUS,
+  LAMP_3X_BONUS,
+  LAMP_4X_BONUS,
+  LAMP_5X_BONUS,
+  LAMP_TOP_LEFT_ROLLOVER,
+  LAMP_TOP_MIDDLE_ROLLOVER,
+  LAMP_TOP_RIGHT_ROLLOVER,
+  LAMP_TERMINATOR
+};
+
 static byte playfieldGeneralIllumination_[] = {
   LAMP_PLAYFIELD_GI,
   LAMP_RIGHT_THUMPER_BUMPER,
@@ -270,15 +354,6 @@ static byte playfieldGeneralIllumination_[] = {
   LAMP_QUEENS_CHAMBER_GI_2,
   LAMP_QUEENS_CHAMBER_GI_3,
   LAMP_QUEENS_CHAMBER_GI_4,
-  LAMP_TERMINATOR
-};
-
-static byte queensChamberHurryUpCollection_[] = {
-  LAMP_10_CHAMBER,
-  LAMP_20_CHAMBER,
-  LAMP_30_CHAMBER,
-  LAMP_40_CHAMBER,
-  LAMP_50_CHAMBER,
   LAMP_TERMINATOR
 };
 
@@ -327,8 +402,8 @@ class LampsHelper {
     void showAllLamps();
     void showBonusLamps(byte value);
     void showBonusMultiplierLamps(byte value);
-    void showLamp(byte lamp, bool flash = false, bool clearAllLamps = false);
-    void showLamps(byte lampCollection, bool clearAllLamps = false);
+    void showLamp(byte lamp, bool flash = false);
+    void showLamps(byte lampCollection, bool flash = false);
 };
 
 #endif

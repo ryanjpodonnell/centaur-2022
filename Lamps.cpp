@@ -42,22 +42,18 @@ void LampsHelper::showBonusMultiplierLamps(byte value) {
   if (value >= 5) showLamp(LAMP_5X_BONUS);
 }
 
-void LampsHelper::showLamp(byte lamp, bool flash, bool clearAllLamps) {
-  if (clearAllLamps) BSOS_TurnOffAllLamps();
-
+void LampsHelper::showLamp(byte lamp, bool flash) {
   if (flash) {
-    BSOS_SetLampState(lamp, 1, 0, 500);
+    BSOS_SetLampState(lamp, 1, 0, FLASH_FREQUENCY);
   } else {
     BSOS_SetLampState(lamp, 1);
   }
 }
 
-void LampsHelper::showLamps(byte lampCollection, bool clearAllLamps) {
-  if (clearAllLamps) BSOS_TurnOffAllLamps();
-
+void LampsHelper::showLamps(byte lampCollection, bool flash) {
   byte* pointer = lampsPointer(lampCollection);
   for(byte i = 0; pointer[i] != LAMP_TERMINATOR; i++) {
-    BSOS_SetLampState(pointer[i], 1);
+    showLamp(pointer[i], flash);
   }
 }
 
@@ -129,7 +125,22 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
       pointer = playfieldGeneralIllumination_;
       break;
     case LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP:
-      pointer = queensChamberHurryUpCollection_;
+      pointer = queensChamberHurryUpLamps_;
+      break;
+    case LAMP_COLLECTION_ORB_FEATURE:
+      pointer = orbFeatureLamps_;
+      break;
+    case LAMP_COLLECTION_SEQUENCE_FEATURE:
+      pointer = sequenceFeatureLamps_;
+      break;
+    case LAMP_COLLECTION_CHAMBER_FEATURE:
+      pointer = chamberFeatureLamps_;
+      break;
+    case LAMP_COLLECTION_GUARDIAN_FEATURE:
+      pointer = guardianFeatureLamps_;
+      break;
+    case LAMP_COLLECTION_BONUS_FEATURE:
+      pointer = bonusFeatureLamps_;
       break;
   }
 
