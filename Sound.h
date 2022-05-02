@@ -1,18 +1,18 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#define SOUND_DRONE_1                           6
+#define SOUND_CONTINIOUS_DRONE                  6
 #define SOUND_LONG_ATTACK_1                     11
 #define SOUND_LONG_ATTACK_2                     12
 #define SOUND_LONG_ATTACK_3                     13
 #define SOUND_LONG_ATTACK_4                     14
 #define SOUND_LONG_ATTACK_5                     15
-#define SOUND_SHORT_ATTACK_1                    16
-#define SOUND_LONG_DECREASE                     17
-#define SOUND_FAST_ATTACK_1                     18
-#define SOUND_SIREN                             19
-#define SOUND_PLACEHOLDER_1                     20
-#define SOUND_PLACEHOLDER_2                     21
+#define SOUND_SHOT                              16
+#define SOUND_SLOW_ECHO                         17
+#define SOUND_FAST_ECHO                         18
+#define SOUND_ALARM                             19
+#define SOUND_LOW_LASER                         20
+#define SOUND_HIGH_LASER                        21
 #define SOUND_PLACEHOLDER_3                     22
 #define SOUND_PLACEHOLDER_4                     23
 #define SOUND_PLACEHOLDER_5                     24

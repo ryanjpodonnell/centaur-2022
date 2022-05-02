@@ -130,6 +130,10 @@ boolean MachineState::samePlayerShootsAgain() {
   return samePlayerShootsAgain_;
 }
 
+boolean MachineState::scoreIncreasing() {
+  return currentPlayer_->scoreIncreasing();
+}
+
 boolean MachineState::topRolloversCompleted() {
   return currentPlayer_->topRolloversCompleted();
 }

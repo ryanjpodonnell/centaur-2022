@@ -69,7 +69,11 @@ int GameMode::manageBallInTrough() {
     g_machineState.setBallEnteredTroughTime();
   }
 
-  if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 || pushingBallFromOutlane_) {
+  if (
+      (g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 ||
+      pushingBallFromOutlane_ ||
+      g_machineState.scoreIncreasing()
+     ) {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
 
@@ -79,6 +83,7 @@ int GameMode::manageBallInTrough() {
     pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+
   } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
@@ -88,8 +93,8 @@ int GameMode::manageBallInTrough() {
     pushingBallFromOutlane_ = true;
 
     g_machineState.setBallSaveUsed(true);
-
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+
   } else if (g_machineState.numberOfBallsInPlay() > 1) {
     if (DEBUG_MESSAGES) Serial.write("Multiball Drained\n\r");
 
@@ -99,8 +104,11 @@ int GameMode::manageBallInTrough() {
     g_machineState.decreaseNumberOfBallsInPlay();
     g_machineState.decreaseModeMultiplier();
     g_machineState.updateModeMultiplierLamps();
-
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+
+  } else if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 || pushingBallFromOutlane_) {
+    return MACHINE_STATE_NORMAL_GAMEPLAY;
+
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 

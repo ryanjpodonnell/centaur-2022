@@ -74,6 +74,7 @@ class MachineState {
     boolean       resetPlayers();
     boolean       rightDropTargetsCompleted();
     boolean       samePlayerShootsAgain();
+    boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
     boolean       troughSwitchActivated();
     byte          bonus(byte player = 0xFF);

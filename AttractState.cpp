@@ -66,11 +66,11 @@ boolean Attract::featureShowEligible() {
   if (featureShowRunning_)          return false;
   if (featureShowStartedTime_ == 0) return true;
 
-  return g_machineState.currentTime() - featureShowStartedTime_ > FEATURE_SHOW_WINDOW;
+  return g_machineState.currentTime() - featureShowStartedTime_ > FEATURE_SHOW_TIMEOUT;
 }
 
 boolean Attract::tauntEligible() {
-  return g_machineState.currentTime() - lastTaunt_ > TAUNT_WINDOW;
+  return g_machineState.currentTime() - lastTaunt_ > TAUNT_TIMEOUT;
 }
 
 void Attract::handleNewState() {

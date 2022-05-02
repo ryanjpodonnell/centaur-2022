@@ -42,6 +42,7 @@ class PlayerState {
     boolean       qualifyMode();
     boolean       qualifyModeMultiplier();
     boolean       rightDropTargetsCompleted();
+    boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
     byte          bonus();
     byte          bonusMultiplier();

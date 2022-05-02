@@ -82,6 +82,10 @@ boolean PlayerState::rightDropTargetsCompleted() {
          rightDropTargets_[3] == true;
 }
 
+boolean PlayerState::scoreIncreasing() {
+  return score_ < tempScore_;
+}
+
 boolean PlayerState::topRolloversCompleted() {
   return topLaneLights_[0] == true &&
          topLaneLights_[1] == true &&

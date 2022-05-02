@@ -1,8 +1,8 @@
 #ifndef ATTRACT_STATE_H
 #define ATTRACT_STATE_H
 
-#define FEATURE_SHOW_WINDOW 60000
-#define TAUNT_WINDOW        15000
+#define FEATURE_SHOW_TIMEOUT 60000
+#define TAUNT_TIMEOUT        15000
 
 class Attract {
   private:

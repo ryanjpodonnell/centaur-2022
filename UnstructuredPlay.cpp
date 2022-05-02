@@ -9,7 +9,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) handleNewMode();
   int returnState = GAME_MODE_UNSTRUCTURED_PLAY;
 
-  handleHurryUp();
+  if (g_machineState.hurryUpActivated()) handleHurryUp();
 
   switch (switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
@@ -55,7 +55,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.updateOrbsDropTargetLamps();
 
       if (g_machineState.orbsDropTargetsCompleted() && g_machineState.qualifyMode()) {
-        g_machineState.flashOrbsDropTargetLamps();
         g_machineState.updateCaptiveOrbsLamps();
         g_machineState.updateRightOrbsReleaseLamp();
       }
@@ -72,7 +71,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.updateRightDropTargetSpotLamp();
 
         if (g_machineState.rightDropTargetsCompleted() && g_machineState.qualifyModeMultiplier()) {
-          g_machineState.flashRightDropTargetLamps();
           g_machineState.updateRightDropTargetResetLamp();
         }
       } else {
@@ -132,6 +130,10 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       }
       break;
 
+    case SW_OUTHOLE:
+      if (g_machineState.hurryUpActivated()) endHurryUp();
+      break;
+
     case 0xFF:
       break;
   }
@@ -159,10 +161,9 @@ void UnstructuredPlay::handleHurryUp() {
   unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
   if (seed != lastFlash_) {
     lastFlash_ = seed;
-    byte numberOfSteps = 5;
-    byte currentStep = seed % numberOfSteps;
-
     g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+
+    byte currentStep = seed % 5;
     if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
     if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
     if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
