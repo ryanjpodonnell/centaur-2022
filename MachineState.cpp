@@ -237,10 +237,6 @@ int MachineState::machineState() {
   return machineStateId_;
 }
 
-unsigned long MachineState::currentBallSwitchHitCounter() {
-  return currentBallSwitchHitCounter_;
-}
-
 unsigned long MachineState::ballEnteredTroughTime() {
   return ballEnteredTroughTime_;
 }
@@ -343,10 +339,6 @@ void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
 
   BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
   BSOS_SetDisplayCredits(credits_);
-}
-
-void MachineState::increaseCurrentBallSwitchHitCounter() {
-  currentBallSwitchHitCounter_ += 1;
 }
 
 void MachineState::increaseModeMultiplier() {
@@ -592,7 +584,5 @@ void MachineState::resetMachineState() {
   hurryUpActivated_      = false;
 
   currentBallFirstSwitchHitTime_ = 0;
-  currentBallSwitchHitCounter_   = 0;
-
   scoreMultiplier_               = 1;
 }

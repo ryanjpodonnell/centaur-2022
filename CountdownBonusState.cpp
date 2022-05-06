@@ -52,13 +52,12 @@ void CountdownBonus::countdownBonusStep() {
     if (g_machineState.bonus()) {
       if (!g_machineState.currentPlayerTilted()) addBonusToScore();
 
-      g_soundHelper.playSound(SOUND_BONUS_LASER);
+      g_soundHelper.playSound(SOUND_BONUS);
       g_machineState.decreaseBonus(1);
     }
   }
 
   if (!g_machineState.bonus() && !countdownEndTime_) {
-    g_soundHelper.playSound(SOUND_BONUS_LASER_FINALE);
     countdownEndTime_ = g_machineState.currentTime() + 1800;
   }
 }

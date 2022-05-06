@@ -184,6 +184,7 @@ void GameMode::handleNewMode() {
 
   g_soundHelper.stopAudio();
   g_soundHelper.playSound(SOUND_CONTINIOUS_DRONE);
+  g_machineState.increaseBonus(1);
 
   setGameMode(GAME_MODE_SKILL_SHOT);
 }

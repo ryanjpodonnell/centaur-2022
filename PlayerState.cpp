@@ -396,7 +396,7 @@ void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
       unsigned long diff = tempScore_ - score_;
       unsigned long valueToIncrease = 1;
 
-      while((valueToIncrease * 10) < diff) {
+      while((valueToIncrease * 10) <= diff) {
         valueToIncrease *= 10;
       }
       score_ += valueToIncrease;

@@ -45,7 +45,6 @@ class MachineState {
     int           machineStateId_;
     unsigned long ballEnteredTroughTime_;
     unsigned long currentBallFirstSwitchHitTime_;
-    unsigned long currentBallSwitchHitCounter_;
     unsigned long currentTime_;
     unsigned long highScore_;
     unsigned long hurryUpValue_;
@@ -91,7 +90,6 @@ class MachineState {
     int           machineState();
     unsigned long ballEnteredTroughTime();
     unsigned long currentBallFirstSwitchHitTime();
-    unsigned long currentBallSwitchHitCounter();
     unsigned long currentTime();
     unsigned long highScore();
     unsigned long hurryUpValue();
@@ -108,7 +106,6 @@ class MachineState {
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
-    void          increaseCurrentBallSwitchHitCounter();
     void          increaseModeMultiplier();
     void          increaseNumberOfBallsInPlay();
     void          increaseScore(unsigned long amountToAdd);

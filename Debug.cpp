@@ -20,6 +20,7 @@ void Debug::handleNewState() {
     Serial.write("Entering Debug State\n\r");
   }
 
+  g_soundHelper.stopAudio();
   g_lampsHelper.showAllLamps();
   g_machineState.setScore(PINBALL_MACHINE_BASE_MAJOR_VERSION, 0);
   g_machineState.setScore(PINBALL_MACHINE_BASE_MINOR_VERSION, 1);

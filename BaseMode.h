@@ -3,7 +3,8 @@
 
 class Base {
   private:
-    void handleDefaultScoringLogic();
+    void handleDefaultScoringLogic(unsigned long value);
+    void handleSignificantSwitchHit();
 
   public:
     Base();
