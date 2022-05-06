@@ -219,10 +219,9 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
 
-    g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
-
-    BSOS_TurnOffAllLamps();
+    g_lampsHelper.hideAllLamps();
     g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
+    g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
 
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
@@ -507,18 +506,10 @@ void MachineState::showAllPlayerLamps() {
 
   updateRightDropTargetResetLamp();
   updateRightDropTargetSpotLamp();
-  if (modeMultiplierQualified()) {
-    flashRightDropTargetLamps();
-  } else {
-    updateRightDropTargetLamps();
-  }
+  updateRightDropTargetLamps();
 
   updateRightOrbsReleaseLamp();
-  if (anyModeQualified()) {
-    flashOrbsDropTargetLamps();
-  } else {
-    updateOrbsDropTargetLamps();
-  }
+  updateOrbsDropTargetLamps();
 }
 
 void MachineState::updateBonusLamps() {

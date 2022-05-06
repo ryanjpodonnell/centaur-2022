@@ -112,12 +112,15 @@ int GameMode::manageBallInTrough() {
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
+    g_soundHelper.stopAudio();
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
 }
 
 int GameMode::manageTilt() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+
+  g_soundHelper.playSound(SOUND_POWERING_DOWN);
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
@@ -178,6 +181,9 @@ int GameMode::runGameModes() {
 void GameMode::handleNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
   while (BSOS_PullFirstFromSwitchStack() != SWITCH_STACK_EMPTY) {}
+
+  g_soundHelper.stopAudio();
+  g_soundHelper.playSound(SOUND_CONTINIOUS_DRONE);
 
   setGameMode(GAME_MODE_SKILL_SHOT);
 }

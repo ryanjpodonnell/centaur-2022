@@ -1,12 +1,12 @@
 #include "SharedVariables.h"
 
 CountdownBonus::CountdownBonus() {
-  stepDuration_     = 100; // .10 seconds
-
   countdownEndTime_ = 0;
   lastDecrease_     = 0;
+  lastFlash_        = 0;
   stateStartedTime_ = 0;
   stateStartedTime_ = 0;
+  stepDuration_     = 100; // .10 seconds
 }
 
 int CountdownBonus::run(boolean curStateChanged) {
@@ -23,12 +23,19 @@ int CountdownBonus::run(boolean curStateChanged) {
   if (timeSinceStateStarted > 1000) countdownBonusStep();
 
   g_machineState.updatePlayerScore();
-  g_machineState.updateBonusLamps();
+  if (!countdownEndTime_) {
+    g_machineState.updateBonusLamps();
+  } else {
+    handleBonusLightShow();
+  }
 
   if (countdownEndTime_ && g_machineState.currentTime() > countdownEndTime_) return MACHINE_STATE_BALL_OVER;
   return MACHINE_STATE_COUNTDOWN_BONUS;
 }
 
+/*********************************************************************
+    Private
+*********************************************************************/
 void CountdownBonus::addBonusToScore() {
   unsigned long bonusMultiplier = (unsigned long)g_machineState.bonusMultiplier();
   unsigned long bonusValue = bonusMultiplier * 1000;
@@ -44,12 +51,32 @@ void CountdownBonus::countdownBonusStep() {
 
     if (g_machineState.bonus()) {
       if (!g_machineState.currentPlayerTilted()) addBonusToScore();
+
+      g_soundHelper.playSound(SOUND_BONUS_LASER);
       g_machineState.decreaseBonus(1);
     }
   }
 
   if (!g_machineState.bonus() && !countdownEndTime_) {
-    countdownEndTime_ = g_machineState.currentTime() + 1000;
+    g_soundHelper.playSound(SOUND_BONUS_LASER_FINALE);
+    countdownEndTime_ = g_machineState.currentTime() + 1800;
+  }
+}
+
+void CountdownBonus::handleBonusLightShow() {
+  unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
+
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+    byte numberOfSteps = 5;
+    byte currentStep = seed % numberOfSteps;
+
+    g_lampsHelper.hideAllLamps();
+    if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);
+    if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2);
+    if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3);
+    if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4);
+    if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5);
   }
 }
 
@@ -61,10 +88,10 @@ void CountdownBonus::handleNewState() {
   BSOS_SetDisplayCredits(g_machineState.credits());
   g_lampsHelper.hideAllLamps();
 
-  stepDuration_            = 100;
-
   countdownEndTime_        = 0;
   lastDecrease_            = 0;
+  lastFlash_               = 0;
   stateStartedTime_        = g_machineState.currentTime();
   stepDurationChangedTime_ = g_machineState.currentTime();
+  stepDuration_            = 100;
 }

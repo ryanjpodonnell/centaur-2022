@@ -34,6 +34,7 @@ int Attract::run(int curState, boolean curStateChanged) {
     case SW_COIN_1:
     case SW_COIN_2:
     case SW_COIN_3:
+      g_soundHelper.playSound(SOUND_ENERGIZE_ME);
       g_machineState.writeCoinToAudit(switchHit);
       g_machineState.increaseCredits(true, 1);
       break;

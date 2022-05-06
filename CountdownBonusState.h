@@ -7,11 +7,13 @@ class CountdownBonus {
 
     unsigned long countdownEndTime_;
     unsigned long lastDecrease_;
+    unsigned long lastFlash_;
     unsigned long stateStartedTime_;
     unsigned long stepDurationChangedTime_;
 
     void addBonusToScore();
     void countdownBonusStep();
+    void handleBonusLightShow();
     void handleNewState();
 
   public:

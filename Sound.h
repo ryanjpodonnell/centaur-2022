@@ -15,14 +15,14 @@
 #define SOUND_HIGH_LASER                        21
 #define SOUND_PLACEHOLDER_3                     22
 #define SOUND_PLACEHOLDER_4                     23
-#define SOUND_PLACEHOLDER_5                     24
+#define SOUND_BONUS_LASER                       24
 #define SOUND_CHIRP_1                           25
 #define SOUND_CHIRP_2                           26
 #define SOUND_THUD_1                            27
 #define SOUND_CRASH_1                           28
 #define SOUND_LASERS_1                          29
 #define SOUND_DRONE_2                           30
-#define SOUND_LASERS_2                          31
+#define SOUND_BONUS_LASER_FINALE                31
 #define SOUND_CHIRP_1                           32
 #define SOUND_CHIRP_2                           33
 #define SOUND_CHIRP_3                           34
@@ -32,7 +32,7 @@
 #define SOUND_SIREN_2                           38
 #define SOUND_PHASER_1                          40
 #define SOUND_PLACEHOLDER_6                     42
-#define SOUND_PLACEHOLDER_7                     44
+#define SOUND_POWERING_DOWN                     44
 #define SOUND_2X_COMPLETED                      48
 #define SOUND_3X_COMPLETED                      49
 #define SOUND_4X_COMPLETED                      50

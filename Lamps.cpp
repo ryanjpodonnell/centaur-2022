@@ -142,6 +142,21 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
     case LAMP_COLLECTION_BONUS_FEATURE:
       pointer = bonusFeatureLamps_;
       break;
+    case LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1:
+      pointer = bonusCountdownStep1_;
+      break;
+    case LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2:
+      pointer = bonusCountdownStep2_;
+      break;
+    case LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3:
+      pointer = bonusCountdownStep3_;
+      break;
+    case LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4:
+      pointer = bonusCountdownStep4_;
+      break;
+    case LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5:
+      pointer = bonusCountdownStep5_;
+      break;
   }
 
   return pointer;
