@@ -43,7 +43,6 @@ void GameMode::setScoreIncreased(boolean value) {
   scoreIncreased_ = value;
 }
 
-
 /*********************************************************************
     Private
 *********************************************************************/
@@ -120,6 +119,7 @@ int GameMode::manageBallInTrough() {
 int GameMode::manageTilt() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
+  g_soundHelper.stopAudio();
   g_soundHelper.playSound(SOUND_POWERING_DOWN);
 
   byte switchHit;

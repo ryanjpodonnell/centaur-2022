@@ -1,6 +1,9 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+#define MILLISECONDS_PER_UNIT                   25
+
+#define SOUND_MUTE                              5
 #define SOUND_CONTINIOUS_DRONE                  6
 #define SOUND_LONG_ATTACK_1                     11
 #define SOUND_LONG_ATTACK_2                     12
@@ -71,7 +74,7 @@
 #define SOUND_ACTIVATED                         83
 #define SOUND_MAXIMUM_ORBITAL_STRENGTH_ACHIEVED 84
 
-// 1 interval == 25 milliseconds
+// 1 unit == 25 milliseconds
 static byte soundDurations_[] = {
   0,   // 0
   0,   // 1
@@ -161,10 +164,16 @@ static byte soundDurations_[] = {
 };
 
 class SoundHelper {
+  private:
+    unsigned long uninterruptableSoundPlayingUntil_;
+
+    void playSquawkAndTalk(byte soundEffectNum);
+
   public:
     SoundHelper();
 
     void playSound(byte soundEffectNum);
+    void playSoundWithoutInterruptions(byte soundEffectNum);
     void stopAudio();
 };
 

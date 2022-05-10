@@ -119,6 +119,7 @@ class MachineState {
     void          resetGuardianRollovers();
     void          resetOrbsDropTargets(boolean activateSolenoid = false);
     void          resetRightDropTargets(boolean activateSolenoid = false);
+    void          resetTiltWarnings();
     void          resetTopRollovers();
     void          rotatePlayerLamps();
     void          rotateQualifiedMode();

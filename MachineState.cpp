@@ -222,6 +222,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     g_lampsHelper.hideAllLamps();
     g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
     g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
+    g_machineState.resetTiltWarnings();
 
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
   }
@@ -404,6 +405,10 @@ void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
 
 void MachineState::resetRightDropTargets(boolean activateSolenoid) {
   currentPlayer_->resetRightDropTargets(activateSolenoid);
+}
+
+void MachineState::resetTiltWarnings() {
+  numberOfTiltWarnings_ = 0;
 }
 
 void MachineState::resetTopRollovers() {

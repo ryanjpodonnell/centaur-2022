@@ -152,10 +152,10 @@ void PlayerState::increaseBonus(byte amountToAdd) {
 
 void PlayerState::increaseBonusMultiplier() {
   byte value = bonusMultiplier_ + 1;
-  if      (value == 2) g_soundHelper.playSound(SOUND_2X_COMPLETED);
-  else if (value == 3) g_soundHelper.playSound(SOUND_3X_COMPLETED);
-  else if (value == 4) g_soundHelper.playSound(SOUND_4X_COMPLETED);
-  else if (value == 5) g_soundHelper.playSound(SOUND_5X_COMPLETED);
+  if      (value == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_2X_COMPLETED);
+  else if (value == 3) g_soundHelper.playSoundWithoutInterruptions(SOUND_3X_COMPLETED);
+  else if (value == 4) g_soundHelper.playSoundWithoutInterruptions(SOUND_4X_COMPLETED);
+  else if (value == 5) g_soundHelper.playSoundWithoutInterruptions(SOUND_5X_COMPLETED);
 
   setBonusMultiplier(value);
 }

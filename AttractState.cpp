@@ -71,6 +71,8 @@ boolean Attract::featureShowEligible() {
 }
 
 boolean Attract::tauntEligible() {
+  if (featureShowRunning_) return false;
+
   return g_machineState.currentTime() - lastTaunt_ > TAUNT_TIMEOUT;
 }
 
