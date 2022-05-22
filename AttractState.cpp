@@ -89,6 +89,20 @@ void Attract::handleNewState() {
   score4_ = g_machineState.score(3);
 
   BSOS_SetDisplayCredits(g_machineState.credits());
+
+  byte switchHit;
+  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
+    switch (switchHit) {
+      case SW_COIN_1:
+      case SW_COIN_2:
+      case SW_COIN_3:
+        g_machineState.writeCoinToAudit(switchHit);
+        g_machineState.increaseCredits(true, 1);
+        break;
+    }
+
+    switchHit = BSOS_PullFirstFromSwitchStack();
+  }
 }
 
 void Attract::handleFeatureShow() {
@@ -136,7 +150,6 @@ void Attract::handleFeatureShow() {
         break;
     }
   }
-
 }
 
 void Attract::handleLightShow() {

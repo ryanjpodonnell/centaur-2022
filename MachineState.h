@@ -76,6 +76,7 @@ class MachineState {
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
     boolean       troughSwitchActivated();
+    boolean       unqualifyMode();
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
     byte          credits();
@@ -95,11 +96,13 @@ class MachineState {
     unsigned long hurryUpValue();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentSwitchHitTime();
+    unsigned long rightDropTargetsFinishedTime();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          decreaseModeMultiplier();
     void          decreaseNumberOfBallsInPlay();
+    void          dropRightDropTargets();
     void          flashOrbsDropTargetLamps();
     void          flashRightDropTargetLamps();
     void          hideAllPlayerLamps();
@@ -139,6 +142,7 @@ class MachineState {
     void          setMostRecentSwitchHitTime();
     void          setNumberOfPlayers(byte value);
     void          setPlayfieldValidated();
+    void          setRightDropTargetsFinishedTime();
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();

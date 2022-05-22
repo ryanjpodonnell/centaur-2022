@@ -19,6 +19,7 @@ class PlayerState {
     byte          modeMultiplier_;
     byte          selectedMode_;
     unsigned long lastFlash_;
+    unsigned long rightDropTargetsFinishedTime_;
     unsigned long score_;
     unsigned long tempScore_;
     boolean       guardianLights_[4];
@@ -44,12 +45,15 @@ class PlayerState {
     boolean       rightDropTargetsCompleted();
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
+    boolean       unqualifyMode();
     byte          bonus();
     byte          bonusMultiplier();
     byte          startQualifiedMode();
+    unsigned long rightDropTargetsFinishedTime();
     unsigned long score();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          decreaseModeMultiplier();
+    void          dropRightDropTargets();
     void          flashOrbsDropTargetLamps();
     void          flashRightDropTargetLamps();
     void          increaseBonus(byte amountToAdd = 1);
@@ -71,6 +75,7 @@ class PlayerState {
     void          rotateQualifiedMode();
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
+    void          setRightDropTargetsFinishedTime();
     void          setScore(unsigned long value);
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();

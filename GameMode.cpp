@@ -112,6 +112,10 @@ int GameMode::manageBallInTrough() {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
     g_soundHelper.stopAudio();
+    g_machineState.resetOrbsDropTargets(false);
+    g_machineState.resetTopRollovers();
+    g_machineState.unqualifyMode();
+
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
 }

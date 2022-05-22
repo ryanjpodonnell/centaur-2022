@@ -142,6 +142,10 @@ boolean MachineState::troughSwitchActivated() {
   return troughSwitchActivated_;
 }
 
+boolean MachineState::unqualifyMode() {
+  return currentPlayer_->unqualifyMode();
+}
+
 byte MachineState::bonus(byte player) {
   if (player == 0xFF) player = currentPlayerNumber();
   if (player == 0) return player1_.bonus();
@@ -222,12 +226,15 @@ int MachineState::initNewBall(bool curStateChanged) {
     g_lampsHelper.hideAllLamps();
     g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
     g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
-    g_machineState.resetTiltWarnings();
 
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, currentTime_ + 600);
+    resetTiltWarnings();
+    setRightDropTargetsFinishedTime();
+    dropRightDropTargets();
+
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, rightDropTargetsFinishedTime());
   }
 
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) || currentTime_ < rightDropTargetsFinishedTime()) {
     return MACHINE_STATE_INIT_NEW_BALL;
   } else {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -264,6 +271,10 @@ unsigned long MachineState::lastTiltWarningTime() {
 
 unsigned long MachineState::mostRecentSwitchHitTime() {
   return mostRecentSwitchHitTime_;
+}
+
+unsigned long MachineState::rightDropTargetsFinishedTime() {
+  return currentPlayer_->rightDropTargetsFinishedTime();
 }
 
 unsigned long MachineState::score(byte player) {
@@ -307,6 +318,10 @@ void MachineState::decreaseNumberOfBallsInPlay() {
   if (numberOfBallsInPlay_ == 1) return;
 
   numberOfBallsInPlay_ -= 1;
+}
+
+void MachineState::dropRightDropTargets() {
+  currentPlayer_->dropRightDropTargets();
 }
 
 void MachineState::flashOrbsDropTargetLamps() {
@@ -481,6 +496,10 @@ void MachineState::setNumberOfPlayers(byte value) {
 
 void MachineState::setPlayfieldValidated() {
   playfieldValidated_ = true;
+}
+
+void MachineState::setRightDropTargetsFinishedTime() {
+  currentPlayer_->setRightDropTargetsFinishedTime();
 }
 
 void MachineState::setScore(unsigned long value, byte player) {
