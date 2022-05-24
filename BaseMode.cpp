@@ -30,7 +30,10 @@ int Base::run(byte switchHit) {
       if (g_machineState.currentBallInPlay() == 1) {
         g_machineState.increaseNumberOfPlayers();
       } else if (g_machineState.resetPlayers()) {
-        returnState = MACHINE_STATE_INIT_GAMEPLAY;
+        BSOS_DisableSolenoidStack();
+        BSOS_SetDisableFlippers(true);
+        BSOS_SetDisplayCredits(g_machineState.credits());
+        g_gameMode.startBonusLightsShow();
       }
 
       break;

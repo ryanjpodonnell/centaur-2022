@@ -4,8 +4,12 @@ GameMode::GameMode() {
   gameModeId_             = GAME_MODE_INITIALIZE;
   gameModeChanged_        = true;
 
+  bonusShowRunning_       = false;
   pushingBallFromOutlane_ = false;
   scoreIncreased_         = false;
+
+  bonusLightShowEndTime_  = 0;
+  lastFlash_              = 0;
 }
 
 boolean GameMode::scoreIncreased() {
@@ -14,6 +18,17 @@ boolean GameMode::scoreIncreased() {
 
 int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) handleNewMode();
+
+  if (bonusLightShowEndTime_ && g_machineState.currentTime() > bonusLightShowEndTime_) {
+    bonusLightShowEndTime_ = 0;
+    bonusShowRunning_      = false;
+    return MACHINE_STATE_INIT_GAMEPLAY;
+  }
+
+  if (bonusShowRunning_) {
+    handleBonusLightShow();
+    return MACHINE_STATE_NORMAL_GAMEPLAY;
+  }
 
   handlePlayerScore();
   handlePlayerBonusLamps();
@@ -41,6 +56,13 @@ void GameMode::setGameMode(byte id) {
 
 void GameMode::setScoreIncreased(boolean value) {
   scoreIncreased_ = value;
+}
+
+void GameMode::startBonusLightsShow() {
+  bonusLightShowEndTime_ = g_machineState.currentTime() + 1800;
+  g_soundHelper.stopAudio();
+  g_soundHelper.playSound(SOUND_BONUS);
+  bonusShowRunning_ = true;
 }
 
 /*********************************************************************
@@ -180,6 +202,23 @@ int GameMode::runGameModes() {
   if (!executedSwitchStack) runGameMode(0xFF);
 
   return returnState;
+}
+
+void GameMode::handleBonusLightShow() {
+  unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
+
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+    byte numberOfSteps = 5;
+    byte currentStep = seed % numberOfSteps;
+
+    g_lampsHelper.hideAllLamps();
+    if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);
+    if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2);
+    if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3);
+    if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4);
+    if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5);
+  }
 }
 
 void GameMode::handleNewMode() {

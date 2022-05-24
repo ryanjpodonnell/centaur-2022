@@ -11,11 +11,14 @@
 
 class GameMode {
   private:
+    boolean       bonusShowRunning_;
     boolean       gameModeChanged_;
     boolean       pushingBallFromOutlane_;
     boolean       scoreIncreased_;
     byte          gameModeId_;
     unsigned long ballTimeInTrough_;
+    unsigned long bonusLightShowEndTime_;
+    unsigned long lastFlash_;
 
     boolean ballSaveActive();
     boolean ballSaveLampActive();
@@ -24,6 +27,7 @@ class GameMode {
     int     manageTilt();
     int     runGameLoop();
     int     runGameModes();
+    void    handleBonusLightShow();
     void    handleNewMode();
     void    handlePlayerBonusLamps();
     void    handlePlayerScore();
@@ -37,6 +41,7 @@ class GameMode {
     int           run(boolean curStateChanged);
     void          setGameMode(byte id);
     void          setScoreIncreased(boolean value);
+    void          startBonusLightsShow();
 };
 
 #endif
