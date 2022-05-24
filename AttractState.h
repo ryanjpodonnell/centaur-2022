@@ -6,9 +6,11 @@
 
 class Attract {
   private:
+    boolean       bonusShowRunning_;
     boolean       featureShowRunning_;
     boolean       updateScores_;
     byte          currentFeatureCycle_;
+    unsigned long bonusLightShowEndTime_;
     unsigned long currentFlashCycle_;
     unsigned long featureShowStartedTime_;
     unsigned long lastFlash_;
@@ -20,9 +22,11 @@ class Attract {
 
     boolean       featureShowEligible();
     boolean       tauntEligible();
+    void          handleBonusLightShow();
     void          handleFeatureShow();
     void          handleLightShow();
     void          handleNewState();
+    void          startBonusLightsShow();
     void          startFeatureShow();
 
   public:

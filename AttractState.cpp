@@ -1,6 +1,7 @@
 #include "SharedVariables.h"
 
 Attract::Attract() {
+  bonusLightShowEndTime_  = 0;
   currentFeatureCycle_    = 0;
   currentFlashCycle_      = 0;
   featureShowStartedTime_ = 0;
@@ -8,6 +9,7 @@ Attract::Attract() {
   lastTaunt_              = 0;
 
   updateScores_       = true;
+  bonusShowRunning_   = false;
   featureShowRunning_ = false;
 }
 
@@ -16,6 +18,8 @@ int Attract::run(int curState, boolean curStateChanged) {
 
   if (featureShowRunning_) {
     handleFeatureShow();
+  } else if (bonusShowRunning_) {
+    handleBonusLightShow();
   } else {
     handleLightShow();
   }
@@ -26,10 +30,7 @@ int Attract::run(int curState, boolean curStateChanged) {
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
     case(SW_CREDIT_BUTTON):
-      if (g_machineState.resetPlayers()) {
-        featureShowRunning_ = false;
-        returnState         = MACHINE_STATE_INIT_GAMEPLAY;
-      }
+      if (g_machineState.resetPlayers()) startBonusLightsShow();
       break;
     case SW_COIN_1:
     case SW_COIN_2:
@@ -45,9 +46,8 @@ int Attract::run(int curState, boolean curStateChanged) {
       }
       break;
     case SW_RIGHT_FLIPPER_BUTTON:
-      if (featureShowEligible()) {
-        startFeatureShow();
-      } else if (tauntEligible()) {
+      if (featureShowEligible()) startFeatureShow();
+      else if (tauntEligible()) {
         g_soundHelper.playSound(SOUND_HA_HA_HA);
         lastTaunt_ = g_machineState.currentTime();
       }
@@ -55,6 +55,13 @@ int Attract::run(int curState, boolean curStateChanged) {
     }
 
     switchHit = BSOS_PullFirstFromSwitchStack();
+  }
+
+  if (bonusLightShowEndTime_ && g_machineState.currentTime() > bonusLightShowEndTime_) {
+    bonusLightShowEndTime_ = 0;
+    bonusShowRunning_      = false;
+    featureShowRunning_    = false;
+    returnState            = MACHINE_STATE_INIT_GAMEPLAY;
   }
 
   return returnState;
@@ -74,6 +81,23 @@ boolean Attract::tauntEligible() {
   if (featureShowRunning_) return false;
 
   return g_machineState.currentTime() - lastTaunt_ > TAUNT_TIMEOUT;
+}
+
+void Attract::handleBonusLightShow() {
+  unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
+
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+    byte numberOfSteps = 5;
+    byte currentStep = seed % numberOfSteps;
+
+    g_lampsHelper.hideAllLamps();
+    if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);
+    if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2);
+    if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3);
+    if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4);
+    if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5);
+  }
 }
 
 void Attract::handleNewState() {
@@ -209,6 +233,12 @@ void Attract::handleLightShow() {
     if (currentStep == 14) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_13);
     if (currentStep == 15) g_lampsHelper.showLamps(LAMP_COLLECTION_RING_14);
   }
+}
+
+void Attract::startBonusLightsShow() {
+  bonusLightShowEndTime_ = g_machineState.currentTime() + 1800;
+  g_soundHelper.playSound(SOUND_BONUS);
+  bonusShowRunning_ = true;
 }
 
 void Attract::startFeatureShow() {
