@@ -2,6 +2,7 @@
 
 Attract          g_attract;
 Base             g_base;
+BonusLightShow   g_bonusLightShow;
 CountdownBonus   g_countdownBonus;
 Debug            g_debug;
 DisplayHelper    g_displayHelper;

@@ -3,6 +3,7 @@
 #include "BSOS_Config.h"
 #include "BallySternOS.h"
 #include "BaseMode.h"
+#include "BonusLightShow.h"
 #include "CountdownBonusState.h"
 #include "Debug.h"
 #include "Display.h"
@@ -25,6 +26,7 @@
 
 extern Attract          g_attract;
 extern Base             g_base;
+extern BonusLightShow   g_bonusLightShow;
 extern CountdownBonus   g_countdownBonus;
 extern Debug            g_debug;
 extern DisplayHelper    g_displayHelper;

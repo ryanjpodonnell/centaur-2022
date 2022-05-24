@@ -33,7 +33,7 @@ int Base::run(byte switchHit) {
         BSOS_DisableSolenoidStack();
         BSOS_SetDisableFlippers(true);
         BSOS_SetDisplayCredits(g_machineState.credits());
-        g_gameMode.startBonusLightsShow();
+        g_bonusLightShow.start();
       }
 
       break;

@@ -26,7 +26,7 @@ int CountdownBonus::run(boolean curStateChanged) {
   if (!countdownEndTime_) {
     g_machineState.updateBonusLamps();
   } else {
-    handleBonusLightShow();
+    g_bonusLightShow.run();
   }
 
   if (countdownEndTime_ && g_machineState.currentTime() > countdownEndTime_) return MACHINE_STATE_BALL_OVER;
@@ -59,23 +59,6 @@ void CountdownBonus::countdownBonusStep() {
 
   if (!g_machineState.bonus() && !countdownEndTime_) {
     countdownEndTime_ = g_machineState.currentTime() + 1800;
-  }
-}
-
-void CountdownBonus::handleBonusLightShow() {
-  unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
-
-  if (seed != lastFlash_) {
-    lastFlash_ = seed;
-    byte numberOfSteps = 5;
-    byte currentStep = seed % numberOfSteps;
-
-    g_lampsHelper.hideAllLamps();
-    if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);
-    if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2);
-    if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3);
-    if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4);
-    if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5);
   }
 }
 

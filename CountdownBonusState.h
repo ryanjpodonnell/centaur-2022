@@ -13,7 +13,6 @@ class CountdownBonus {
 
     void addBonusToScore();
     void countdownBonusStep();
-    void handleBonusLightShow();
     void handleNewState();
 
   public:
