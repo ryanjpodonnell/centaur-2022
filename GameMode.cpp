@@ -188,6 +188,8 @@ void GameMode::handleNewMode() {
 
   g_soundHelper.stopAudio();
   g_soundHelper.playSound(SOUND_CONTINIOUS_DRONE);
+  if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
+
   g_machineState.increaseBonus(1);
 
   setGameMode(GAME_MODE_SKILL_SHOT);

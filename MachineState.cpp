@@ -50,6 +50,11 @@ boolean MachineState::currentPlayerTilted() {
   return numberOfTiltWarnings_ > MAXIMUM_NUMBER_OF_TILT_WARNINGS;
 }
 
+boolean MachineState::firstBallActive() {
+  return g_machineState.currentPlayerNumber() == 0 &&
+         g_machineState.currentBallInPlay()   == 1;
+}
+
 boolean MachineState::guardianRolloversCompleted() {
   return currentPlayer_->guardianRolloversCompleted();
 }

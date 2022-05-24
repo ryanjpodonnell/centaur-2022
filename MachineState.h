@@ -61,6 +61,7 @@ class MachineState {
     boolean       ballSaveActivated();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
+    boolean       firstBallActive();
     boolean       guardianRolloversCompleted();
     boolean       hurryUpActivated();
     boolean       increaseNumberOfPlayers();

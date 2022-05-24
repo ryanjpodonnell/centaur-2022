@@ -16,10 +16,10 @@ Attract::Attract() {
 int Attract::run(int curState, boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
-  if (featureShowRunning_) {
-    handleFeatureShow();
-  } else if (bonusShowRunning_) {
+  if (bonusShowRunning_) {
     handleBonusLightShow();
+  } else if (featureShowRunning_) {
+    handleFeatureShow();
   } else {
     handleLightShow();
   }
