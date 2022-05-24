@@ -13,7 +13,7 @@ Attract::Attract() {
   featureShowRunning_ = false;
 }
 
-int Attract::run(int curState, boolean curStateChanged) {
+int Attract::run(boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
   if (bonusShowRunning_) {
@@ -24,7 +24,7 @@ int Attract::run(int curState, boolean curStateChanged) {
     handleLightShow();
   }
 
-  int returnState = curState;
+  int returnState = MACHINE_STATE_ATTRACT;
   byte switchHit  = BSOS_PullFirstFromSwitchStack();
 
   while (switchHit != SWITCH_STACK_EMPTY) {

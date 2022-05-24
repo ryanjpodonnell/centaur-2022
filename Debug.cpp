@@ -4,13 +4,13 @@ Debug::Debug() {
   stateStartedTime_ = 0;
 }
 
-int Debug::run(int curState, boolean curStateChanged) {
+int Debug::run(boolean curStateChanged) {
   if (curStateChanged) handleNewState();
 
   unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
   if (timeSinceStateStarted >= 3000) return MACHINE_STATE_ATTRACT;
 
-  return curState;
+  return MACHINE_STATE_DEBUG;
 }
 
 void Debug::handleNewState() {

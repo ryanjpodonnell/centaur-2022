@@ -55,10 +55,10 @@ void loop() {
     machineState = g_selfTestAndAudit.run(machineState, machineStateChanged);
 
   } else if (machineState == MACHINE_STATE_DEBUG) {
-    machineState = g_debug.run(machineState, machineStateChanged);
+    machineState = g_debug.run(machineStateChanged);
 
   } else if (machineState == MACHINE_STATE_ATTRACT) {
-    machineState = g_attract.run(machineState, machineStateChanged);
+    machineState = g_attract.run(machineStateChanged);
 
   } else if (machineState == MACHINE_STATE_INIT_GAMEPLAY) {
     machineState = g_machineState.initGamePlay();

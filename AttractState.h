@@ -32,7 +32,7 @@ class Attract {
   public:
     Attract();
 
-    int run(int currentState, boolean currentStateChanged);
+    int run(boolean currentStateChanged);
 };
 
 #endif
