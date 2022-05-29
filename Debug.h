@@ -8,7 +8,7 @@ class Debug {
   private:
     unsigned long stateStartedTime_;
 
-    void handleNewState();
+    void manageNewState();
 
   public:
     Debug();

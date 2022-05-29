@@ -6,10 +6,10 @@ UnstructuredPlay::UnstructuredPlay() {
 }
 
 byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
-  if (gameModeChanged) handleNewMode();
+  if (gameModeChanged) manageNewMode();
   int returnState = GAME_MODE_UNSTRUCTURED_PLAY;
 
-  if (g_machineState.hurryUpActivated()) handleHurryUp();
+  if (g_machineState.hurryUpActivated()) manageHurryUp();
 
   switch (switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
@@ -154,7 +154,7 @@ void UnstructuredPlay::endHurryUp() {
   g_machineState.updateGuardianRolloverLamps();
 }
 
-void UnstructuredPlay::handleHurryUp() {
+void UnstructuredPlay::manageHurryUp() {
   if (!g_machineState.hurryUpActivated()) return;
   updateHurryUpValue();
 
@@ -172,7 +172,7 @@ void UnstructuredPlay::handleHurryUp() {
   }
 }
 
-void UnstructuredPlay::handleNewMode() {
+void UnstructuredPlay::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
   g_machineState.showAllPlayerLamps();
 }

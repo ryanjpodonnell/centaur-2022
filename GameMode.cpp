@@ -13,21 +13,12 @@ boolean GameMode::scoreIncreased() {
 }
 
 int GameMode::run(boolean curStateChanged) {
-  if (curStateChanged) handleNewMode();
+  if (curStateChanged) manageNewMode();
+  if (gameModeId_ == GAME_MODE_RESTART_GAME) return manageGameRestart();
 
-  if (g_bonusLightShow.ended()) {
-    g_bonusLightShow.end();
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  }
-
-  if (g_bonusLightShow.running()) {
-    g_bonusLightShow.run();
-    return MACHINE_STATE_NORMAL_GAMEPLAY;
-  }
-
-  handlePlayerScore();
-  handlePlayerBonusLamps();
-  handleShootAgainLamp();
+  managePlayerScore();
+  managePlayerBonusLamps();
+  manageShootAgainLamp();
 
   int returnState = runGameLoop();
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
@@ -70,6 +61,21 @@ boolean GameMode::ballSaveLampActive() {
 
   return (g_machineState.currentTime() - g_machineState.currentBallFirstSwitchHitTime())
     < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
+}
+
+int GameMode::manageGameRestart() {
+  if (g_bonusLightShow.ended()) {
+    g_bonusLightShow.end();
+    return MACHINE_STATE_INIT_GAMEPLAY;
+  }
+
+  if (g_bonusLightShow.running()) {
+    g_bonusLightShow.run();
+  } else {
+    g_bonusLightShow.start();
+  }
+
+  return MACHINE_STATE_NORMAL_GAMEPLAY;
 }
 
 int GameMode::manageBallInTrough() {
@@ -192,7 +198,7 @@ int GameMode::runGameModes() {
   return returnState;
 }
 
-void GameMode::handleNewMode() {
+void GameMode::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
   while (BSOS_PullFirstFromSwitchStack() != SWITCH_STACK_EMPTY) {}
 
@@ -205,11 +211,11 @@ void GameMode::handleNewMode() {
   setGameMode(GAME_MODE_SKILL_SHOT);
 }
 
-void GameMode::handlePlayerBonusLamps() {
+void GameMode::managePlayerBonusLamps() {
   g_machineState.updateBonusLamps();
 }
 
-void GameMode::handlePlayerScore() {
+void GameMode::managePlayerScore() {
   boolean shouldFlashScore = g_machineState.playfieldValidated() ? false : true;
   boolean shouldDashScore  =
     g_machineState.playfieldValidated() &&
@@ -218,7 +224,7 @@ void GameMode::handlePlayerScore() {
   g_machineState.updatePlayerScore(shouldFlashScore, shouldDashScore);
 }
 
-void GameMode::handleShootAgainLamp() {
+void GameMode::manageShootAgainLamp() {
   if (!BALL_SAVE_NUMBER_OF_SECONDS) return;
 
   if (!g_machineState.ballSaveActivated()) {

@@ -8,7 +8,7 @@ class SkillShot {
     unsigned long scoreValue_;
 
     byte checkRollover(byte switchHit);
-    void handleNewMode();
+    void manageNewMode();
 
   public:
     SkillShot();

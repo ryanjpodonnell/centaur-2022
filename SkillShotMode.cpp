@@ -3,7 +3,7 @@
 SkillShot::SkillShot() {}
 
 byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
-  if (gameModeChanged) handleNewMode();
+  if (gameModeChanged) manageNewMode();
   byte newGameMode = GAME_MODE_SKILL_SHOT;
 
   switch(switchHit) {
@@ -71,7 +71,7 @@ byte SkillShot::checkRollover(byte switchHit) {
   return GAME_MODE_UNSTRUCTURED_PLAY;
 }
 
-void SkillShot::handleNewMode() {
+void SkillShot::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Skill Shot Mode\n\r");
   g_machineState.hideAllPlayerLamps();
 

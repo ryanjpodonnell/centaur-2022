@@ -12,14 +12,14 @@ Attract::Attract() {
 }
 
 int Attract::run(boolean curStateChanged) {
-  if (curStateChanged) handleNewState();
+  if (curStateChanged) manageNewState();
 
   if (g_bonusLightShow.running()) {
     g_bonusLightShow.run();
   } else if (featureShowRunning_) {
-    handleFeatureShow();
+    manageFeatureShow();
   } else {
-    handleLightShow();
+    manageLightShow();
   }
 
   int returnState = MACHINE_STATE_ATTRACT;
@@ -80,7 +80,7 @@ boolean Attract::tauntEligible() {
   return g_machineState.currentTime() - lastTaunt_ > TAUNT_TIMEOUT;
 }
 
-void Attract::handleNewState() {
+void Attract::manageNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Attract State\n\r");
 
   BSOS_DisableSolenoidStack();
@@ -109,7 +109,7 @@ void Attract::handleNewState() {
   }
 }
 
-void Attract::handleFeatureShow() {
+void Attract::manageFeatureShow() {
   unsigned long timeSinceStateStarted = g_machineState.currentTime() - featureShowStartedTime_;
 
   byte          featureCycle = 0;
@@ -156,7 +156,7 @@ void Attract::handleFeatureShow() {
   }
 }
 
-void Attract::handleLightShow() {
+void Attract::manageLightShow() {
   unsigned long seed      = g_machineState.currentTime() / 100;   // .10 seconds
   unsigned long cycleSeed = g_machineState.currentTime() / 10000; // 10 seconds
 

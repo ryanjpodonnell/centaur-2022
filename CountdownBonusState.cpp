@@ -10,7 +10,7 @@ CountdownBonus::CountdownBonus() {
 }
 
 int CountdownBonus::run(boolean curStateChanged) {
-  if (curStateChanged) handleNewState();
+  if (curStateChanged) manageNewState();
 
   unsigned long timeSinceStateStarted         = g_machineState.currentTime() - stateStartedTime_;
   unsigned long timeSinceStepDuractionChanged = g_machineState.currentTime() - stepDurationChangedTime_;
@@ -62,7 +62,7 @@ void CountdownBonus::countdownBonusStep() {
   }
 }
 
-void CountdownBonus::handleNewState() {
+void CountdownBonus::manageNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Countdown Bonus State\n\r");
 
   BSOS_DisableSolenoidStack();

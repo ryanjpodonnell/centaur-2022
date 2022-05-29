@@ -13,8 +13,8 @@ class UnstructuredPlay {
     unsigned long lastFlash_;
 
     void          endHurryUp();
-    void          handleHurryUp();
-    void          handleNewMode();
+    void          manageHurryUp();
+    void          manageNewMode();
     void          startHurryUp(unsigned long value, int seconds);
     void          updateHurryUpValue();
 

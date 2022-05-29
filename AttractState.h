@@ -20,10 +20,10 @@ class Attract {
 
     boolean       featureShowEligible();
     boolean       tauntEligible();
-    void          handleBonusLightShow();
-    void          handleFeatureShow();
-    void          handleLightShow();
-    void          handleNewState();
+    void          manageBonusLightShow();
+    void          manageFeatureShow();
+    void          manageLightShow();
+    void          manageNewState();
     void          startFeatureShow();
 
   public:

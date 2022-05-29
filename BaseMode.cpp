@@ -33,7 +33,7 @@ int Base::run(byte switchHit) {
         BSOS_DisableSolenoidStack();
         BSOS_SetDisableFlippers(true);
         BSOS_SetDisplayCredits(g_machineState.credits());
-        g_bonusLightShow.start();
+        g_gameMode.setGameMode(GAME_MODE_RESTART_GAME);
       }
 
       break;
@@ -42,8 +42,8 @@ int Base::run(byte switchHit) {
     case SW_TOP_MIDDLE_LANE:
     case SW_TOP_RIGHT_LANE:
       g_soundHelper.playSound(SOUND_TOP_ROLLOVER);
-      handleSignificantSwitchHit();
-      handleDefaultScoringLogic(500);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(500);
       break;
 
     case SW_LEFT_OUTLANE:
@@ -51,15 +51,15 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_OUTLANE:
     case SW_RIGHT_RETURN_LANE:
       g_soundHelper.playSound(SOUND_BOTTOM_ROLLOVER);
-      handleSignificantSwitchHit();
-      handleDefaultScoringLogic(5000);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(5000);
       break;
 
     case SW_LEFT_THUMPER_BUMPER:
     case SW_RIGHT_THUMPER_BUMPER:
       g_soundHelper.playSound(SOUND_THUMPER_BUMPER);
-      handleSignificantSwitchHit();
-      handleDefaultScoringLogic(1000);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(1000);
       break;
 
     case SW_O_DROP_TARGET:
@@ -68,15 +68,15 @@ int Base::run(byte switchHit) {
     case SW_S_DROP_TARGET:
       g_soundHelper.playSound(SOUND_DROP_TARGET);
       g_machineState.increaseBonus(1);
-      handleSignificantSwitchHit();
-      handleDefaultScoringLogic(1000);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(1000);
       break;
 
     case SW_LEFT_SLINGSHOT:
     case SW_RIGHT_SLINGSHOT:
       g_soundHelper.playSound(SOUND_SLINGSHOT);
-      handleSignificantSwitchHit();
-      handleDefaultScoringLogic(10);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(10);
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
@@ -94,8 +94,8 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_4:
     case SW_TOP_LEFT_LANE_RO_BUTTON:
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
-      handleSignificantSwitchHit();
-      handleDefaultScoringLogic(10);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(10);
 
       break;
   }
@@ -106,11 +106,11 @@ int Base::run(byte switchHit) {
 /*********************************************************************
     Private
 *********************************************************************/
-void Base::handleDefaultScoringLogic(unsigned long value) {
+void Base::manageDefaultScoringLogic(unsigned long value) {
   if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(value);
 }
 
-void Base::handleSignificantSwitchHit() {
+void Base::manageSignificantSwitchHit() {
   g_machineState.setMostRecentSwitchHitTime();
   if (!g_machineState.playfieldValidated()) {
     g_machineState.setPlayfieldValidated();

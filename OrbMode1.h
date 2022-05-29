@@ -9,7 +9,7 @@ class OrbMode1 {
     byte totalSeconds_;
     unsigned long modeStartedTime_;
 
-    void handleNewMode();
+    void manageNewMode();
 
   public:
     OrbMode1();

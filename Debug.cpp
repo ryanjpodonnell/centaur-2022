@@ -5,7 +5,7 @@ Debug::Debug() {
 }
 
 int Debug::run(boolean curStateChanged) {
-  if (curStateChanged) handleNewState();
+  if (curStateChanged) manageNewState();
 
   unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
   if (timeSinceStateStarted >= 3000) return MACHINE_STATE_ATTRACT;
@@ -13,7 +13,7 @@ int Debug::run(boolean curStateChanged) {
   return MACHINE_STATE_DEBUG;
 }
 
-void Debug::handleNewState() {
+void Debug::manageNewState() {
   stateStartedTime_ = g_machineState.currentTime();
 
   if (DEBUG_MESSAGES) {
