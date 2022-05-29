@@ -1,7 +1,6 @@
 #include "SharedVariables.h"
 
 CountdownBonus::CountdownBonus() {
-  countdownEndTime_ = 0;
   lastDecrease_     = 0;
   lastFlash_        = 0;
   stateStartedTime_ = 0;
@@ -20,16 +19,24 @@ int CountdownBonus::run(boolean curStateChanged) {
     stepDurationChangedTime_ = g_machineState.currentTime();
   }
 
-  if (timeSinceStateStarted > 1000) countdownBonusStep();
+  if (timeSinceStateStarted < 1000) return MACHINE_STATE_COUNTDOWN_BONUS;
 
-  g_machineState.updatePlayerScore();
-  if (!countdownEndTime_) {
-    g_machineState.updateBonusLamps();
-  } else {
-    g_bonusLightShow.run();
+  if (g_machineState.bonus()) {
+    countdownBonusStep();
+    return MACHINE_STATE_COUNTDOWN_BONUS;
   }
 
-  if (countdownEndTime_ && g_machineState.currentTime() > countdownEndTime_) return MACHINE_STATE_BALL_OVER;
+  if (g_bonusLightShow.ended()) {
+    g_bonusLightShow.end();
+    return MACHINE_STATE_BALL_OVER;
+  }
+
+  if (g_bonusLightShow.running()) {
+    g_bonusLightShow.run();
+  } else {
+    g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
+  }
+
   return MACHINE_STATE_COUNTDOWN_BONUS;
 }
 
@@ -54,11 +61,9 @@ void CountdownBonus::countdownBonusStep() {
 
       g_soundHelper.playSound(SOUND_BONUS);
       g_machineState.decreaseBonus(1);
+      g_machineState.updateBonusLamps();
+      g_machineState.updatePlayerScore();
     }
-  }
-
-  if (!g_machineState.bonus() && !countdownEndTime_) {
-    countdownEndTime_ = g_machineState.currentTime() + 1800;
   }
 }
 
@@ -70,7 +75,6 @@ void CountdownBonus::manageNewState() {
   BSOS_SetDisplayCredits(g_machineState.credits());
   g_lampsHelper.hideAllLamps();
 
-  countdownEndTime_        = 0;
   lastDecrease_            = 0;
   lastFlash_               = 0;
   stateStartedTime_        = g_machineState.currentTime();

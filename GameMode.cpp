@@ -72,7 +72,7 @@ int GameMode::manageGameRestart() {
   if (g_bonusLightShow.running()) {
     g_bonusLightShow.run();
   } else {
-    g_bonusLightShow.start();
+    g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
   }
 
   return MACHINE_STATE_NORMAL_GAMEPLAY;
