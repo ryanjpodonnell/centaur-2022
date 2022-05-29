@@ -17,8 +17,8 @@ int GameMode::run(boolean curStateChanged) {
   if (gameModeId_ == GAME_MODE_RESTART_GAME) return manageGameRestart();
 
   managePlayerScore();
-  managePlayerBonusLamps();
   manageShootAgainLamp();
+  if (!g_bonusLightShow.running()) managePlayerBonusLamps();
 
   int returnState = runGameLoop();
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {

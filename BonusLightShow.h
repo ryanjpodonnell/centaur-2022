@@ -6,7 +6,7 @@
 
 static int showDurations_[] = {
   1800, // 0
-  1000  // 1
+  3000  // 1
 };
 
 class BonusLightShow {

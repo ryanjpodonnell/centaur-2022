@@ -10,6 +10,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
   int returnState = GAME_MODE_UNSTRUCTURED_PLAY;
 
   if (g_machineState.hurryUpActivated()) manageHurryUp();
+  if (g_bonusLightShow.running())        g_bonusLightShow.run();
+  if (g_bonusLightShow.ended())          g_bonusLightShow.end();
 
   switch (switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
@@ -72,6 +74,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
         if (g_machineState.rightDropTargetsCompleted() && g_machineState.qualifyModeMultiplier()) {
           g_machineState.updateRightDropTargetResetLamp();
+          g_bonusLightShow.start(BONUS_LIGHT_SHOW_RESET_1_THROUGH_4_ARROW);
         }
       } else {
         g_machineState.resetRightDropTargets(true);

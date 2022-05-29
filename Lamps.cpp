@@ -57,6 +57,14 @@ void LampsHelper::showLamps(byte lampCollection, bool flash) {
   }
 }
 
+void LampsHelper::showLampsWithSeed(byte lampCollection, byte seed) {
+  byte* pointer = lampsPointer(lampCollection);
+
+  for(byte i = 0; i <= seed; i++) {
+    showLamp(pointer[i]);
+  }
+}
+
 
 /*********************************************************************
     Private
@@ -156,6 +164,9 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
       break;
     case LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5:
       pointer = bonusCountdownStep5_;
+      break;
+    case LAMP_COLLECTION_BONUS_RESET_ARROW:
+      pointer = bonusResetArrow_;
       break;
   }
 

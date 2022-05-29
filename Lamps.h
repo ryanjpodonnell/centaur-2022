@@ -99,6 +99,7 @@
 #define LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3   28
 #define LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4   29
 #define LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5   30
+#define LAMP_COLLECTION_BONUS_RESET_ARROW        31
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -405,6 +406,17 @@ static byte bonusCountdownStep5_[] = {
   LAMP_TERMINATOR
 };
 
+static byte bonusResetArrow_[] = {
+  LAMP_4K_BONUS,
+  LAMP_5X_BONUS,
+  LAMP_40K_BONUS,
+  LAMP_2X_BONUS,
+  LAMP_8K_BONUS,
+  LAMP_9K_BONUS,
+  LAMP_10K_BONUS,
+  LAMP_TERMINATOR
+};
+
 static byte descendingBonusValues_[] = {
   60,
   40,
@@ -452,6 +464,7 @@ class LampsHelper {
     void showBonusMultiplierLamps(byte value);
     void showLamp(byte lamp, bool flash = false);
     void showLamps(byte lampCollection, bool flash = false);
+    void showLampsWithSeed(byte lampCollection, byte seed = 0xFF);
 };
 
 #endif

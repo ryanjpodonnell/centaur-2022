@@ -18,6 +18,8 @@ boolean BonusLightShow::running() {
 void BonusLightShow::end() {
   endTime_ = 0;
   running_ = false;
+
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
 }
 
 void BonusLightShow::run() {
@@ -49,15 +51,17 @@ void BonusLightShow::start(byte lightShowId) {
 *********************************************************************/
 void BonusLightShow::manageResetArrowShow(unsigned long seed) {
   lastFlash_          = seed;
-  byte numberOfSteps  = 5;
+  byte numberOfSteps  = 6;
   byte currentStep    = seed % numberOfSteps;
 
-  g_lampsHelper.hideAllLamps();
-  if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);
-  if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2);
-  if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3);
-  if (currentStep == 3) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4);
-  if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
+  if (currentStep == 0) {
+    return;
+  } else if (currentStep < 5) {
+    g_lampsHelper.showLampsWithSeed(LAMP_COLLECTION_BONUS_RESET_ARROW, currentStep);
+  } else {
+    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RESET_ARROW);
+  }
 }
 
 void BonusLightShow::manageSpinShow(unsigned long seed) {
