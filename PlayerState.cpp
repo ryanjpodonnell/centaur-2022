@@ -52,6 +52,13 @@ boolean PlayerState::modeMultiplierQualified() {
   return modeMultiplierQualified_;
 }
 
+boolean PlayerState::orbsDropTargetsAllStanding() {
+  return orbsDropTargets_[0] == false &&
+         orbsDropTargets_[1] == false &&
+         orbsDropTargets_[2] == false &&
+         orbsDropTargets_[3] == false;
+}
+
 boolean PlayerState::orbsDropTargetsCompleted() {
   return orbsDropTargets_[0] == true &&
          orbsDropTargets_[1] == true &&
@@ -73,6 +80,13 @@ boolean PlayerState::qualifyModeMultiplier() {
   modeMultiplierQualified_ = true;
 
   return true;
+}
+
+boolean PlayerState::rightDropTargetsAllStanding() {
+  return rightDropTargets_[0] == false &&
+         rightDropTargets_[1] == false &&
+         rightDropTargets_[2] == false &&
+         rightDropTargets_[3] == false;
 }
 
 boolean PlayerState::rightDropTargetsCompleted() {

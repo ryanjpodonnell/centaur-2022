@@ -96,7 +96,6 @@ int Base::run(byte switchHit) {
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       manageSignificantSwitchHit();
       manageDefaultScoringLogic(10);
-
       break;
   }
 
@@ -111,6 +110,7 @@ void Base::manageDefaultScoringLogic(unsigned long value) {
 }
 
 void Base::manageSignificantSwitchHit() {
+  g_gameMode.resetIndicatorPlayed();
   g_machineState.setMostRecentSwitchHitTime();
   if (!g_machineState.playfieldValidated()) {
     g_machineState.setPlayfieldValidated();

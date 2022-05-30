@@ -77,6 +77,7 @@ void loop() {
     machineState = g_machineState.initNewBall(machineStateChanged);
 
   } else if (machineState == MACHINE_STATE_BALL_OVER && !g_machineState.samePlayerShootsAgain()) {
+    if (DEBUG_MESSAGES) Serial.write("Increasing Current Player\n\r");
     machineState = g_machineState.increaseCurrentPlayer();
   }
 

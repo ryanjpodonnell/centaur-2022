@@ -56,7 +56,6 @@ int Attract::run(boolean curStateChanged) {
   }
 
   if (g_bonusLightShow.ended()) {
-    g_bonusLightShow.end();
     featureShowRunning_ = false;
     returnState         = MACHINE_STATE_INIT_GAMEPLAY;
   }
@@ -82,6 +81,8 @@ boolean Attract::tauntEligible() {
 
 void Attract::manageNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Attract State\n\r");
+
+  g_bonusLightShow.reset();
 
   BSOS_DisableSolenoidStack();
   BSOS_TurnOffAllLamps();

@@ -6,6 +6,7 @@ GameMode::GameMode() {
 
   pushingBallFromOutlane_ = false;
   scoreIncreased_         = false;
+  indicatorPlayed_        = false;
 }
 
 boolean GameMode::scoreIncreased() {
@@ -17,8 +18,9 @@ int GameMode::run(boolean curStateChanged) {
   if (gameModeId_ == GAME_MODE_RESTART_GAME) return manageGameRestart();
 
   managePlayerScore();
+  manageShotIndicatorShow();
   manageShootAgainLamp();
-  if (!g_bonusLightShow.running()) managePlayerBonusLamps();
+  managePlayerBonusLamps();
 
   int returnState = runGameLoop();
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
@@ -64,15 +66,14 @@ boolean GameMode::ballSaveLampActive() {
 }
 
 int GameMode::manageGameRestart() {
-  if (g_bonusLightShow.ended()) {
-    g_bonusLightShow.end();
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  }
-
   if (g_bonusLightShow.running()) {
     g_bonusLightShow.run();
   } else {
     g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
+  }
+
+  if (g_bonusLightShow.ended()) {
+    return MACHINE_STATE_INIT_GAMEPLAY;
   }
 
   return MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -127,10 +128,13 @@ int GameMode::manageBallInTrough() {
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
-    g_soundHelper.stopAudio();
+    if (g_bonusLightShow.running()) g_bonusLightShow.end();
+    g_bonusLightShow.reset();
+
     g_machineState.resetOrbsDropTargets(false);
     g_machineState.resetTopRollovers();
     g_machineState.unqualifyMode();
+    g_soundHelper.stopAudio();
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
@@ -212,6 +216,8 @@ void GameMode::manageNewMode() {
 }
 
 void GameMode::managePlayerBonusLamps() {
+  if (g_bonusLightShow.running()) return;
+
   g_machineState.updateBonusLamps();
 }
 
@@ -237,6 +243,44 @@ void GameMode::manageShootAgainLamp() {
       !ballSaveLampActive()) {
     g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
   }
+}
+
+void GameMode::manageShotIndicatorShow() {
+  if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
+  if (!g_machineState.playfieldValidated()) return;
+  if ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) < 10000) return;
+  if (indicatorPlayed_) return;
+
+  if (g_bonusLightShow.running()) {
+    g_bonusLightShow.run();
+    return;
+  }
+
+  if (g_machineState.orbsDropTargetsAllStanding() && g_machineState.rightDropTargetsAllStanding()) {
+    indicatorPlayed_ = true;
+    g_lampsHelper.showLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS, true);
+    g_lampsHelper.showLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS, true);
+    g_bonusLightShow.start(BONUS_LIGHT_SHOW_ORBS_AND_RIGHT_DROPS_ARROW);
+    return;
+  }
+
+  if (g_machineState.orbsDropTargetsAllStanding()) {
+    indicatorPlayed_ = true;
+    g_lampsHelper.showLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS, true);
+    g_bonusLightShow.start(BONUS_LIGHT_SHOW_ORBS_DROPS_ARROW);
+    return;
+  }
+
+  if (g_machineState.rightDropTargetsAllStanding()) {
+    indicatorPlayed_ = true;
+    g_lampsHelper.showLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS, true);
+    g_bonusLightShow.start(BONUS_LIGHT_SHOW_RIGHT_DROPS_ARROW);
+    return;
+  }
+}
+
+void GameMode::resetIndicatorPlayed() {
+  indicatorPlayed_ = false;
 }
 
 void GameMode::runGameMode(byte switchHit) {

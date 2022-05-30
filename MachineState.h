@@ -67,11 +67,13 @@ class MachineState {
     boolean       increaseNumberOfPlayers();
     boolean       machineStateChanged();
     boolean       modeMultiplierQualified();
+    boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
     boolean       playfieldValidated();
     boolean       qualifyMode();
     boolean       qualifyModeMultiplier();
     boolean       resetPlayers();
+    boolean       rightDropTargetsAllStanding();
     boolean       rightDropTargetsCompleted();
     boolean       samePlayerShootsAgain();
     boolean       scoreIncreasing();

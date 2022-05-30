@@ -39,9 +39,11 @@ class PlayerState {
     boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();
     boolean       modeMultiplierQualified();
+    boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
     boolean       qualifyMode();
     boolean       qualifyModeMultiplier();
+    boolean       rightDropTargetsAllStanding();
     boolean       rightDropTargetsCompleted();
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();

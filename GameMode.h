@@ -13,6 +13,7 @@
 class GameMode {
   private:
     boolean       gameModeChanged_;
+    boolean       indicatorPlayed_;
     boolean       pushingBallFromOutlane_;
     boolean       scoreIncreased_;
     byte          gameModeId_;
@@ -29,15 +30,17 @@ class GameMode {
     void    managePlayerBonusLamps();
     void    managePlayerScore();
     void    manageShootAgainLamp();
+    void    manageShotIndicatorShow();
     void    runGameMode(byte switchHit);
 
   public:
     GameMode();
 
-    boolean       scoreIncreased();
-    int           run(boolean curStateChanged);
-    void          setGameMode(byte id);
-    void          setScoreIncreased(boolean value);
+    boolean scoreIncreased();
+    int     run(boolean curStateChanged);
+    void    resetIndicatorPlayed();
+    void    setGameMode(byte id);
+    void    setScoreIncreased(boolean value);
 };
 
 #endif

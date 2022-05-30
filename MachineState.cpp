@@ -90,6 +90,10 @@ boolean MachineState::modeMultiplierQualified() {
   return currentPlayer_->modeMultiplierQualified();
 }
 
+boolean MachineState::orbsDropTargetsAllStanding() {
+  return currentPlayer_->orbsDropTargetsAllStanding();
+}
+
 boolean MachineState::orbsDropTargetsCompleted() {
   return currentPlayer_->orbsDropTargetsCompleted();
 }
@@ -125,6 +129,10 @@ boolean MachineState::resetPlayers() {
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
+}
+
+boolean MachineState::rightDropTargetsAllStanding() {
+  return currentPlayer_->rightDropTargetsAllStanding();
 }
 
 boolean MachineState::rightDropTargetsCompleted() {

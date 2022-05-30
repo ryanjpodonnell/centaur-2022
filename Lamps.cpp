@@ -168,6 +168,12 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
     case LAMP_COLLECTION_BONUS_RESET_ARROW:
       pointer = bonusResetArrow_;
       break;
+    case LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW:
+      pointer = bonusOrbsDropsArrow_;
+      break;
+    case LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW:
+      pointer = bonusRightDropsArrow_;
+      break;
   }
 
   return pointer;

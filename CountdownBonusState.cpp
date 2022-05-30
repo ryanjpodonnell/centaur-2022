@@ -26,16 +26,13 @@ int CountdownBonus::run(boolean curStateChanged) {
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
 
-  if (g_bonusLightShow.ended()) {
-    g_bonusLightShow.end();
-    return MACHINE_STATE_BALL_OVER;
-  }
-
   if (g_bonusLightShow.running()) {
     g_bonusLightShow.run();
   } else {
     g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
   }
+
+  if (g_bonusLightShow.ended()) return MACHINE_STATE_BALL_OVER;
 
   return MACHINE_STATE_COUNTDOWN_BONUS;
 }

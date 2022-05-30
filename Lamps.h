@@ -100,6 +100,8 @@
 #define LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_4   29
 #define LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_5   30
 #define LAMP_COLLECTION_BONUS_RESET_ARROW        31
+#define LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW   32
+#define LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW  33
 
 static byte bonusAllLamps_[] = {
   LAMP_1K_BONUS,
@@ -374,7 +376,7 @@ static byte bonusCountdownStep1_[] = {
 
 static byte bonusCountdownStep2_[] = {
   LAMP_2K_BONUS,
-  LAMP_2X_BONUS,
+  LAMP_3X_BONUS,
   LAMP_40K_BONUS,
   LAMP_4X_BONUS,
   LAMP_7K_BONUS,
@@ -414,6 +416,28 @@ static byte bonusResetArrow_[] = {
   LAMP_8K_BONUS,
   LAMP_9K_BONUS,
   LAMP_10K_BONUS,
+  LAMP_TERMINATOR
+};
+
+static byte bonusOrbsDropsArrow_[] = {
+  LAMP_60K_BONUS,
+  LAMP_40K_BONUS,
+  LAMP_20K_BONUS,
+  LAMP_9K_BONUS,
+  LAMP_10K_BONUS,
+  LAMP_1K_BONUS,
+  LAMP_2K_BONUS,
+  LAMP_TERMINATOR
+};
+
+static byte bonusRightDropsArrow_[] = {
+  LAMP_7K_BONUS,
+  LAMP_4X_BONUS,
+  LAMP_40K_BONUS,
+  LAMP_3X_BONUS,
+  LAMP_1K_BONUS,
+  LAMP_2K_BONUS,
+  LAMP_3K_BONUS,
   LAMP_TERMINATOR
 };
 
