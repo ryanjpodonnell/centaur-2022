@@ -82,6 +82,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
       if (g_machineState.modeMultiplierQualified()) {
+        if (g_bonusLightShow.running()) g_bonusLightShow.end();
+
         g_machineState.increaseModeMultiplier();
         g_machineState.updateModeMultiplierLamps();
 
