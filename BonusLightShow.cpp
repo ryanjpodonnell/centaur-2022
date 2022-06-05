@@ -42,25 +42,26 @@ void BonusLightShow::run() {
   unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
   if (seed == lastFlash_) return;
 
+  lastFlash_ = seed;
   switch (lightShowId_) {
     case BONUS_LIGHT_SHOW_ORBS_AND_RIGHT_DROPS_ARROW:
-      manageOrbsAndRightDropsArrowShow(seed);
+      manageOrbsAndRightDropsArrowShow();
       break;
 
     case BONUS_LIGHT_SHOW_ORBS_DROPS_ARROW:
-      manageOrbsDropsArrowShow(seed);
+      manageOrbsDropsArrowShow();
       break;
 
     case BONUS_LIGHT_SHOW_RESET_1_THROUGH_4_ARROW:
-      manageResetArrowShow(seed);
+      manageResetArrowShow();
       break;
 
     case BONUS_LIGHT_SHOW_RIGHT_DROPS_ARROW:
-      manageRightDropsArrowShow(seed);
+      manageRightDropsArrowShow();
       break;
 
     case BONUS_LIGHT_SHOW_SPIN:
-      manageSpinShow(seed);
+      manageSpinShow();
       break;
   }
 }
@@ -78,74 +79,60 @@ void BonusLightShow::start(byte lightShowId) {
 /*********************************************************************
     Private
 *********************************************************************/
-void BonusLightShow::manageOrbsAndRightDropsArrowShow(unsigned long seed) {
-  lastFlash_          = seed;
-  byte numberOfSteps  = 11;
-  byte currentStep    = seed % numberOfSteps;
+void BonusLightShow::manageOrbsAndRightDropsArrowShow() {
+  byte currentStep = lastFlash_ % 11;
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0 || currentStep == 5) {
-    return;
-  } else if (currentStep < 4) {
-    g_lampsHelper.showLampsWithSeed(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW, currentStep);
-  } else if (currentStep == 4) {
-    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW);
-  } else if (currentStep < 10) {
-    g_lampsHelper.showLampsWithSeed(LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW, currentStep - 5);
-  } else {
-    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW);
-  }
+  if (currentStep == 0)  return;
+  if (currentStep == 1)  g_lampsHelper.showLamp(LAMP_60K_BONUS);
+  if (currentStep == 2)  g_lampsHelper.showLamp(LAMP_40K_BONUS);
+  if (currentStep == 3)  g_lampsHelper.showLamp(LAMP_20K_BONUS);
+  if (currentStep == 4)  g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW);
+  if (currentStep == 5)  return;
+  if (currentStep == 6)  g_lampsHelper.showLamp(LAMP_7K_BONUS);
+  if (currentStep == 7)  g_lampsHelper.showLamp(LAMP_4X_BONUS);
+  if (currentStep == 8)  g_lampsHelper.showLamp(LAMP_40K_BONUS);
+  if (currentStep == 9)  g_lampsHelper.showLamp(LAMP_3X_BONUS);
+  if (currentStep == 10) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW);
 }
 
-void BonusLightShow::manageOrbsDropsArrowShow(unsigned long seed) {
-  lastFlash_          = seed;
-  byte numberOfSteps  = 5;
-  byte currentStep    = seed % numberOfSteps;
+void BonusLightShow::manageOrbsDropsArrowShow() {
+  byte currentStep = lastFlash_ % 5;
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0) {
-    return;
-  } else if (currentStep < 4) {
-    g_lampsHelper.showLampsWithSeed(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW, currentStep);
-  } else {
-    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW);
-  }
+  if (currentStep == 0) return;
+  if (currentStep == 1) g_lampsHelper.showLamp(LAMP_60K_BONUS);
+  if (currentStep == 2) g_lampsHelper.showLamp(LAMP_40K_BONUS);
+  if (currentStep == 3) g_lampsHelper.showLamp(LAMP_20K_BONUS);
+  if (currentStep == 4) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW);
 }
 
-void BonusLightShow::manageResetArrowShow(unsigned long seed) {
-  lastFlash_          = seed;
-  byte numberOfSteps  = 6;
-  byte currentStep    = seed % numberOfSteps;
+void BonusLightShow::manageResetArrowShow() {
+  byte currentStep = lastFlash_ % 6;
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0) {
-    return;
-  } else if (currentStep < 5) {
-    g_lampsHelper.showLampsWithSeed(LAMP_COLLECTION_BONUS_RESET_ARROW, currentStep);
-  } else {
-    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RESET_ARROW);
-  }
+  if (currentStep == 0) return;
+  if (currentStep == 1) g_lampsHelper.showLamp(LAMP_4K_BONUS);
+  if (currentStep == 2) g_lampsHelper.showLamp(LAMP_5K_BONUS);
+  if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40K_BONUS);
+  if (currentStep == 4) g_lampsHelper.showLamp(LAMP_2X_BONUS);
+  if (currentStep == 5) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RESET_ARROW);
 }
 
-void BonusLightShow::manageRightDropsArrowShow(unsigned long seed) {
-  lastFlash_          = seed;
-  byte numberOfSteps  = 6;
-  byte currentStep    = seed % numberOfSteps;
+void BonusLightShow::manageRightDropsArrowShow() {
+  byte currentStep = lastFlash_ % 6;
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0) {
-    return;
-  } else if (currentStep < 5) {
-    g_lampsHelper.showLampsWithSeed(LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW, currentStep);
-  } else {
-    g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW);
-  }
+  if (currentStep == 0) return;
+  if (currentStep == 1) g_lampsHelper.showLamp(LAMP_7K_BONUS);
+  if (currentStep == 2) g_lampsHelper.showLamp(LAMP_4X_BONUS);
+  if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40K_BONUS);
+  if (currentStep == 4) g_lampsHelper.showLamp(LAMP_3X_BONUS);
+  if (currentStep == 5) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RIGHT_DROPS_ARROW);
 }
 
-void BonusLightShow::manageSpinShow(unsigned long seed) {
-  lastFlash_          = seed;
-  byte numberOfSteps  = 5;
-  byte currentStep    = seed % numberOfSteps;
+void BonusLightShow::manageSpinShow() {
+  byte currentStep = lastFlash_ % 5;
 
   g_lampsHelper.hideAllLamps();
   if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);

@@ -128,9 +128,7 @@ int GameMode::manageBallInTrough() {
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
-    if (g_bonusLightShow.running()) g_bonusLightShow.end();
-    g_bonusLightShow.reset();
-
+    g_bonusLightShow.end();
     g_machineState.resetOrbsDropTargets(false);
     g_machineState.resetTopRollovers();
     g_machineState.unqualifyMode();
@@ -208,9 +206,9 @@ void GameMode::manageNewMode() {
 
   g_soundHelper.stopAudio();
   g_soundHelper.playSound(SOUND_CONTINIOUS_DRONE);
-  if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
-
   g_machineState.increaseBonus(1);
+
+  if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
 
   setGameMode(GAME_MODE_SKILL_SHOT);
 }

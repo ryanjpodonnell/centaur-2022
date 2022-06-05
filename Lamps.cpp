@@ -57,15 +57,6 @@ void LampsHelper::showLamps(byte lampCollection, bool flash) {
   }
 }
 
-void LampsHelper::showLampsWithSeed(byte lampCollection, byte seed) {
-  byte* pointer = lampsPointer(lampCollection);
-
-  for(byte i = 0; i <= seed; i++) {
-    showLamp(pointer[i]);
-  }
-}
-
-
 /*********************************************************************
     Private
 *********************************************************************/

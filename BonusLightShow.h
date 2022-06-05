@@ -23,11 +23,11 @@ class BonusLightShow {
     unsigned long endTime_;
     unsigned long lastFlash_;
 
-    void manageOrbsAndRightDropsArrowShow(unsigned long seed);
-    void manageOrbsDropsArrowShow(unsigned long seed);
-    void manageResetArrowShow(unsigned long seed);
-    void manageRightDropsArrowShow(unsigned long seed);
-    void manageSpinShow(unsigned long seed);
+    void manageOrbsAndRightDropsArrowShow();
+    void manageOrbsDropsArrowShow();
+    void manageResetArrowShow();
+    void manageRightDropsArrowShow();
+    void manageSpinShow();
 
   public:
     BonusLightShow();

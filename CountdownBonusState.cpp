@@ -67,10 +67,12 @@ void CountdownBonus::countdownBonusStep() {
 void CountdownBonus::manageNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Countdown Bonus State\n\r");
 
+  g_bonusLightShow.reset();
+  g_lampsHelper.hideAllLamps();
+
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
   BSOS_SetDisplayCredits(g_machineState.credits());
-  g_lampsHelper.hideAllLamps();
 
   lastDecrease_            = 0;
   lastFlash_               = 0;
