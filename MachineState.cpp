@@ -409,12 +409,19 @@ void MachineState::registerTiltWarning() {
   if ((currentTime_ - lastTiltWarningTime_) > TILT_WARNING_DEBOUNCE_TIME) {
     lastTiltWarningTime_ = currentTime_;
     numberOfTiltWarnings_ += 1;
+    g_soundHelper.playSoundWithoutInterruptions(SOUND_POWERING_DOWN);
 
     if (currentPlayerTilted()) {
+      if (DEBUG_MESSAGES) Serial.write("Ball Tilted\n\r");
+
       BSOS_DisableSolenoidStack();
       BSOS_SetDisableFlippers(true);
       BSOS_TurnOffAllLamps();
       BSOS_SetLampState(LAMP_TILT, 1);
+
+      g_soundHelper.stopAudio();
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_POWERING_DOWN);
+      g_machineState.setBonus(0);
     }
   }
 }

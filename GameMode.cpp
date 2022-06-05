@@ -73,6 +73,7 @@ int GameMode::manageGameRestart() {
   }
 
   if (g_bonusLightShow.ended()) {
+    g_bonusLightShow.reset();
     return MACHINE_STATE_INIT_GAMEPLAY;
   }
 
@@ -129,10 +130,11 @@ int GameMode::manageBallInTrough() {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
     g_bonusLightShow.end();
+    g_bonusLightShow.reset();
     g_machineState.resetOrbsDropTargets(false);
     g_machineState.resetTopRollovers();
     g_machineState.unqualifyMode();
-    g_soundHelper.stopAudio();
+    if (!g_machineState.currentPlayerTilted()) g_soundHelper.stopAudio();
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }
@@ -140,9 +142,6 @@ int GameMode::manageBallInTrough() {
 
 int GameMode::manageTilt() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-
-  g_soundHelper.stopAudio();
-  g_soundHelper.playSound(SOUND_POWERING_DOWN);
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
