@@ -38,6 +38,20 @@ int Base::run(byte switchHit) {
 
       break;
 
+    case SW_LEFT_THUMPER_BUMPER:
+    case SW_RIGHT_THUMPER_BUMPER:
+      g_soundHelper.playSound(SOUND_1K_SWITCH);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(1000);
+      break;
+
+    case SW_LEFT_SLINGSHOT:
+    case SW_RIGHT_SLINGSHOT:
+      g_soundHelper.playSound(SOUND_SLINGSHOT);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(10);
+      break;
+
     case SW_TOP_LEFT_LANE:
     case SW_TOP_MIDDLE_LANE:
     case SW_TOP_RIGHT_LANE:
@@ -55,45 +69,77 @@ int Base::run(byte switchHit) {
       manageDefaultScoringLogic(5000);
       break;
 
-    case SW_LEFT_THUMPER_BUMPER:
-    case SW_RIGHT_THUMPER_BUMPER:
-      g_soundHelper.playSound(SOUND_THUMPER_BUMPER);
-      manageSignificantSwitchHit();
-      manageDefaultScoringLogic(1000);
-      break;
-
     case SW_O_DROP_TARGET:
     case SW_R_DROP_TARGET:
     case SW_B_DROP_TARGET:
     case SW_S_DROP_TARGET:
-      g_soundHelper.playSound(SOUND_DROP_TARGET);
+      g_soundHelper.playSound(SOUND_1K_SWITCH);
       g_machineState.increaseBonus(1);
       manageSignificantSwitchHit();
       manageDefaultScoringLogic(1000);
       break;
 
-    case SW_LEFT_SLINGSHOT:
-    case SW_RIGHT_SLINGSHOT:
-      g_soundHelper.playSound(SOUND_SLINGSHOT);
-      manageSignificantSwitchHit();
-      manageDefaultScoringLogic(10);
-      break;
-
-    case SW_ORBS_RIGHT_LANE_TARGET:
-    case SW_10_POINT_REBOUND:
-    case SW_1ST_INLINE_DROP_TARGET:
-    case SW_2ND_INLINE_DROP_TARGET:
-    case SW_3RD_INLINE_DROP_TARGET:
-    case SW_4TH_INLINE_DROP_TARGET:
-    case SW_INLINE_BACK_TARGET:
-    case SW_LEFT_SIDE_RO_BUTTON:
-    case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
     case SW_RIGHT_4_DROP_TARGET_1:
     case SW_RIGHT_4_DROP_TARGET_2:
     case SW_RIGHT_4_DROP_TARGET_3:
     case SW_RIGHT_4_DROP_TARGET_4:
+      g_soundHelper.playSound(SOUND_SPOT_1_THROUGH_4);
+      g_machineState.increaseBonus(1);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(1000);
+      break;
+
+    case SW_1ST_INLINE_DROP_TARGET:
+    case SW_2ND_INLINE_DROP_TARGET:
+    case SW_3RD_INLINE_DROP_TARGET:
+    case SW_4TH_INLINE_DROP_TARGET:
+      /* only single value // queens chamber */
+      g_machineState.increaseBonus(1);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(1000);
+      break;
+
     case SW_TOP_LEFT_LANE_RO_BUTTON:
+      g_soundHelper.playSound(SOUND_5K_SWITCH);
+      g_machineState.increaseBonus(1);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(5000);
+      break;
+
+    case SW_LEFT_SIDE_RO_BUTTON:
+      g_soundHelper.playSound(SOUND_QUEENS_CHAMBER_ROLLOVER);
+      g_machineState.increaseBonus(1);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(5000);
+      break;
+
+    case SW_ORBS_RIGHT_LANE_TARGET:
+      g_soundHelper.playSound(SOUND_5K_SWITCH);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(5000);
+      break;
+
+    case SW_INLINE_BACK_TARGET:
+      g_soundHelper.playSound(SOUND_INLINE_BACK_TARGET);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(50000);
+      break;
+
+    case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
+      g_soundHelper.playSound(SOUND_RESET_1_THROUGH_4);
+      g_machineState.increaseBonus(1);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(5000);
+      break;
+
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
+      g_soundHelper.playSound(SOUND_SPOT_1_THROUGH_4);
+      manageSignificantSwitchHit();
+      manageDefaultScoringLogic(10000);
+      break;
+
+    case SW_10_POINT_REBOUND:
+      g_soundHelper.playSound(SOUND_10_POINT_REBOUND);
       manageSignificantSwitchHit();
       manageDefaultScoringLogic(10);
       break;
