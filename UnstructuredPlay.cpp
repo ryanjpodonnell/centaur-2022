@@ -106,6 +106,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.updateRightOrbsReleaseLamp();
         g_machineState.updateSelectedMode();
       }
+
       break;
 
     case SW_LEFT_THUMPER_BUMPER:
@@ -114,12 +115,14 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.rotateQualifiedMode();
         g_machineState.updateCaptiveOrbsLamps();
       }
+
       break;
 
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       if (g_machineState.allowRightDropTargetProgress() && !g_machineState.rightDropTargetsCompleted()) {
         g_machineState.registerRightDropTarget(0xFF);
       }
+
       break;
 
     case SW_1ST_INLINE_DROP_TARGET:
@@ -130,7 +133,16 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_machineState.hurryUpActivated()) {
         endHurryUp();
         g_machineState.increaseScore(g_machineState.hurryUpValue());
+      } else {
+        if ((g_machineState.queensChamberBonusValue() < MAX_QUEENS_CHAMBER_BONUS_VALUE) &&
+            (g_machineState.queensChamberScoreValue() < MAX_QUEENS_CHAMBER_SCORE_VALUE)
+           ) {
+          g_machineState.increaseQueensChamberBonusValue();
+          g_machineState.increaseQueensChamberScoreValue();
+          g_machineState.updateQueensChamberLamps();
+        }
       }
+
       break;
 
     case SW_OUTHOLE:
@@ -182,7 +194,7 @@ void UnstructuredPlay::manageNewMode() {
 
 void UnstructuredPlay::startHurryUp(unsigned long value, int seconds) {
   if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
-  g_soundHelper.playSound(SOUND_SIREN_2);
+  g_soundHelper.playSoundWithoutInterruptions(SOUND_SIREN_2);
   g_machineState.setHurryUpActivated(true);
   g_machineState.setHurryUpValue(value);
   hurryUpInitialValue_        = value;

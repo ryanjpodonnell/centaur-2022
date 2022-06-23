@@ -82,6 +82,7 @@ class MachineState {
     boolean       unqualifyMode();
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
+    byte          queensChamberBonusValue();
     byte          credits();
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
@@ -99,6 +100,7 @@ class MachineState {
     unsigned long hurryUpValue();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentSwitchHitTime();
+    unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
@@ -113,6 +115,8 @@ class MachineState {
     void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseModeMultiplier();
+    void          increaseQueensChamberBonusValue();
+    void          increaseQueensChamberScoreValue();
     void          increaseNumberOfBallsInPlay();
     void          increaseScore(unsigned long amountToAdd);
     void          overridePlayerScore(unsigned long value);
@@ -124,6 +128,8 @@ class MachineState {
     void          registerTopRollover(byte switchHit);
     void          resetGuardianRollovers();
     void          resetOrbsDropTargets(boolean activateSolenoid = false);
+    void          resetQueensChamberBonusValue();
+    void          resetQueensChamberScoreValue();
     void          resetRightDropTargets(boolean activateSolenoid = false);
     void          resetTiltWarnings();
     void          resetTopRollovers();
@@ -155,6 +161,7 @@ class MachineState {
     void          updateModeMultiplierLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
+    void          updateQueensChamberLamps();
     void          updateRightDropTargetLamps();
     void          updateRightDropTargetResetLamp();
     void          updateRightDropTargetSpotLamp();

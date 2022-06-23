@@ -132,6 +132,8 @@ int GameMode::manageBallInTrough() {
     g_bonusLightShow.end();
     g_bonusLightShow.reset();
     g_machineState.resetOrbsDropTargets(false);
+    g_machineState.resetQueensChamberBonusValue();
+    g_machineState.resetQueensChamberScoreValue();
     g_machineState.resetTopRollovers();
     g_machineState.unqualifyMode();
     if (!g_machineState.currentPlayerTilted()) g_soundHelper.stopAudio();

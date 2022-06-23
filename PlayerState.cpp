@@ -4,23 +4,9 @@ PlayerState::PlayerState() {
 }
 
 PlayerState::PlayerState(byte displayNumber) {
-  modeMultiplierQualified_ = false;
+  displayNumber_ = displayNumber;
 
-  bonusMultiplier_         = 1;
-  bonus_                   = 0;
-  displayNumber_           = displayNumber;
-  modeMultiplier_          = 1;
-  score_                   = 0;
-  selectedMode_            = 0;
-  tempScore_               = 0;
-
-  resetGuardianRollovers();
-  resetTopRollovers();
-
-  resetOrbsDropTargets(false);
-  resetRightDropTargets(false);
-
-  resetModeStatus();
+  resetPlayerState();
 }
 
 boolean PlayerState::allModesQualified() {
@@ -122,6 +108,10 @@ byte PlayerState::bonusMultiplier() {
   return bonusMultiplier_;
 }
 
+byte PlayerState::queensChamberBonusValue() {
+  return queensChamberBonusValue_;
+}
+
 byte PlayerState::startQualifiedMode() {
   launchLockedBallsIntoPlay();
 
@@ -130,6 +120,10 @@ byte PlayerState::startQualifiedMode() {
   if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
   if (selectedMode_ == 2) return GAME_MODE_ORBS_3;
   if (selectedMode_ == 3) return GAME_MODE_ORBS_4;
+}
+
+unsigned long PlayerState::queensChamberScoreValue() {
+  return queensChamberScoreValue_;
 }
 
 unsigned long PlayerState::rightDropTargetsFinishedTime() {
@@ -214,6 +208,14 @@ void PlayerState::increaseModeMultiplier() {
   modeMultiplier_ += 1;
 }
 
+void PlayerState::increaseQueensChamberBonusValue() {
+  queensChamberBonusValue_ += 1;
+}
+
+void PlayerState::increaseQueensChamberScoreValue() {
+  queensChamberScoreValue_ += 10000;
+}
+
 void PlayerState::increaseScore(unsigned long amountToAdd) {
   tempScore_ += amountToAdd;
 }
@@ -296,12 +298,22 @@ void PlayerState::resetOrbsDropTargets(boolean activateSolenoid) {
   orbsDropTargets_[3] = false;
 }
 
+void PlayerState::resetQueensChamberBonusValue() {
+  queensChamberBonusValue_ = 1;
+}
+
+void PlayerState::resetQueensChamberScoreValue() {
+  queensChamberScoreValue_ = 10000;
+}
+
 void PlayerState::resetPlayerState() {
   modeMultiplierQualified_ = false;
 
   bonusMultiplier_         = 1;
   bonus_                   = 0;
   modeMultiplier_          = 1;
+  queensChamberBonusValue_ = 1;
+  queensChamberScoreValue_ = 10000;
   score_                   = 0;
   selectedMode_            = 0;
   tempScore_               = 0;
@@ -465,6 +477,40 @@ void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
   }
 
   g_displayHelper.showPlayerScores(displayNumber_, flashCurrent, dashCurrent);
+}
+
+void PlayerState::updateQueensChamberLamps() {
+  if (queensChamberBonusValue_ == 1 && queensChamberScoreValue_ == 10000) {
+    g_lampsHelper.showLamp(LAMP_10_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+  } else if (queensChamberBonusValue_ == 2 && queensChamberScoreValue_ == 20000) {
+    g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+    g_lampsHelper.showLamp(LAMP_20_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+  } else if (queensChamberBonusValue_ == 3 && queensChamberScoreValue_ == 30000) {
+    g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+    g_lampsHelper.showLamp(LAMP_30_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+  } else if (queensChamberBonusValue_ == 4 && queensChamberScoreValue_ == 40000) {
+    g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+    g_lampsHelper.showLamp(LAMP_40_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+  } else if (queensChamberBonusValue_ == 5 && queensChamberScoreValue_ == 50000) {
+    g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+    g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+    g_lampsHelper.showLamp(LAMP_50_CHAMBER);
+  }
 }
 
 void PlayerState::updateRightDropTargetLamps() {

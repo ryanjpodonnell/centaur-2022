@@ -171,6 +171,10 @@ byte MachineState::bonusMultiplier() {
   return currentPlayer_->bonusMultiplier();
 }
 
+byte MachineState::queensChamberBonusValue() {
+  return currentPlayer_->queensChamberBonusValue();
+}
+
 byte MachineState::credits() {
   return credits_;
 }
@@ -286,6 +290,10 @@ unsigned long MachineState::mostRecentSwitchHitTime() {
   return mostRecentSwitchHitTime_;
 }
 
+unsigned long MachineState::queensChamberScoreValue() {
+  return currentPlayer_->queensChamberScoreValue();
+}
+
 unsigned long MachineState::rightDropTargetsFinishedTime() {
   return currentPlayer_->rightDropTargetsFinishedTime();
 }
@@ -374,6 +382,14 @@ void MachineState::increaseModeMultiplier() {
   currentPlayer_->increaseModeMultiplier();
 }
 
+void MachineState::increaseQueensChamberBonusValue() {
+  currentPlayer_->increaseQueensChamberBonusValue();
+}
+
+void MachineState::increaseQueensChamberScoreValue() {
+  currentPlayer_->increaseQueensChamberScoreValue();
+}
+
 void MachineState::increaseNumberOfBallsInPlay() {
   if (numberOfBallsInPlay_ == MAXIMUM_NUMBER_OF_BALLS_IN_PLAY) return;
 
@@ -436,6 +452,14 @@ void MachineState::resetGuardianRollovers() {
 
 void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
   currentPlayer_->resetOrbsDropTargets(activateSolenoid);
+}
+
+void MachineState::resetQueensChamberBonusValue() {
+  currentPlayer_->resetQueensChamberBonusValue();
+}
+
+void MachineState::resetQueensChamberScoreValue() {
+  currentPlayer_->resetQueensChamberScoreValue();
 }
 
 void MachineState::resetRightDropTargets(boolean activateSolenoid) {
@@ -538,14 +562,13 @@ void MachineState::showAllPlayerLamps() {
   updateCaptiveOrbsLamps();
   updateGuardianRolloverLamps();
   updateModeMultiplierLamps();
-  updateTopRolloverLamps();
-
+  updateOrbsDropTargetLamps();
+  updateQueensChamberLamps();
+  updateRightDropTargetLamps();
   updateRightDropTargetResetLamp();
   updateRightDropTargetSpotLamp();
-  updateRightDropTargetLamps();
-
   updateRightOrbsReleaseLamp();
-  updateOrbsDropTargetLamps();
+  updateTopRolloverLamps();
 }
 
 void MachineState::updateBonusLamps() {
@@ -574,6 +597,10 @@ void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) 
   } else {
     currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
   }
+}
+
+void MachineState::updateQueensChamberLamps() {
+  currentPlayer_->updateQueensChamberLamps();
 }
 
 void MachineState::updateRightDropTargetLamps() {

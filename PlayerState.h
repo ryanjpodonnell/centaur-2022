@@ -1,9 +1,11 @@
 #ifndef PLAYER_STATE_H
 #define PLAYER_STATE_H
 
-#define MAX_BONUS_MULTIPLIER      5
-#define MAX_DISPLAY_BONUS         175
-#define MAX_MODE_MULTIPLIER       5
+#define MAX_BONUS_MULTIPLIER           5
+#define MAX_DISPLAY_BONUS              175
+#define MAX_MODE_MULTIPLIER            5
+#define MAX_QUEENS_CHAMBER_BONUS_VALUE 5
+#define MAX_QUEENS_CHAMBER_SCORE_VALUE 50000
 
 #define MODE_STATUS_NOT_QUALIFIED 0
 #define MODE_STATUS_QUALIFIED     1
@@ -17,8 +19,10 @@ class PlayerState {
     byte          bonus_;
     byte          displayNumber_;
     byte          modeMultiplier_;
+    byte          queensChamberBonusValue_;
     byte          selectedMode_;
     unsigned long lastFlash_;
+    unsigned long queensChamberScoreValue_;
     unsigned long rightDropTargetsFinishedTime_;
     unsigned long score_;
     unsigned long tempScore_;
@@ -50,7 +54,9 @@ class PlayerState {
     boolean       unqualifyMode();
     byte          bonus();
     byte          bonusMultiplier();
+    byte          queensChamberBonusValue();
     byte          startQualifiedMode();
+    unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
     unsigned long score();
     void          decreaseBonus(byte amountToSubtract = 1);
@@ -61,6 +67,8 @@ class PlayerState {
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseModeMultiplier();
+    void          increaseQueensChamberBonusValue();
+    void          increaseQueensChamberScoreValue();
     void          increaseScore(unsigned long amountToAdd);
     void          overridePlayerScore(unsigned long value);
     void          registerGuardianRollover(byte switchHit);
@@ -71,6 +79,8 @@ class PlayerState {
     void          resetModeStatus();
     void          resetOrbsDropTargets(boolean activateSolenoid = false);
     void          resetPlayerState();
+    void          resetQueensChamberBonusValue();
+    void          resetQueensChamberScoreValue();
     void          resetRightDropTargets(boolean activateSolenoid = false);
     void          resetTopRollovers();
     void          rotatePlayerLamps();
@@ -85,6 +95,7 @@ class PlayerState {
     void          updateModeMultiplierLamps();
     void          updateOrbsDropTargetLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
+    void          updateQueensChamberLamps();
     void          updateRightDropTargetLamps();
     void          updateRightDropTargetResetLamp();
     void          updateRightDropTargetSpotLamp();
