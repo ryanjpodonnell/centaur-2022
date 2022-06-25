@@ -15,6 +15,7 @@
 class PlayerState {
   private:
     boolean       modeMultiplierQualified_;
+    byte          activeRightDropTarget_;
     byte          bonusMultiplier_;
     byte          bonus_;
     byte          displayNumber_;
@@ -24,6 +25,7 @@ class PlayerState {
     unsigned long lastFlash_;
     unsigned long queensChamberScoreValue_;
     unsigned long rightDropTargetsFinishedTime_;
+    unsigned long rightDropTargetsScoreValue_;
     unsigned long score_;
     unsigned long tempScore_;
     boolean       guardianLights_[4];
@@ -58,6 +60,7 @@ class PlayerState {
     byte          startQualifiedMode();
     unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
+    unsigned long rightDropTargetsScoreValue();
     unsigned long score();
     void          decreaseBonus(byte amountToSubtract = 1);
     void          decreaseModeMultiplier();

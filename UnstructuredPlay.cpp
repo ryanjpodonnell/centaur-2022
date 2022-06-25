@@ -87,7 +87,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.increaseModeMultiplier();
         g_machineState.updateModeMultiplierLamps();
 
-        g_machineState.resetRightDropTargets(true);
+        if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true);
         g_machineState.updateRightDropTargetLamps();
         g_machineState.updateRightDropTargetResetLamp();
         g_machineState.updateRightDropTargetSpotLamp();

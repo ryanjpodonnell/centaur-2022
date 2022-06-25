@@ -102,6 +102,7 @@ class MachineState {
     unsigned long mostRecentSwitchHitTime();
     unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
+    unsigned long rightDropTargetsScoreValue();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
     void          decreaseBonus(byte amountToSubtract = 1);

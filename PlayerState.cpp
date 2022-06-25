@@ -130,6 +130,10 @@ unsigned long PlayerState::rightDropTargetsFinishedTime() {
   return rightDropTargetsFinishedTime_;
 }
 
+unsigned long PlayerState::rightDropTargetsScoreValue() {
+  return rightDropTargetsScoreValue_;
+}
+
 unsigned long PlayerState::score() {
   return score_;
 }
@@ -244,6 +248,32 @@ void PlayerState::registerRightDropTarget(byte switchHit) {
   if (switchHit == SW_RIGHT_4_DROP_TARGET_3) rightDropTargets_[2] = true;
   if (switchHit == SW_RIGHT_4_DROP_TARGET_4) rightDropTargets_[3] = true;
 
+  if (switchHit == activeRightDropTarget_) {
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_1) {
+      rightDropTargetsScoreValue_ = 10000;
+      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_2;
+    }
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_2) {
+      rightDropTargetsScoreValue_ = 20000;
+      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_3;
+    }
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_3) {
+      rightDropTargetsScoreValue_ = 40000;
+      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_4;
+    }
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_4) {
+      rightDropTargetsScoreValue_ = 80000;
+      activeRightDropTarget_ = 0xFF;
+
+      g_machineState.increaseModeMultiplier();
+      g_machineState.updateModeMultiplierLamps();
+      if (allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true);
+    }
+  } else if (switchHit != activeRightDropTarget_) {
+    rightDropTargetsScoreValue_ = 500;
+    activeRightDropTarget_ = 0xFF;
+  }
+
   if (switchHit == 0xFF) {
     if (rightDropTargets_[0] == false) {
       BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, 4, g_machineState.currentTime());
@@ -307,6 +337,8 @@ void PlayerState::resetQueensChamberScoreValue() {
 }
 
 void PlayerState::resetPlayerState() {
+  activeRightDropTarget_   = SW_RIGHT_4_DROP_TARGET_1;
+
   modeMultiplierQualified_ = false;
 
   bonusMultiplier_         = 1;
@@ -331,6 +363,8 @@ void PlayerState::resetRightDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) {
     BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, g_machineState.currentTime() + 500);
   }
+
+  activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_1;
 
   rightDropTargets_[0] = false;
   rightDropTargets_[1] = false;
@@ -514,10 +548,36 @@ void PlayerState::updateQueensChamberLamps() {
 }
 
 void PlayerState::updateRightDropTargetLamps() {
-  rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
-  rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
-  rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
-  rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  if (activeRightDropTarget_ == 0xFF) {
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_1) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_2) {
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_3) {
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_4) {
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW, true);
+  }
 }
 
 void PlayerState::updateRightDropTargetResetLamp() {

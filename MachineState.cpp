@@ -298,6 +298,10 @@ unsigned long MachineState::rightDropTargetsFinishedTime() {
   return currentPlayer_->rightDropTargetsFinishedTime();
 }
 
+unsigned long MachineState::rightDropTargetsScoreValue() {
+  return currentPlayer_->rightDropTargetsScoreValue();
+}
+
 unsigned long MachineState::score(byte player) {
   if (player == 0xFF) player = currentPlayerNumber();
   if (player == 0) return player1_.score();

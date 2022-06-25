@@ -80,7 +80,7 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_4:
       g_soundHelper.playSound(SOUND_SPOT_1_THROUGH_4);
       g_machineState.increaseBonus(1);
-      manageDefaultScoringLogic(1000);
+      manageDefaultScoringLogic(g_machineState.rightDropTargetsScoreValue());
       break;
 
     case SW_1ST_INLINE_DROP_TARGET:
