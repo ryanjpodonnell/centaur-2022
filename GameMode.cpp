@@ -129,6 +129,7 @@ int GameMode::manageBallInTrough() {
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
+    g_machineState.updatePlayerScore(false, false);
     g_bonusLightShow.end();
     g_bonusLightShow.reset();
     g_machineState.resetOrbsDropTargets(false);
