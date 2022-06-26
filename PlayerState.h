@@ -15,6 +15,7 @@
 class PlayerState {
   private:
     boolean       modeMultiplierQualified_;
+    boolean       rightDropTargetsCompletedInOrder_;
     byte          activeRightDropTarget_;
     byte          bonusMultiplier_;
     byte          bonus_;
@@ -36,6 +37,8 @@ class PlayerState {
 
     boolean       anyModeStarted();
     void          launchLockedBallsIntoPlay();
+    void          manageRightDropTargetScoring(byte switchHit);
+    void          manageSpotRightDropTarget();
 
   public:
     PlayerState();
@@ -47,13 +50,11 @@ class PlayerState {
     boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
-    boolean       qualifyMode();
-    boolean       qualifyModeMultiplier();
     boolean       rightDropTargetsAllStanding();
     boolean       rightDropTargetsCompleted();
+    boolean       rightDropTargetsCompletedInOrder();
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
-    boolean       unqualifyMode();
     byte          bonus();
     byte          bonusMultiplier();
     byte          queensChamberBonusValue();
@@ -74,6 +75,8 @@ class PlayerState {
     void          increaseQueensChamberScoreValue();
     void          increaseScore(unsigned long amountToAdd);
     void          overridePlayerScore(unsigned long value);
+    void          qualifyMode();
+    void          qualifyModeMultiplier();
     void          registerGuardianRollover(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
     void          registerRightDropTarget(byte switchHit);
@@ -92,6 +95,7 @@ class PlayerState {
     void          setBonusMultiplier(byte value);
     void          setRightDropTargetsFinishedTime();
     void          setScore(unsigned long value);
+    void          unqualifyMode();
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();

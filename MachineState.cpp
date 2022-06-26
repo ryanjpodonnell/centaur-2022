@@ -102,14 +102,6 @@ boolean MachineState::playfieldValidated() {
   return playfieldValidated_;
 }
 
-boolean MachineState::qualifyMode() {
-  return currentPlayer_->qualifyMode();
-}
-
-boolean MachineState::qualifyModeMultiplier() {
-  return currentPlayer_->qualifyModeMultiplier();
-}
-
 boolean MachineState::resetPlayers() {
   if (credits_ < 1 && !FREE_PLAY) return false;
 
@@ -139,6 +131,10 @@ boolean MachineState::rightDropTargetsCompleted() {
   return currentPlayer_->rightDropTargetsCompleted();
 }
 
+boolean MachineState::rightDropTargetsCompletedInOrder() {
+  return currentPlayer_->rightDropTargetsCompletedInOrder();
+}
+
 boolean MachineState::samePlayerShootsAgain() {
   return samePlayerShootsAgain_;
 }
@@ -153,10 +149,6 @@ boolean MachineState::topRolloversCompleted() {
 
 boolean MachineState::troughSwitchActivated() {
   return troughSwitchActivated_;
-}
-
-boolean MachineState::unqualifyMode() {
-  return currentPlayer_->unqualifyMode();
 }
 
 byte MachineState::bonus(byte player) {
@@ -408,6 +400,14 @@ void MachineState::overridePlayerScore(unsigned long value) {
   currentPlayer_->overridePlayerScore(value);
 }
 
+void MachineState::qualifyMode() {
+  return currentPlayer_->qualifyMode();
+}
+
+void MachineState::qualifyModeMultiplier() {
+  return currentPlayer_->qualifyModeMultiplier();
+}
+
 void MachineState::readStoredParameters() {
   setHighScore(BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, DEFAULT_HIGH_SCORE));
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
@@ -573,6 +573,10 @@ void MachineState::showAllPlayerLamps() {
   updateRightDropTargetSpotLamp();
   updateRightOrbsReleaseLamp();
   updateTopRolloverLamps();
+}
+
+void MachineState::unqualifyMode() {
+  return currentPlayer_->unqualifyMode();
 }
 
 void MachineState::updateBonusLamps() {
