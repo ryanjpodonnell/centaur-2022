@@ -98,6 +98,10 @@ boolean MachineState::orbsDropTargetsCompleted() {
   return currentPlayer_->orbsDropTargetsCompleted();
 }
 
+boolean MachineState::orbsDropTargetsCompletedInOrder() {
+  return currentPlayer_->orbsDropTargetsCompletedInOrder();
+}
+
 boolean MachineState::playfieldValidated() {
   return playfieldValidated_;
 }

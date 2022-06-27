@@ -69,6 +69,7 @@ class MachineState {
     boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
+    boolean       orbsDropTargetsCompletedInOrder();
     boolean       playfieldValidated();
     boolean       resetPlayers();
     boolean       rightDropTargetsAllStanding();

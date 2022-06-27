@@ -15,7 +15,9 @@
 class PlayerState {
   private:
     boolean       modeMultiplierQualified_;
+    boolean       orbsDropTargetsCompletedInOrder_;
     boolean       rightDropTargetsCompletedInOrder_;
+    byte          activeOrbsDropTarget_;
     byte          activeRightDropTarget_;
     byte          bonusMultiplier_;
     byte          bonus_;
@@ -37,6 +39,7 @@ class PlayerState {
 
     boolean       anyModeStarted();
     void          launchLockedBallsIntoPlay();
+    void          manageOrbsDropTargetScoring(byte switchHit);
     void          manageRightDropTargetScoring(byte switchHit);
     void          manageSpotRightDropTarget();
 
@@ -50,6 +53,7 @@ class PlayerState {
     boolean       modeMultiplierQualified();
     boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
+    boolean       orbsDropTargetsCompletedInOrder();
     boolean       rightDropTargetsAllStanding();
     boolean       rightDropTargetsCompleted();
     boolean       rightDropTargetsCompletedInOrder();
