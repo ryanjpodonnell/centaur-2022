@@ -63,6 +63,10 @@ boolean MachineState::hurryUpActivated() {
   return hurryUpActivated_;
 }
 
+boolean MachineState::increaseMultiplierQualified() {
+  return currentPlayer_->increaseMultiplierQualified();
+}
+
 boolean MachineState::increaseNumberOfPlayers() {
   if (credits_ < 1 && !FREE_PLAY) return false;
   if (numberOfPlayers_ >= 4) return false;
@@ -84,10 +88,6 @@ boolean MachineState::increaseNumberOfPlayers() {
 
 boolean MachineState::machineStateChanged() {
   return machineStateChanged_;
-}
-
-boolean MachineState::modeMultiplierQualified() {
-  return currentPlayer_->modeMultiplierQualified();
 }
 
 boolean MachineState::orbsDropTargetsAllStanding() {
@@ -167,10 +167,6 @@ byte MachineState::bonusMultiplier() {
   return currentPlayer_->bonusMultiplier();
 }
 
-byte MachineState::queensChamberBonusValue() {
-  return currentPlayer_->queensChamberBonusValue();
-}
-
 byte MachineState::credits() {
   return credits_;
 }
@@ -181,14 +177,6 @@ byte MachineState::currentBallInPlay() {
 
 byte MachineState::currentPlayerNumber() {
   return currentPlayerNumber_;
-}
-
-byte MachineState::numberOfBallsInPlay() {
-  return numberOfBallsInPlay_;
-}
-
-byte MachineState::numberOfPlayers() {
-  return numberOfPlayers_;
 }
 
 byte MachineState::increaseCurrentPlayer() {
@@ -204,6 +192,26 @@ byte MachineState::increaseCurrentPlayer() {
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
   }
+}
+
+byte MachineState::numberOfBallsInPlay() {
+  return numberOfBallsInPlay_;
+}
+
+byte MachineState::numberOfPlayers() {
+  return numberOfPlayers_;
+}
+
+byte MachineState::qualifiedScoreMultiplier() {
+  return currentPlayer_->qualifiedScoreMultiplier();
+}
+
+byte MachineState::queensChamberBonusValue() {
+  return currentPlayer_->queensChamberBonusValue();
+}
+
+byte MachineState::scoreMultiplier() {
+  return currentPlayer_->scoreMultiplier();
 }
 
 byte MachineState::startQualifiedMode() {
@@ -306,19 +314,6 @@ unsigned long MachineState::score(byte player) {
   if (player == 3) return player4_.score();
 }
 
-void MachineState::setMachineState(int id) {
-  if (id != machineStateId_) {
-    machineStateChanged_ = true;
-    machineStateId_ = id;
-  } else {
-    machineStateChanged_ = false;
-  }
-}
-
-void MachineState::setMostRecentSwitchHitTime() {
-  mostRecentSwitchHitTime_ = currentTime_;
-}
-
 void MachineState::awardExtraBall() {
   if (extraBallCollected_) return;
 
@@ -327,18 +322,22 @@ void MachineState::awardExtraBall() {
   BSOS_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain_);
 }
 
-void MachineState::decreaseBonus(byte amountToSubtract) {
-  currentPlayer_->decreaseBonus(amountToSubtract);
+void MachineState::completeActiveMode() {
+  currentPlayer_->completeActiveMode();
 }
 
-void MachineState::decreaseModeMultiplier() {
-  currentPlayer_->decreaseModeMultiplier();
+void MachineState::decreaseBonus() {
+  currentPlayer_->decreaseBonus();
 }
 
 void MachineState::decreaseNumberOfBallsInPlay() {
   if (numberOfBallsInPlay_ == 1) return;
 
   numberOfBallsInPlay_ -= 1;
+}
+
+void MachineState::decreaseScoreMultiplier() {
+  currentPlayer_->decreaseScoreMultiplier();
 }
 
 void MachineState::dropRightDropTargets() {
@@ -378,8 +377,14 @@ void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
   BSOS_SetDisplayCredits(credits_);
 }
 
-void MachineState::increaseModeMultiplier() {
-  currentPlayer_->increaseModeMultiplier();
+void MachineState::increaseNumberOfBallsInPlay() {
+  if (numberOfBallsInPlay_ == MAXIMUM_NUMBER_OF_BALLS_IN_PLAY) return;
+
+  numberOfBallsInPlay_ += 1;
+}
+
+void MachineState::increaseQualifiedScoreMultiplier() {
+  currentPlayer_->increaseQualifiedScoreMultiplier();
 }
 
 void MachineState::increaseQueensChamberBonusValue() {
@@ -390,26 +395,31 @@ void MachineState::increaseQueensChamberScoreValue() {
   currentPlayer_->increaseQueensChamberScoreValue();
 }
 
-void MachineState::increaseNumberOfBallsInPlay() {
-  if (numberOfBallsInPlay_ == MAXIMUM_NUMBER_OF_BALLS_IN_PLAY) return;
-
-  numberOfBallsInPlay_ += 1;
-}
-
 void MachineState::increaseScore(unsigned long amountToAdd) {
   currentPlayer_->increaseScore(amountToAdd);
+}
+
+void MachineState::increaseScoreMultiplier() {
+  currentPlayer_->increaseScoreMultiplier();
+}
+
+void MachineState::launchBallIntoPlay(int lag) {
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, currentTime() + 100 + lag);
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, currentTime() + 1000 + lag);
+
+  increaseNumberOfBallsInPlay();
 }
 
 void MachineState::overridePlayerScore(unsigned long value) {
   currentPlayer_->overridePlayerScore(value);
 }
 
-void MachineState::qualifyMode() {
-  return currentPlayer_->qualifyMode();
+void MachineState::qualifyIncreaseMultiplier() {
+  return currentPlayer_->qualifyIncreaseMultiplier();
 }
 
-void MachineState::qualifyModeMultiplier() {
-  return currentPlayer_->qualifyModeMultiplier();
+void MachineState::qualifyMode() {
+  return currentPlayer_->qualifyMode();
 }
 
 void MachineState::readStoredParameters() {
@@ -542,6 +552,19 @@ void MachineState::setHurryUpValue(unsigned long value) {
   hurryUpValue_ = value;
 }
 
+void MachineState::setMachineState(int id) {
+  if (id != machineStateId_) {
+    machineStateChanged_ = true;
+    machineStateId_ = id;
+  } else {
+    machineStateChanged_ = false;
+  }
+}
+
+void MachineState::setMostRecentSwitchHitTime() {
+  mostRecentSwitchHitTime_ = currentTime_;
+}
+
 void MachineState::setNumberOfPlayers(byte value) {
   numberOfPlayers_ = value;
 }
@@ -569,14 +592,18 @@ void MachineState::setTroughSwitchActivated(boolean value) {
 void MachineState::showAllPlayerLamps() {
   updateCaptiveOrbsLamps();
   updateGuardianRolloverLamps();
-  updateModeMultiplierLamps();
   updateOrbsDropTargetLamps();
   updateQueensChamberLamps();
   updateRightDropTargetLamps();
   updateRightDropTargetResetLamp();
   updateRightDropTargetSpotLamp();
   updateRightOrbsReleaseLamp();
+  updateScoreMultiplierLamps();
   updateTopRolloverLamps();
+}
+
+void MachineState::unqualifyIncreaseMultiplier() {
+  return currentPlayer_->unqualifyIncreaseMultiplier();
 }
 
 void MachineState::unqualifyMode() {
@@ -593,10 +620,6 @@ void MachineState::updateCaptiveOrbsLamps() {
 
 void MachineState::updateGuardianRolloverLamps() {
   currentPlayer_->updateGuardianRolloverLamps();
-}
-
-void MachineState::updateModeMultiplierLamps() {
-  currentPlayer_->updateModeMultiplierLamps();
 }
 
 void MachineState::updateOrbsDropTargetLamps() {
@@ -629,6 +652,10 @@ void MachineState::updateRightDropTargetSpotLamp() {
 
 void MachineState::updateRightOrbsReleaseLamp() {
   currentPlayer_->updateRightOrbsReleaseLamp();
+}
+
+void MachineState::updateScoreMultiplierLamps() {
+  currentPlayer_->updateScoreMultiplierLamps();
 }
 
 void MachineState::updateSelectedMode() {
@@ -667,5 +694,4 @@ void MachineState::resetMachineState() {
   hurryUpActivated_      = false;
 
   currentBallFirstSwitchHitTime_ = 0;
-  scoreMultiplier_               = 1;
 }

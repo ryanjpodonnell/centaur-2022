@@ -119,8 +119,8 @@ int GameMode::manageBallInTrough() {
     pushingBallFromOutlane_ = true;
 
     g_machineState.decreaseNumberOfBallsInPlay();
-    g_machineState.decreaseModeMultiplier();
-    g_machineState.updateModeMultiplierLamps();
+    g_machineState.decreaseScoreMultiplier();
+    g_machineState.updateScoreMultiplierLamps();
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
   } else if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 || pushingBallFromOutlane_) {
@@ -132,6 +132,7 @@ int GameMode::manageBallInTrough() {
     g_machineState.updatePlayerScore(false, false);
     g_bonusLightShow.end();
     g_bonusLightShow.reset();
+    g_machineState.completeActiveMode();
     g_machineState.resetOrbsDropTargets(false);
     g_machineState.resetQueensChamberBonusValue();
     g_machineState.resetQueensChamberScoreValue();

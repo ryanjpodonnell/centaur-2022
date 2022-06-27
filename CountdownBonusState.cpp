@@ -57,7 +57,7 @@ void CountdownBonus::countdownBonusStep() {
       if (!g_machineState.currentPlayerTilted()) addBonusToScore();
 
       g_soundHelper.playSound(SOUND_BONUS);
-      g_machineState.decreaseBonus(1);
+      g_machineState.decreaseBonus();
       g_machineState.updateBonusLamps();
       g_machineState.updatePlayerScore();
     }

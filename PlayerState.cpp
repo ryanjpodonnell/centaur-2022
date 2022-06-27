@@ -17,7 +17,7 @@ boolean PlayerState::allModesQualified() {
 }
 
 boolean PlayerState::allowRightDropTargetProgress() {
-  return modeMultiplier_ != MAX_MODE_MULTIPLIER && !modeMultiplierQualified_;
+  return qualifiedScoreMultiplier_ != MAX_MODE_MULTIPLIER && !increaseMultiplierQualified_;
 }
 
 boolean PlayerState::anyModeQualified() {
@@ -34,8 +34,8 @@ boolean PlayerState::guardianRolloversCompleted() {
          guardianLights_[3] == true;
 }
 
-boolean PlayerState::modeMultiplierQualified() {
-  return modeMultiplierQualified_;
+boolean PlayerState::increaseMultiplierQualified() {
+  return increaseMultiplierQualified_;
 }
 
 boolean PlayerState::orbsDropTargetsAllStanding() {
@@ -92,11 +92,22 @@ byte PlayerState::bonusMultiplier() {
   return bonusMultiplier_;
 }
 
+byte PlayerState::qualifiedScoreMultiplier() {
+  return qualifiedScoreMultiplier_;
+}
+
 byte PlayerState::queensChamberBonusValue() {
   return queensChamberBonusValue_;
 }
 
+byte PlayerState::scoreMultiplier() {
+  return scoreMultiplier_;
+}
+
 byte PlayerState::startQualifiedMode() {
+  scoreMultiplier_          = qualifiedScoreMultiplier_;
+  qualifiedScoreMultiplier_ = 1;
+
   launchLockedBallsIntoPlay();
 
   modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
@@ -122,20 +133,24 @@ unsigned long PlayerState::score() {
   return score_;
 }
 
-void PlayerState::decreaseBonus(byte amountToSubtract) {
+void PlayerState::completeActiveMode() {
+  if (modeStatus_[selectedMode_] != MODE_STATUS_STARTED) return;
+
+  modeStatus_[selectedMode_] = MODE_STATUS_COMPLETED;
+}
+
+void PlayerState::decreaseBonus() {
   int currentBonus = bonus();
 
-  if ((currentBonus - amountToSubtract) < 0) {
+  if ((currentBonus - 1) < 0) {
     setBonus(0);
   } else {
-    setBonus(currentBonus - amountToSubtract);
+    setBonus(currentBonus - 1);
   }
 }
 
-void PlayerState::decreaseModeMultiplier() {
-  if (modeMultiplier_ == 1) return;
-
-  modeMultiplier_ -= 1;
+void PlayerState::decreaseScoreMultiplier() {
+  scoreMultiplier_ -= 1;
 }
 
 void PlayerState::dropRightDropTargets() {
@@ -191,9 +206,8 @@ void PlayerState::increaseBonusMultiplier() {
   setBonusMultiplier(value);
 }
 
-void PlayerState::increaseModeMultiplier() {
-  modeMultiplierQualified_ = false;
-  modeMultiplier_ += 1;
+void PlayerState::increaseQualifiedScoreMultiplier() {
+  qualifiedScoreMultiplier_ += 1;
 }
 
 void PlayerState::increaseQueensChamberBonusValue() {
@@ -208,16 +222,20 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
   tempScore_ += amountToAdd;
 }
 
+void PlayerState::increaseScoreMultiplier() {
+  scoreMultiplier_ += 1;
+}
+
 void PlayerState::overridePlayerScore(unsigned long value) {
   g_displayHelper.overrideScoreDisplay(displayNumber_, value);
 }
 
-void PlayerState::qualifyMode() {
-  modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
+void PlayerState::qualifyIncreaseMultiplier() {
+  increaseMultiplierQualified_ = true;
 }
 
-void PlayerState::qualifyModeMultiplier() {
-  modeMultiplierQualified_ = true;
+void PlayerState::qualifyMode() {
+  modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
@@ -319,16 +337,17 @@ void PlayerState::resetPlayerState() {
   activeOrbsDropTarget_             = SW_O_DROP_TARGET;
   orbsDropTargetsCompletedInOrder_  = true;
 
-  modeMultiplierQualified_ = false;
+  increaseMultiplierQualified_ = false;
 
-  bonusMultiplier_         = 1;
-  bonus_                   = 0;
-  modeMultiplier_          = 1;
-  queensChamberBonusValue_ = 1;
-  queensChamberScoreValue_ = 10000;
-  score_                   = 0;
-  selectedMode_            = 0;
-  tempScore_               = 0;
+  bonusMultiplier_          = 1;
+  bonus_                    = 0;
+  qualifiedScoreMultiplier_ = 1;
+  queensChamberBonusValue_  = 1;
+  queensChamberScoreValue_  = 10000;
+  score_                    = 0;
+  scoreMultiplier_          = 1;
+  selectedMode_             = 0;
+  tempScore_                = 0;
 
   resetGuardianRollovers();
   resetTopRollovers();
@@ -352,7 +371,7 @@ void PlayerState::resetRightDropTargets(boolean activateSolenoid) {
   rightDropTargets_[2] = false;
   rightDropTargets_[3] = false;
 
-  modeMultiplierQualified_ = false;
+  increaseMultiplierQualified_ = false;
 }
 
 void PlayerState::resetTopRollovers() {
@@ -415,6 +434,10 @@ void PlayerState::setScore(unsigned long value) {
   tempScore_ = value;
 }
 
+void PlayerState::unqualifyIncreaseMultiplier() {
+  increaseMultiplierQualified_ = false;
+}
+
 void PlayerState::unqualifyMode() {
   modeStatus_[selectedMode_] = MODE_STATUS_NOT_QUALIFIED;
 }
@@ -437,38 +460,6 @@ void PlayerState::updateGuardianRolloverLamps() {
   guardianLights_[1] ? g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
   guardianLights_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
   guardianLights_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER)    : g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
-}
-
-void PlayerState::updateModeMultiplierLamps() {
-  boolean flashLamps = true;
-  if (anyModeStarted()) flashLamps = false;
-
-  if (modeMultiplier_ == 1) {
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_2X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (modeMultiplier_ == 2) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (modeMultiplier_ == 3) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (modeMultiplier_ == 4) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, flashLamps);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (modeMultiplier_ == 5) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X, flashLamps);
-  }
 }
 
 void PlayerState::updateOrbsDropTargetLamps() {
@@ -568,7 +559,7 @@ void PlayerState::updateRightDropTargetLamps() {
 }
 
 void PlayerState::updateRightDropTargetResetLamp() {
-  if (modeMultiplierQualified_) {
+  if (increaseMultiplierQualified_) {
     g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW, true);
   } else {
     g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
@@ -589,6 +580,42 @@ void PlayerState::updateRightOrbsReleaseLamp() {
   } else {
     g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
   }
+}
+
+void PlayerState::updateScoreMultiplierLamps() {
+  boolean flashLamps = anyModeStarted() ? false : true;
+
+  if (qualifiedScoreMultiplier_ == 1) {
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_2X);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
+  } else if (qualifiedScoreMultiplier_ == 2) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
+  } else if (qualifiedScoreMultiplier_ == 3) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
+  } else if (qualifiedScoreMultiplier_ == 4) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, flashLamps);
+    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
+  } else if (qualifiedScoreMultiplier_ == 5) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, flashLamps);
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X, flashLamps);
+  }
+
+  if (scoreMultiplier_ == 2) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X);
+  if (scoreMultiplier_ == 3) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X);
+  if (scoreMultiplier_ == 4) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X);
+  if (scoreMultiplier_ == 5) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X);
 }
 
 void PlayerState::updateSelectedMode() {
@@ -622,12 +649,11 @@ boolean PlayerState::anyModeStarted() {
 void PlayerState::launchLockedBallsIntoPlay() {
   int lag = 0;
 
-  for (byte iterator = 1; iterator < modeMultiplier_; iterator++) {
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, g_machineState.currentTime() + 100 + lag);
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, g_machineState.currentTime() + 1000 + lag);
-    lag += 2000;
-
+  for (byte iterator = g_machineState.numberOfBallsInPlay(); iterator < scoreMultiplier_; iterator++) {
+    g_machineState.launchBallIntoPlay();
     g_machineState.increaseNumberOfBallsInPlay();
+
+    lag += 2000;
   }
 }
 
