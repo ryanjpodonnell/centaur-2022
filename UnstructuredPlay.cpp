@@ -60,7 +60,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_machineState.orbsDropTargetsCompleted()) {
         if (g_machineState.orbsDropTargetsCompletedInOrder()) {
           if (DEBUG_MESSAGES) Serial.write("Additional Ball Added\n\r");
-          g_machineState.increaseScoreMultiplier();
           g_machineState.launchBallIntoPlay();
           g_machineState.increaseNumberOfBallsInPlay();
           g_machineState.updateScoreMultiplierLamps();

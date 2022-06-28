@@ -24,7 +24,6 @@ class PlayerState {
     byte          displayNumber_;
     byte          qualifiedScoreMultiplier_;
     byte          queensChamberBonusValue_;
-    byte          scoreMultiplier_;
     byte          selectedMode_;
     unsigned long lastFlash_;
     unsigned long queensChamberScoreValue_;
@@ -64,7 +63,6 @@ class PlayerState {
     byte          bonusMultiplier();
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
-    byte          scoreMultiplier();
     byte          startQualifiedMode();
     unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
@@ -72,7 +70,6 @@ class PlayerState {
     unsigned long score();
     void          completeSelectedMode();
     void          decreaseBonus();
-    void          decreaseScoreMultiplier();
     void          dropRightDropTargets();
     void          flashOrbsDropTargetLamps();
     void          flashRightDropTargetLamps();
@@ -82,7 +79,6 @@ class PlayerState {
     void          increaseQueensChamberBonusValue();
     void          increaseQueensChamberScoreValue();
     void          increaseScore(unsigned long amountToAdd);
-    void          increaseScoreMultiplier();
     void          overridePlayerScore(unsigned long value);
     void          qualifyIncreaseMultiplier();
     void          qualifyMode();

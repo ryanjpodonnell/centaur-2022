@@ -100,16 +100,10 @@ byte PlayerState::queensChamberBonusValue() {
   return queensChamberBonusValue_;
 }
 
-byte PlayerState::scoreMultiplier() {
-  return scoreMultiplier_;
-}
-
 byte PlayerState::startQualifiedMode() {
-  if (scoreMultiplier_ < qualifiedScoreMultiplier_) scoreMultiplier_ = qualifiedScoreMultiplier_;
-  qualifiedScoreMultiplier_ = 1;
-
   launchLockedBallsIntoPlay();
 
+  qualifiedScoreMultiplier_ = 1;
   modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
   if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
   if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
@@ -147,10 +141,6 @@ void PlayerState::decreaseBonus() {
   } else {
     setBonus(currentBonus - 1);
   }
-}
-
-void PlayerState::decreaseScoreMultiplier() {
-  scoreMultiplier_ -= 1;
 }
 
 void PlayerState::dropRightDropTargets() {
@@ -220,10 +210,6 @@ void PlayerState::increaseQueensChamberScoreValue() {
 
 void PlayerState::increaseScore(unsigned long amountToAdd) {
   tempScore_ += amountToAdd;
-}
-
-void PlayerState::increaseScoreMultiplier() {
-  scoreMultiplier_ += 1;
 }
 
 void PlayerState::overridePlayerScore(unsigned long value) {
@@ -345,7 +331,6 @@ void PlayerState::resetPlayerState() {
   queensChamberBonusValue_  = 1;
   queensChamberScoreValue_  = 10000;
   score_                    = 0;
-  scoreMultiplier_          = 1;
   selectedMode_             = 0;
   tempScore_                = 0;
 
@@ -583,27 +568,27 @@ void PlayerState::updateRightOrbsReleaseLamp() {
 }
 
 void PlayerState::updateScoreMultiplierLamps() {
-  if (qualifiedScoreMultiplier_ < 2 && scoreMultiplier_ < 2) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_2X);
-  if (qualifiedScoreMultiplier_ < 3 && scoreMultiplier_ < 3) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
-  if (qualifiedScoreMultiplier_ < 4 && scoreMultiplier_ < 4) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-  if (qualifiedScoreMultiplier_ < 5 && scoreMultiplier_ < 5) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
+  if (qualifiedScoreMultiplier_ < 2 && g_machineState.numberOfBallsInPlay() < 2) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_2X);
+  if (qualifiedScoreMultiplier_ < 3 && g_machineState.numberOfBallsInPlay() < 3) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
+  if (qualifiedScoreMultiplier_ < 4 && g_machineState.numberOfBallsInPlay() < 4) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
+  if (qualifiedScoreMultiplier_ < 5 && g_machineState.numberOfBallsInPlay() < 5) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
 
-  if (scoreMultiplier_ >= 2) {
+  if (g_machineState.numberOfBallsInPlay() >= 2) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X);
   } else if (qualifiedScoreMultiplier_ >= 2) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, true);
   }
-  if (scoreMultiplier_ >= 3) {
+  if (g_machineState.numberOfBallsInPlay() >= 3) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X);
   } else if (qualifiedScoreMultiplier_ >= 3) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, true);
   }
-  if (scoreMultiplier_ >= 4) {
+  if (g_machineState.numberOfBallsInPlay() >= 4) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X);
   } else if (qualifiedScoreMultiplier_ >= 4) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, true);
   }
-  if (scoreMultiplier_ >= 5) {
+  if (g_machineState.numberOfBallsInPlay() >= 5) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X);
   } else if (qualifiedScoreMultiplier_ >= 5) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X, true);
@@ -643,7 +628,7 @@ boolean PlayerState::anyModeStarted() {
 void PlayerState::launchLockedBallsIntoPlay() {
   int lag = 0;
 
-  for (byte itr = g_machineState.numberOfBallsInPlay(); itr < scoreMultiplier_; itr++) {
+  for (byte itr = g_machineState.numberOfBallsInPlay(); itr < qualifiedScoreMultiplier_; itr++) {
     g_machineState.launchBallIntoPlay(lag);
     g_machineState.increaseNumberOfBallsInPlay();
 

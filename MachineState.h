@@ -88,7 +88,6 @@ class MachineState {
     byte          numberOfPlayers();
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
-    byte          scoreMultiplier();
     byte          startQualifiedMode();
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
@@ -108,7 +107,6 @@ class MachineState {
     void          completeSelectedMode();
     void          decreaseBonus();
     void          decreaseNumberOfBallsInPlay();
-    void          decreaseScoreMultiplier();
     void          dropRightDropTargets();
     void          flashOrbsDropTargetLamps();
     void          flashRightDropTargetLamps();
@@ -121,7 +119,6 @@ class MachineState {
     void          increaseQueensChamberBonusValue();
     void          increaseQueensChamberScoreValue();
     void          increaseScore(unsigned long amountToAdd);
-    void          increaseScoreMultiplier();
     void          launchBallIntoPlay(int lag = 0);
     void          overridePlayerScore(unsigned long value);
     void          qualifyIncreaseMultiplier();

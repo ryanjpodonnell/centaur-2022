@@ -210,10 +210,6 @@ byte MachineState::queensChamberBonusValue() {
   return currentPlayer_->queensChamberBonusValue();
 }
 
-byte MachineState::scoreMultiplier() {
-  return currentPlayer_->scoreMultiplier();
-}
-
 byte MachineState::startQualifiedMode() {
   return currentPlayer_->startQualifiedMode();
 }
@@ -336,10 +332,6 @@ void MachineState::decreaseNumberOfBallsInPlay() {
   numberOfBallsInPlay_ -= 1;
 }
 
-void MachineState::decreaseScoreMultiplier() {
-  currentPlayer_->decreaseScoreMultiplier();
-}
-
 void MachineState::dropRightDropTargets() {
   currentPlayer_->dropRightDropTargets();
 }
@@ -397,10 +389,6 @@ void MachineState::increaseQueensChamberScoreValue() {
 
 void MachineState::increaseScore(unsigned long amountToAdd) {
   currentPlayer_->increaseScore(amountToAdd);
-}
-
-void MachineState::increaseScoreMultiplier() {
-  currentPlayer_->increaseScoreMultiplier();
 }
 
 void MachineState::launchBallIntoPlay(int lag) {

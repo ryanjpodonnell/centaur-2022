@@ -138,7 +138,9 @@ int Base::run(byte switchHit) {
     Private
 *********************************************************************/
 void Base::manageDefaultScoringLogic(unsigned long value) {
-  if(!g_gameMode.scoreIncreased()) g_machineState.increaseScore(value * g_machineState.scoreMultiplier());
+  if (!g_gameMode.scoreIncreased()) {
+    g_machineState.increaseScore(value * g_machineState.numberOfBallsInPlay());
+  }
 
   g_gameMode.resetIndicatorPlayed();
   g_machineState.setMostRecentSwitchHitTime();
