@@ -23,8 +23,11 @@ byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
     BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 8, g_machineState.currentTime() + 500);
     BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, g_machineState.currentTime() + 500);
 
-    newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
     g_displayHelper.overrideCredits(g_machineState.credits());
+    g_machineState.completeSelectedMode();
+    g_machineState.rotateQualifiedMode();
+
+    newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
   }
 
   return newGameMode;

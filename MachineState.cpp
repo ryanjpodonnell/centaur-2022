@@ -322,8 +322,8 @@ void MachineState::awardExtraBall() {
   BSOS_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain_);
 }
 
-void MachineState::completeActiveMode() {
-  currentPlayer_->completeActiveMode();
+void MachineState::completeSelectedMode() {
+  currentPlayer_->completeSelectedMode();
 }
 
 void MachineState::decreaseBonus() {
@@ -406,8 +406,6 @@ void MachineState::increaseScoreMultiplier() {
 void MachineState::launchBallIntoPlay(int lag) {
   BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, currentTime() + 100 + lag);
   BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, currentTime() + 1000 + lag);
-
-  increaseNumberOfBallsInPlay();
 }
 
 void MachineState::overridePlayerScore(unsigned long value) {

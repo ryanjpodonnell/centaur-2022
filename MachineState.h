@@ -41,7 +41,6 @@ class MachineState {
     byte          numberOfBallsInPlay_;
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
-    byte          scoreMultiplier_;
     int           machineStateId_;
     unsigned long ballEnteredTroughTime_;
     unsigned long currentBallFirstSwitchHitTime_;
@@ -106,7 +105,7 @@ class MachineState {
     unsigned long rightDropTargetsScoreValue();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
-    void          completeActiveMode();
+    void          completeSelectedMode();
     void          decreaseBonus();
     void          decreaseNumberOfBallsInPlay();
     void          decreaseScoreMultiplier();

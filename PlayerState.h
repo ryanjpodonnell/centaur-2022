@@ -70,7 +70,7 @@ class PlayerState {
     unsigned long rightDropTargetsFinishedTime();
     unsigned long rightDropTargetsScoreValue();
     unsigned long score();
-    void          completeActiveMode();
+    void          completeSelectedMode();
     void          decreaseBonus();
     void          decreaseScoreMultiplier();
     void          dropRightDropTargets();

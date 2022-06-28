@@ -105,7 +105,7 @@ byte PlayerState::scoreMultiplier() {
 }
 
 byte PlayerState::startQualifiedMode() {
-  scoreMultiplier_          = qualifiedScoreMultiplier_;
+  if (scoreMultiplier_ < qualifiedScoreMultiplier_) scoreMultiplier_ = qualifiedScoreMultiplier_;
   qualifiedScoreMultiplier_ = 1;
 
   launchLockedBallsIntoPlay();
@@ -133,7 +133,7 @@ unsigned long PlayerState::score() {
   return score_;
 }
 
-void PlayerState::completeActiveMode() {
+void PlayerState::completeSelectedMode() {
   if (modeStatus_[selectedMode_] != MODE_STATUS_STARTED) return;
 
   modeStatus_[selectedMode_] = MODE_STATUS_COMPLETED;
@@ -395,7 +395,7 @@ void PlayerState::rotatePlayerLamps() {
 
 void PlayerState::rotateQualifiedMode() {
   byte moddedModeIterator = 0;
-  for (byte modeIterator = (selectedMode_ + 1); modeIterator <= (selectedMode_ + 4); modeIterator++) {
+  for (byte modeIterator = (selectedMode_ + 1); modeIterator < (selectedMode_ + 3); modeIterator++) {
     moddedModeIterator = modeIterator % 4;
 
     if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
@@ -583,47 +583,41 @@ void PlayerState::updateRightOrbsReleaseLamp() {
 }
 
 void PlayerState::updateScoreMultiplierLamps() {
-  boolean flashLamps = anyModeStarted() ? false : true;
+  if (qualifiedScoreMultiplier_ < 2 && scoreMultiplier_ < 2) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_2X);
+  if (qualifiedScoreMultiplier_ < 3 && scoreMultiplier_ < 3) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
+  if (qualifiedScoreMultiplier_ < 4 && scoreMultiplier_ < 4) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
+  if (qualifiedScoreMultiplier_ < 5 && scoreMultiplier_ < 5) g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
 
-  if (qualifiedScoreMultiplier_ == 1) {
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_2X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (qualifiedScoreMultiplier_ == 2) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_3X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (qualifiedScoreMultiplier_ == 3) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_4X);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (qualifiedScoreMultiplier_ == 4) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, flashLamps);
-    g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_5X);
-  } else if (qualifiedScoreMultiplier_ == 5) {
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, flashLamps);
-    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X, flashLamps);
+  if (scoreMultiplier_ >= 2) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X);
+  } else if (qualifiedScoreMultiplier_ >= 2) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X, true);
   }
-
-  if (scoreMultiplier_ == 2) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X);
-  if (scoreMultiplier_ == 3) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X);
-  if (scoreMultiplier_ == 4) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X);
-  if (scoreMultiplier_ == 5) g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X);
+  if (scoreMultiplier_ >= 3) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X);
+  } else if (qualifiedScoreMultiplier_ >= 3) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X, true);
+  }
+  if (scoreMultiplier_ >= 4) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X);
+  } else if (qualifiedScoreMultiplier_ >= 4) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X, true);
+  }
+  if (scoreMultiplier_ >= 5) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X);
+  } else if (qualifiedScoreMultiplier_ >= 5) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X, true);
+  }
 }
 
 void PlayerState::updateSelectedMode() {
   if (allModesQualified()) return;
 
-  for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
-    if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) {
-      selectedMode_ = modeIterator;
+  byte moddedModeIterator = 0;
+  for (byte modeIterator = (selectedMode_ + 1); modeIterator < (selectedMode_ + 3); modeIterator++) {
+    moddedModeIterator = modeIterator % 4;
+    if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
+      selectedMode_ = moddedModeIterator;
 
       return;
     }
@@ -649,8 +643,8 @@ boolean PlayerState::anyModeStarted() {
 void PlayerState::launchLockedBallsIntoPlay() {
   int lag = 0;
 
-  for (byte iterator = g_machineState.numberOfBallsInPlay(); iterator < scoreMultiplier_; iterator++) {
-    g_machineState.launchBallIntoPlay();
+  for (byte itr = g_machineState.numberOfBallsInPlay(); itr < scoreMultiplier_; itr++) {
+    g_machineState.launchBallIntoPlay(lag);
     g_machineState.increaseNumberOfBallsInPlay();
 
     lag += 2000;

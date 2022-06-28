@@ -59,8 +59,10 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       if (g_machineState.orbsDropTargetsCompleted()) {
         if (g_machineState.orbsDropTargetsCompletedInOrder()) {
+          if (DEBUG_MESSAGES) Serial.write("Additional Ball Added\n\r");
           g_machineState.increaseScoreMultiplier();
           g_machineState.launchBallIntoPlay();
+          g_machineState.increaseNumberOfBallsInPlay();
           g_machineState.updateScoreMultiplierLamps();
         }
 
@@ -81,6 +83,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       if (g_machineState.rightDropTargetsCompleted()) {
         if (g_machineState.rightDropTargetsCompletedInOrder()) {
+          if (DEBUG_MESSAGES) Serial.write("Additional Ball Qualified\n\r");
           g_machineState.increaseQualifiedScoreMultiplier();
           g_machineState.updateScoreMultiplierLamps();
 
@@ -123,7 +126,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
         g_machineState.updateScoreMultiplierLamps();
         g_machineState.updateRightOrbsReleaseLamp();
-        g_machineState.updateSelectedMode();
       }
 
       break;
