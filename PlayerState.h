@@ -113,7 +113,6 @@ class PlayerState {
     void          updateRightDropTargetSpotLamp();
     void          updateRightOrbsReleaseLamp();
     void          updateScoreMultiplierLamps();
-    void          updateSelectedMode();
     void          updateTopRolloverLamps();
 };
 

@@ -171,7 +171,6 @@ class MachineState {
     void          updateRightDropTargetSpotLamp();
     void          updateRightOrbsReleaseLamp();
     void          updateScoreMultiplierLamps();
-    void          updateSelectedMode();
     void          updateTopRolloverLamps();
     void          writeCoinToAudit(byte switchHit);
 };

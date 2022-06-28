@@ -1,7 +1,7 @@
 #ifndef ORB_MODE_1_H
 #define ORB_MODE_1_H
 
-#define ORB_MODE_1_TOTAL_SECONDS 30
+#define ORB_MODE_1_TOTAL_SECONDS 5
 
 class OrbMode1 {
   private:

@@ -25,7 +25,6 @@ byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
 
     g_displayHelper.overrideCredits(g_machineState.credits());
     g_machineState.completeSelectedMode();
-    g_machineState.rotateQualifiedMode();
 
     newGameMode = GAME_MODE_UNSTRUCTURED_PLAY;
   }

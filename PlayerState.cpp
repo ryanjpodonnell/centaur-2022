@@ -105,10 +105,11 @@ byte PlayerState::startQualifiedMode() {
 
   qualifiedScoreMultiplier_ = 1;
   modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
+
   if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
-  if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
-  if (selectedMode_ == 2) return GAME_MODE_ORBS_3;
-  if (selectedMode_ == 3) return GAME_MODE_ORBS_4;
+  if (selectedMode_ == 1) return GAME_MODE_ORBS_1;
+  if (selectedMode_ == 2) return GAME_MODE_ORBS_1;
+  if (selectedMode_ == 3) return GAME_MODE_ORBS_1;
 }
 
 unsigned long PlayerState::queensChamberScoreValue() {
@@ -221,7 +222,17 @@ void PlayerState::qualifyIncreaseMultiplier() {
 }
 
 void PlayerState::qualifyMode() {
-  modeStatus_[selectedMode_] = MODE_STATUS_QUALIFIED;
+  byte moddedModeIterator = 0;
+  for (byte modeIterator = selectedMode_; modeIterator < (selectedMode_ + 4); modeIterator++) {
+    moddedModeIterator = modeIterator % 4;
+
+    if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
+      modeStatus_[moddedModeIterator] = MODE_STATUS_QUALIFIED;
+      selectedMode_ = moddedModeIterator;
+
+      return;
+    }
+  }
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
@@ -380,13 +391,14 @@ void PlayerState::rotatePlayerLamps() {
 
 void PlayerState::rotateQualifiedMode() {
   byte moddedModeIterator = 0;
+
   for (byte modeIterator = (selectedMode_ + 1); modeIterator < (selectedMode_ + 3); modeIterator++) {
     moddedModeIterator = modeIterator % 4;
 
     if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
       modeStatus_[moddedModeIterator] = MODE_STATUS_QUALIFIED;
-      modeStatus_[selectedMode_]      = MODE_STATUS_NOT_QUALIFIED;
-      selectedMode_                   = moddedModeIterator;
+      modeStatus_[selectedMode_] = MODE_STATUS_NOT_QUALIFIED;
+      selectedMode_ = moddedModeIterator;
 
       return;
     }
@@ -434,9 +446,13 @@ void PlayerState::updateBonusLamps() {
 
 void PlayerState::updateCaptiveOrbsLamps() {
   for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
+    char buf[128];
+    sprintf(buf, "Mode %d status = %d\n", modeIterator, modeStatus_[modeIterator]);
+    Serial.write(buf);
+
     if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(captiveOrbsLamps_[modeIterator]);
     if (modeStatus_[modeIterator] == MODE_STATUS_QUALIFIED)     g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator], true);
-    if (modeStatus_[modeIterator] == MODE_STATUS_STARTED)       g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator]);
+    if (modeStatus_[modeIterator] == MODE_STATUS_COMPLETED)     g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator]);
   }
 }
 
@@ -592,20 +608,6 @@ void PlayerState::updateScoreMultiplierLamps() {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X);
   } else if (qualifiedScoreMultiplier_ >= 5) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X, true);
-  }
-}
-
-void PlayerState::updateSelectedMode() {
-  if (allModesQualified()) return;
-
-  byte moddedModeIterator = 0;
-  for (byte modeIterator = (selectedMode_ + 1); modeIterator < (selectedMode_ + 3); modeIterator++) {
-    moddedModeIterator = modeIterator % 4;
-    if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
-      selectedMode_ = moddedModeIterator;
-
-      return;
-    }
   }
 }
 

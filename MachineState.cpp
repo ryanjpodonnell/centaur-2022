@@ -644,10 +644,6 @@ void MachineState::updateScoreMultiplierLamps() {
   currentPlayer_->updateScoreMultiplierLamps();
 }
 
-void MachineState::updateSelectedMode() {
-  currentPlayer_->updateSelectedMode();
-}
-
 void MachineState::updateTopRolloverLamps() {
   currentPlayer_->updateTopRolloverLamps();
 }

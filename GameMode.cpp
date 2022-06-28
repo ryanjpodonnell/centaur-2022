@@ -133,8 +133,6 @@ int GameMode::manageBallInTrough() {
     g_bonusLightShow.reset();
 
     g_machineState.completeSelectedMode();
-    g_machineState.rotateQualifiedMode();
-
     g_machineState.resetOrbsDropTargets(false);
     g_machineState.resetQueensChamberBonusValue();
     g_machineState.resetQueensChamberScoreValue();
