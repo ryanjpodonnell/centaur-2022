@@ -152,6 +152,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_INLINE_BACK_TARGET:
       if (g_machineState.hurryUpActivated()) {
         endHurryUp();
+        g_machineState.updateQueensChamberLamps();
         g_machineState.increaseScore(g_machineState.hurryUpValue());
       } else {
         if ((g_machineState.queensChamberBonusValue() < MAX_QUEENS_CHAMBER_BONUS_VALUE) &&

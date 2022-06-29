@@ -392,7 +392,7 @@ void PlayerState::rotatePlayerLamps() {
 void PlayerState::rotateQualifiedMode() {
   byte moddedModeIterator = 0;
 
-  for (byte modeIterator = (selectedMode_ + 1); modeIterator < (selectedMode_ + 3); modeIterator++) {
+  for (byte modeIterator = (selectedMode_ + 1); modeIterator < (selectedMode_ + 4); modeIterator++) {
     moddedModeIterator = modeIterator % 4;
 
     if (modeStatus_[moddedModeIterator] == MODE_STATUS_NOT_QUALIFIED) {
