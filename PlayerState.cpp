@@ -148,22 +148,22 @@ void PlayerState::dropRightDropTargets() {
   int lag = 750;
 
   if (rightDropTargets_[0] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, 4, g_machineState.currentTime() + lag);
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
     lag += 250;
   }
 
   if (rightDropTargets_[1] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, 4, g_machineState.currentTime() + lag);
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
     lag += 250;
   }
 
   if (rightDropTargets_[2] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, 4, g_machineState.currentTime() + lag);
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
     lag += 250;
   }
 
   if (rightDropTargets_[3] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, 4, g_machineState.currentTime() + lag);
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
   }
 }
 
@@ -307,7 +307,7 @@ void PlayerState::resetModeStatus() {
 
 void PlayerState::resetOrbsDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) {
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 8, g_machineState.currentTime() + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 500);
   }
 
   activeOrbsDropTarget_            = SW_O_DROP_TARGET;
@@ -356,7 +356,7 @@ void PlayerState::resetPlayerState() {
 
 void PlayerState::resetRightDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) {
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, g_machineState.currentTime() + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 500);
   }
 
   activeRightDropTarget_            = SW_RIGHT_4_DROP_TARGET_1;
@@ -687,22 +687,22 @@ void PlayerState::manageRightDropTargetScoring(byte switchHit) {
 
 void PlayerState::manageSpotRightDropTarget() {
   if (rightDropTargets_[0] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, 4, g_machineState.currentTime());
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
     return;
   }
 
   if (rightDropTargets_[1] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, 4, g_machineState.currentTime());
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
     return;
   }
 
   if (rightDropTargets_[2] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, 4, g_machineState.currentTime());
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
     return;
   }
 
   if (rightDropTargets_[3] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, 4, g_machineState.currentTime());
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
     return;
   }
 }

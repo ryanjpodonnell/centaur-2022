@@ -234,9 +234,9 @@ int MachineState::initNewBall(bool curStateChanged) {
 
     BSOS_EnableSolenoidStack();
     BSOS_SetDisableFlippers(false);
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, 8, currentTime_ + 500);
-    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, 8, currentTime_ + 500);
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, 8, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_DROPS_RESET_STRENGTH, currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_DROPS_RESET_STRENGTH, currentTime_ + 600);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, currentTime_ + 700);
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
 
@@ -248,7 +248,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     setRightDropTargetsFinishedTime();
     dropRightDropTargets();
 
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, 4, rightDropTargetsFinishedTime());
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, rightDropTargetsFinishedTime());
   }
 
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) || currentTime_ < rightDropTargetsFinishedTime()) {
@@ -392,8 +392,8 @@ void MachineState::increaseScore(unsigned long amountToAdd) {
 }
 
 void MachineState::launchBallIntoPlay(int lag) {
-  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE, 4, currentTime() + 100 + lag);
-  BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, 6, currentTime() + 1000 + lag);
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime() + 100 + lag);
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, currentTime() + 1000 + lag);
 }
 
 void MachineState::overridePlayerScore(unsigned long value) {

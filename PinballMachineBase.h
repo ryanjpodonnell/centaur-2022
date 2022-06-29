@@ -72,5 +72,14 @@
 #define SOL_K1_RELAY                  16
 #define SOL_MAGNET                    17
 
+#define SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH 7
+#define SOL_BALL_RELEASE_STRENGTH           4
+#define SOL_DROPS_RESET_STRENGTH            5
+#define SOL_OUTHOLE_KICKER_STRENGTH         4
+#define SOL_PLAYFIELD_KICKER_STRENGTH       4
+#define SOL_SINGLE_DROP_STRENGTH            4
+#define SOL_SLINGSHOT_STRENGTH              4
+#define SOL_THUMPER_BUMPER_STRENGTH         3
+
 #define NUM_SWITCHES_WITH_TRIGGERS          4
 #define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 4
