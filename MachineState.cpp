@@ -22,6 +22,7 @@ MachineState::MachineState() {
   ballEnteredTroughTime_       = 0;
   lastTiltWarningTime_         = 0;
   mostRecentSwitchHitTime_     = 0;
+  mostRecentSwitchHit_         = 0xFF;
 
   resetMachineState();
 }
@@ -192,6 +193,10 @@ byte MachineState::increaseCurrentPlayer() {
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
   }
+}
+
+byte MachineState::mostRecentSwitchHit() {
+  return mostRecentSwitchHit_;
 }
 
 byte MachineState::numberOfBallsInPlay() {
@@ -561,6 +566,10 @@ void MachineState::setMachineState(int id) {
   } else {
     machineStateChanged_ = false;
   }
+}
+
+void MachineState::setMostRecentSwitchHit(byte value) {
+  mostRecentSwitchHit_ = value;
 }
 
 void MachineState::setMostRecentSwitchHitTime() {

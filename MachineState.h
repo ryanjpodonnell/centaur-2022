@@ -38,6 +38,7 @@ class MachineState {
     byte          credits_;
     byte          currentBallInPlay_;
     byte          currentPlayerNumber_;
+    byte          mostRecentSwitchHit_;
     byte          numberOfBallsInPlay_;
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
@@ -84,6 +85,7 @@ class MachineState {
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
     byte          increaseCurrentPlayer();
+    byte          mostRecentSwitchHit();
     byte          numberOfBallsInPlay();
     byte          numberOfPlayers();
     byte          qualifiedScoreMultiplier();
@@ -151,6 +153,7 @@ class MachineState {
     void          setHurryUpActivated(boolean value);
     void          setHurryUpValue(unsigned long value);
     void          setMachineState(int id);
+    void          setMostRecentSwitchHit(byte value);
     void          setMostRecentSwitchHitTime();
     void          setNumberOfPlayers(byte value);
     void          setPlayfieldValidated();
