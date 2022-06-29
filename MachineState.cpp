@@ -63,10 +63,6 @@ boolean MachineState::hurryUpActivated() {
   return hurryUpActivated_;
 }
 
-boolean MachineState::increaseMultiplierQualified() {
-  return currentPlayer_->increaseMultiplierQualified();
-}
-
 boolean MachineState::increaseNumberOfPlayers() {
   if (credits_ < 1 && !FREE_PLAY) return false;
   if (numberOfPlayers_ >= 4) return false;
@@ -137,6 +133,10 @@ boolean MachineState::rightDropTargetsCompleted() {
 
 boolean MachineState::rightDropTargetsCompletedInOrder() {
   return currentPlayer_->rightDropTargetsCompletedInOrder();
+}
+
+boolean MachineState::rightDropTargetsResetQualified() {
+  return currentPlayer_->rightDropTargetsResetQualified();
 }
 
 boolean MachineState::samePlayerShootsAgain() {
@@ -248,7 +248,11 @@ int MachineState::initNewBall(bool curStateChanged) {
     setRightDropTargetsFinishedTime();
     dropRightDropTargets();
 
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, rightDropTargetsFinishedTime());
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(
+        SOL_OUTHOLE_KICKER,
+        SOL_OUTHOLE_KICKER_STRENGTH,
+        rightDropTargetsFinishedTime()
+        );
   }
 
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) || currentTime_ < rightDropTargetsFinishedTime()) {
@@ -336,12 +340,12 @@ void MachineState::dropRightDropTargets() {
   currentPlayer_->dropRightDropTargets();
 }
 
-void MachineState::flashOrbsDropTargetLamps() {
-  currentPlayer_->flashOrbsDropTargetLamps();
+void MachineState::flashOrbsDropTargetsLamps() {
+  currentPlayer_->flashOrbsDropTargetsLamps();
 }
 
-void MachineState::flashRightDropTargetLamps() {
-  currentPlayer_->flashRightDropTargetLamps();
+void MachineState::flashRightDropTargetsLamps() {
+  currentPlayer_->flashRightDropTargetsLamps();
 }
 
 void MachineState::hideAllPlayerLamps() {
@@ -400,12 +404,12 @@ void MachineState::overridePlayerScore(unsigned long value) {
   currentPlayer_->overridePlayerScore(value);
 }
 
-void MachineState::qualifyIncreaseMultiplier() {
-  return currentPlayer_->qualifyIncreaseMultiplier();
-}
-
 void MachineState::qualifyMode() {
   return currentPlayer_->qualifyMode();
+}
+
+void MachineState::qualifyRightDropTargetsReset() {
+  return currentPlayer_->qualifyRightDropTargetsReset();
 }
 
 void MachineState::readStoredParameters() {
@@ -455,7 +459,13 @@ void MachineState::resetGuardianRollovers() {
 }
 
 void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
-  currentPlayer_->resetOrbsDropTargets(activateSolenoid);
+  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
+      SOL_ORBS_TARGET_RESET,
+      SOL_DROPS_RESET_STRENGTH,
+      g_machineState.currentTime() + 500
+      );
+
+  currentPlayer_->resetOrbsDropTargets();
 }
 
 void MachineState::resetQueensChamberBonusValue() {
@@ -467,7 +477,13 @@ void MachineState::resetQueensChamberScoreValue() {
 }
 
 void MachineState::resetRightDropTargets(boolean activateSolenoid) {
-  currentPlayer_->resetRightDropTargets(activateSolenoid);
+  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
+      SOL_4_RIGHT_DROP_TARGET_RESET,
+      SOL_DROPS_RESET_STRENGTH,
+      g_machineState.currentTime() + 500
+      );
+
+  currentPlayer_->resetRightDropTargets();
 }
 
 void MachineState::resetTiltWarnings() {
@@ -578,22 +594,22 @@ void MachineState::setTroughSwitchActivated(boolean value) {
 void MachineState::showAllPlayerLamps() {
   updateCaptiveOrbsLamps();
   updateGuardianRolloverLamps();
-  updateOrbsDropTargetLamps();
+  updateOrbsDropTargetsLamps();
   updateQueensChamberLamps();
-  updateRightDropTargetLamps();
-  updateRightDropTargetResetLamp();
-  updateRightDropTargetSpotLamp();
+  updateRightDropTargetsLamps();
+  updateRightDropTargetsResetLamp();
+  updateRightDropTargetsSpotLamp();
   updateRightOrbsReleaseLamp();
   updateScoreMultiplierLamps();
   updateTopRolloverLamps();
 }
 
-void MachineState::unqualifyIncreaseMultiplier() {
-  return currentPlayer_->unqualifyIncreaseMultiplier();
-}
-
 void MachineState::unqualifyMode() {
   return currentPlayer_->unqualifyMode();
+}
+
+void MachineState::unqualifyRightDropTargetsReset() {
+  return currentPlayer_->unqualifyRightDropTargetsReset();
 }
 
 void MachineState::updateBonusLamps() {
@@ -608,8 +624,8 @@ void MachineState::updateGuardianRolloverLamps() {
   currentPlayer_->updateGuardianRolloverLamps();
 }
 
-void MachineState::updateOrbsDropTargetLamps() {
-  currentPlayer_->updateOrbsDropTargetLamps();
+void MachineState::updateOrbsDropTargetsLamps() {
+  currentPlayer_->updateOrbsDropTargetsLamps();
 }
 
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
@@ -624,16 +640,16 @@ void MachineState::updateQueensChamberLamps() {
   currentPlayer_->updateQueensChamberLamps();
 }
 
-void MachineState::updateRightDropTargetLamps() {
-  currentPlayer_->updateRightDropTargetLamps();
+void MachineState::updateRightDropTargetsLamps() {
+  currentPlayer_->updateRightDropTargetsLamps();
 }
 
-void MachineState::updateRightDropTargetResetLamp() {
-  currentPlayer_->updateRightDropTargetResetLamp();
+void MachineState::updateRightDropTargetsResetLamp() {
+  currentPlayer_->updateRightDropTargetsResetLamp();
 }
 
-void MachineState::updateRightDropTargetSpotLamp() {
-  currentPlayer_->updateRightDropTargetSpotLamp();
+void MachineState::updateRightDropTargetsSpotLamp() {
+  currentPlayer_->updateRightDropTargetsSpotLamp();
 }
 
 void MachineState::updateRightOrbsReleaseLamp() {

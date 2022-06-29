@@ -55,7 +55,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
       g_machineState.registerOrbsDropTarget(switchHit);
-      g_machineState.updateOrbsDropTargetLamps();
+      g_machineState.updateOrbsDropTargetsLamps();
 
       if (g_machineState.orbsDropTargetsCompleted()) {
         if (g_machineState.orbsDropTargetsCompletedInOrder()) {
@@ -65,9 +65,13 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.updateScoreMultiplierLamps();
         }
 
-        g_machineState.qualifyMode();
-        g_machineState.updateCaptiveOrbsLamps();
-        g_machineState.updateRightOrbsReleaseLamp();
+        if (!g_machineState.anyModeQualified()) {
+          g_machineState.qualifyMode();
+          g_machineState.updateCaptiveOrbsLamps();
+          g_machineState.updateRightOrbsReleaseLamp();
+
+          g_machineState.resetOrbsDropTargets(true);
+        }
       }
 
       break;
@@ -88,30 +92,30 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
           if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true);
         } else {
-          g_machineState.qualifyIncreaseMultiplier();
+          g_machineState.qualifyRightDropTargetsReset();
           g_bonusLightShow.start(BONUS_LIGHT_SHOW_RESET_1_THROUGH_4_ARROW);
         }
       }
 
-      g_machineState.updateRightDropTargetLamps();
-      g_machineState.updateRightDropTargetResetLamp();
-      g_machineState.updateRightDropTargetSpotLamp();
+      g_machineState.updateRightDropTargetsLamps();
+      g_machineState.updateRightDropTargetsResetLamp();
+      g_machineState.updateRightDropTargetsSpotLamp();
 
       break;
 
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
-      if (g_machineState.increaseMultiplierQualified()) {
+      if (g_machineState.rightDropTargetsResetQualified()) {
         if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
-        g_machineState.unqualifyIncreaseMultiplier();
+        g_machineState.unqualifyRightDropTargetsReset();
         g_machineState.increaseQualifiedScoreMultiplier();
-        g_machineState.updateScoreMultiplierLamps();
 
         if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true);
 
-        g_machineState.updateRightDropTargetLamps();
-        g_machineState.updateRightDropTargetResetLamp();
-        g_machineState.updateRightDropTargetSpotLamp();
+        g_machineState.updateRightDropTargetsLamps();
+        g_machineState.updateRightDropTargetsResetLamp();
+        g_machineState.updateRightDropTargetsSpotLamp();
+        g_machineState.updateScoreMultiplierLamps();
       }
 
       break;
@@ -120,9 +124,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_machineState.anyModeQualified()) {
         if (g_machineState.hurryUpActivated()) endHurryUp();
 
-        g_machineState.resetOrbsDropTargets(false);
         returnState = g_machineState.startQualifiedMode();
-
         g_machineState.updateScoreMultiplierLamps();
         g_machineState.updateRightOrbsReleaseLamp();
       }

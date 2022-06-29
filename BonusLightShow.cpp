@@ -24,8 +24,8 @@ void BonusLightShow::end() {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
-  g_machineState.updateOrbsDropTargetLamps();
-  g_machineState.updateRightDropTargetLamps();
+  g_machineState.updateOrbsDropTargetsLamps();
+  g_machineState.updateRightDropTargetsLamps();
 }
 
 void BonusLightShow::reset() {

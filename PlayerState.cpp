@@ -17,7 +17,7 @@ boolean PlayerState::allModesQualified() {
 }
 
 boolean PlayerState::allowRightDropTargetProgress() {
-  return qualifiedScoreMultiplier_ != MAX_MODE_MULTIPLIER && !increaseMultiplierQualified_;
+  return (qualifiedScoreMultiplier_ != MAX_MODE_MULTIPLIER) && !rightDropTargetsResetQualified_;
 }
 
 boolean PlayerState::anyModeQualified() {
@@ -34,10 +34,6 @@ boolean PlayerState::guardianRolloversCompleted() {
          guardianLights_[3] == true;
 }
 
-boolean PlayerState::increaseMultiplierQualified() {
-  return increaseMultiplierQualified_;
-}
-
 boolean PlayerState::orbsDropTargetsAllStanding() {
   return orbsDropTargets_[0] == false &&
          orbsDropTargets_[1] == false &&
@@ -47,6 +43,10 @@ boolean PlayerState::orbsDropTargetsAllStanding() {
 
 boolean PlayerState::orbsDropTargetsCompletedInOrder() {
   return orbsDropTargetsCompletedInOrder_;
+}
+
+boolean PlayerState::rightDropTargetsResetQualified() {
+  return rightDropTargetsResetQualified_;
 }
 
 boolean PlayerState::orbsDropTargetsCompleted() {
@@ -167,14 +167,14 @@ void PlayerState::dropRightDropTargets() {
   }
 }
 
-void PlayerState::flashOrbsDropTargetLamps() {
+void PlayerState::flashOrbsDropTargetsLamps() {
   g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, true);
   g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW, true);
   g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW, true);
   g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW, true);
 }
 
-void PlayerState::flashRightDropTargetLamps() {
+void PlayerState::flashRightDropTargetsLamps() {
   g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
   g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
   g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
@@ -217,10 +217,6 @@ void PlayerState::overridePlayerScore(unsigned long value) {
   g_displayHelper.overrideScoreDisplay(displayNumber_, value);
 }
 
-void PlayerState::qualifyIncreaseMultiplier() {
-  increaseMultiplierQualified_ = true;
-}
-
 void PlayerState::qualifyMode() {
   byte moddedModeIterator = 0;
   for (byte modeIterator = selectedMode_; modeIterator < (selectedMode_ + 4); modeIterator++) {
@@ -233,6 +229,10 @@ void PlayerState::qualifyMode() {
       return;
     }
   }
+}
+
+void PlayerState::qualifyRightDropTargetsReset() {
+  rightDropTargetsResetQualified_ = true;
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
@@ -305,11 +305,7 @@ void PlayerState::resetModeStatus() {
   modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
 }
 
-void PlayerState::resetOrbsDropTargets(boolean activateSolenoid) {
-  if (activateSolenoid) {
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 500);
-  }
-
+void PlayerState::resetOrbsDropTargets() {
   activeOrbsDropTarget_            = SW_O_DROP_TARGET;
   orbsDropTargetsCompletedInOrder_ = true;
 
@@ -334,7 +330,7 @@ void PlayerState::resetPlayerState() {
   activeOrbsDropTarget_             = SW_O_DROP_TARGET;
   orbsDropTargetsCompletedInOrder_  = true;
 
-  increaseMultiplierQualified_ = false;
+  rightDropTargetsResetQualified_ = false;
 
   bonusMultiplier_          = 1;
   bonus_                    = 0;
@@ -348,17 +344,13 @@ void PlayerState::resetPlayerState() {
   resetGuardianRollovers();
   resetTopRollovers();
 
-  resetOrbsDropTargets(false);
-  resetRightDropTargets(false);
+  resetOrbsDropTargets();
+  resetRightDropTargets();
 
   resetModeStatus();
 }
 
-void PlayerState::resetRightDropTargets(boolean activateSolenoid) {
-  if (activateSolenoid) {
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 500);
-  }
-
+void PlayerState::resetRightDropTargets() {
   activeRightDropTarget_            = SW_RIGHT_4_DROP_TARGET_1;
   rightDropTargetsCompletedInOrder_ = true;
 
@@ -367,7 +359,7 @@ void PlayerState::resetRightDropTargets(boolean activateSolenoid) {
   rightDropTargets_[2] = false;
   rightDropTargets_[3] = false;
 
-  increaseMultiplierQualified_ = false;
+  rightDropTargetsResetQualified_ = false;
 }
 
 void PlayerState::resetTopRollovers() {
@@ -431,12 +423,12 @@ void PlayerState::setScore(unsigned long value) {
   tempScore_ = value;
 }
 
-void PlayerState::unqualifyIncreaseMultiplier() {
-  increaseMultiplierQualified_ = false;
-}
-
 void PlayerState::unqualifyMode() {
   modeStatus_[selectedMode_] = MODE_STATUS_NOT_QUALIFIED;
+}
+
+void PlayerState::unqualifyRightDropTargetsReset() {
+  rightDropTargetsResetQualified_ = false;
 }
 
 void PlayerState::updateBonusLamps() {
@@ -463,7 +455,7 @@ void PlayerState::updateGuardianRolloverLamps() {
   guardianLights_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER)    : g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
 }
 
-void PlayerState::updateOrbsDropTargetLamps() {
+void PlayerState::updateOrbsDropTargetsLamps() {
   boolean shouldFlashLamps = orbsDropTargetsCompletedInOrder() ? true : false;
 
   orbsDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, shouldFlashLamps) : g_lampsHelper.hideLamp(LAMP_O_DROP_TARGET_ARROW);
@@ -526,7 +518,7 @@ void PlayerState::updateQueensChamberLamps() {
   }
 }
 
-void PlayerState::updateRightDropTargetLamps() {
+void PlayerState::updateRightDropTargetsLamps() {
   if (activeRightDropTarget_ == 0xFF) {
     g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
     g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
@@ -559,15 +551,15 @@ void PlayerState::updateRightDropTargetLamps() {
   }
 }
 
-void PlayerState::updateRightDropTargetResetLamp() {
-  if (increaseMultiplierQualified_) {
+void PlayerState::updateRightDropTargetsResetLamp() {
+  if (rightDropTargetsResetQualified_) {
     g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW, true);
   } else {
     g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
   }
 }
 
-void PlayerState::updateRightDropTargetSpotLamp() {
+void PlayerState::updateRightDropTargetsSpotLamp() {
   if (allowRightDropTargetProgress() && !rightDropTargetsCompleted()) {
     g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
   } else {
