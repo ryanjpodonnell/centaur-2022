@@ -206,7 +206,8 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
 }
 
 void PlayerState::overridePlayerScore(unsigned long value) {
-  g_displayHelper.overrideScoreDisplay(displayNumber_, value);
+  byte adjacentScoreDisplay = (displayNumber_ + 2) % 4;
+  g_displayHelper.overrideScoreDisplay(adjacentScoreDisplay, value);
 }
 
 void PlayerState::qualifyMode() {

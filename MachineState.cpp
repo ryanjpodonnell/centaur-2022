@@ -654,11 +654,8 @@ void MachineState::updateOrbsDropTargetsLamps() {
 }
 
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
-  if (hurryUpActivated_) {
-    currentPlayer_->overridePlayerScore(hurryUpValue_);
-  } else {
-    currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
-  }
+  if (hurryUpActivated_) currentPlayer_->overridePlayerScore(hurryUpValue_);
+  currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
 }
 
 void MachineState::updateQueensChamberLamps() {
