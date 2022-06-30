@@ -155,6 +155,7 @@ void Base::manageInlineTargetLogic(byte defaultSound, byte switchHit) {
 
   if (g_machineState.hurryUpActivated()) {
     g_gameMode.endHurryUp();
+    g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
     manageDefaultScoringLogic(g_machineState.hurryUpValue() * multiplier, switchHit);
   } else {
     g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);

@@ -298,6 +298,10 @@ unsigned long MachineState::mostRecentSwitchHitTime() {
   return mostRecentSwitchHitTime_;
 }
 
+unsigned long MachineState::queensChamberHurryUpValue() {
+  return currentPlayer_->queensChamberHurryUpValue();
+}
+
 unsigned long MachineState::queensChamberScoreValue() {
   return currentPlayer_->queensChamberScoreValue();
 }

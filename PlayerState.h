@@ -67,6 +67,7 @@ class PlayerState {
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
     byte          startQualifiedMode();
+    unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
     unsigned long rightDropTargetsScoreValue();

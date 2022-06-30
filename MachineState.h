@@ -101,6 +101,7 @@ class MachineState {
     unsigned long hurryUpValue();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentSwitchHitTime();
+    unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsFinishedTime();
     unsigned long rightDropTargetsScoreValue();

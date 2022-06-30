@@ -112,6 +112,14 @@ byte PlayerState::startQualifiedMode() {
   if (selectedMode_ == 3) return GAME_MODE_ORBS_1;
 }
 
+unsigned long PlayerState::queensChamberHurryUpValue() {
+  if (activeInlineDropTarget_ == SW_1ST_INLINE_DROP_TARGET) return 100000;
+  if (activeInlineDropTarget_ == SW_2ND_INLINE_DROP_TARGET) return 200000;
+  if (activeInlineDropTarget_ == SW_3RD_INLINE_DROP_TARGET) return 300000;
+  if (activeInlineDropTarget_ == SW_4TH_INLINE_DROP_TARGET) return 400000;
+  if (activeInlineDropTarget_ == SW_INLINE_BACK_TARGET)     return 500000;
+}
+
 unsigned long PlayerState::queensChamberScoreValue() {
   return queensChamberScoreValue_;
 }

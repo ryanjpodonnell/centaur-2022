@@ -26,7 +26,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       if (g_machineState.guardianRolloversCompleted()) {
         g_machineState.resetGuardianRollovers();
-        g_gameMode.startHurryUp(100000, 10);
+        g_machineState.updateGuardianRolloverLamps();
+        g_gameMode.startHurryUp(g_machineState.queensChamberHurryUpValue(), 10);
       }
       break;
 
