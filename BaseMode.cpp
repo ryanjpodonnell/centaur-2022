@@ -81,7 +81,7 @@ int Base::run(byte switchHit) {
       if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_DROP_TARGET);
 
       if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1 * multiplier);
-      manageDefaultScoringLogic(10000, switchHit);
+      manageDefaultScoringLogic(10000 * multiplier, switchHit);
       break;
 
     case SW_INLINE_BACK_TARGET:
@@ -90,7 +90,7 @@ int Base::run(byte switchHit) {
       if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_INLINE_BACK_TARGET);
 
       if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1 * multiplier);
-      manageDefaultScoringLogic(10000, switchHit);
+      manageDefaultScoringLogic(10000 * multiplier, switchHit);
       break;
 
     case SW_TOP_LEFT_LANE_RO_BUTTON:

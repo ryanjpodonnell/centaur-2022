@@ -16,6 +16,7 @@
 #define MAXIMUM_NUMBER_OF_BALLS_IN_PLAY 5
 #define MAXIMUM_NUMBER_OF_CREDITS       99
 #define MAXIMUM_NUMBER_OF_TILT_WARNINGS 2
+#define SOLENOID_BUFFER_TIME            250
 #define TILT_WARNING_DEBOUNCE_TIME      1000
 
 #define FREE_PLAY                       1
@@ -43,6 +44,7 @@ class MachineState {
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     int           machineStateId_;
+    unsigned long activationTime_;
     unsigned long ballEnteredTroughTime_;
     unsigned long currentBallFirstSwitchHitTime_;
     unsigned long currentTime_;
@@ -97,20 +99,22 @@ class MachineState {
     unsigned long ballEnteredTroughTime();
     unsigned long currentBallFirstSwitchHitTime();
     unsigned long currentTime();
+    unsigned long dropRightDropTargets(unsigned long activationTime_);
     unsigned long highScore();
     unsigned long hurryUpValue();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentSwitchHitTime();
     unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
-    unsigned long rightDropTargetsFinishedTime();
+    unsigned long resetInlineDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime_ = 0);
+    unsigned long resetOrbsDropTargets  (boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime_ = 0);
+    unsigned long resetRightDropTargets (boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime_ = 0);
     unsigned long rightDropTargetsScoreValue();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();
     void          completeSelectedMode();
     void          decreaseBonus();
     void          decreaseNumberOfBallsInPlay();
-    void          dropRightDropTargets();
     void          flashOrbsDropTargetsLamps();
     void          flashRightDropTargetsLamps();
     void          hideAllPlayerLamps();
@@ -134,9 +138,6 @@ class MachineState {
     void          registerTiltWarning();
     void          registerTopRollover(byte switchHit);
     void          resetGuardianRollovers();
-    void          resetInlineDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long lag = 500);
-    void          resetOrbsDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long lag = 500);
-    void          resetRightDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long lag = 500);
     void          resetTiltWarnings();
     void          resetTopRollovers();
     void          rotatePlayerLamps();
@@ -158,7 +159,6 @@ class MachineState {
     void          setMostRecentSwitchHitTime();
     void          setNumberOfPlayers(byte value);
     void          setPlayfieldValidated();
-    void          setRightDropTargetsFinishedTime();
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();

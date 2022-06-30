@@ -28,7 +28,6 @@ class PlayerState {
     byte          selectedMode_;
     unsigned long lastFlash_;
     unsigned long queensChamberScoreValue_;
-    unsigned long rightDropTargetsFinishedTime_;
     unsigned long rightDropTargetsScoreValue_;
     unsigned long score_;
     unsigned long tempScore_;
@@ -67,14 +66,13 @@ class PlayerState {
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
     byte          startQualifiedMode();
+    unsigned long dropRightDropTargets(unsigned long activationTime_);
     unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
-    unsigned long rightDropTargetsFinishedTime();
     unsigned long rightDropTargetsScoreValue();
     unsigned long score();
     void          completeSelectedMode();
     void          decreaseBonus();
-    void          dropRightDropTargets();
     void          flashOrbsDropTargetsLamps();
     void          flashRightDropTargetsLamps();
     void          increaseBonus(byte amountToAdd = 1);
@@ -100,7 +98,6 @@ class PlayerState {
     void          rotateQualifiedMode();
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
-    void          setRightDropTargetsFinishedTime();
     void          setScore(unsigned long value);
     void          unqualifyMode();
     void          unqualifyRightDropTargetsReset();

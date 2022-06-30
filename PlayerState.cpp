@@ -112,6 +112,27 @@ byte PlayerState::startQualifiedMode() {
   if (selectedMode_ == 3) return GAME_MODE_ORBS_1;
 }
 
+unsigned long PlayerState::dropRightDropTargets(unsigned long activationTime_) {
+  if (rightDropTargets_[0] == true) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, activationTime_);
+    activationTime_ += SOLENOID_BUFFER_TIME;
+  }
+  if (rightDropTargets_[1] == true) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, activationTime_);
+    activationTime_ += SOLENOID_BUFFER_TIME;
+  }
+  if (rightDropTargets_[2] == true) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, activationTime_);
+    activationTime_ += SOLENOID_BUFFER_TIME;
+  }
+  if (rightDropTargets_[3] == true) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, activationTime_);
+    activationTime_ += SOLENOID_BUFFER_TIME;
+  }
+
+  return activationTime_;
+}
+
 unsigned long PlayerState::queensChamberHurryUpValue() {
   if (activeInlineDropTarget_ == SW_1ST_INLINE_DROP_TARGET) return 100000;
   if (activeInlineDropTarget_ == SW_2ND_INLINE_DROP_TARGET) return 200000;
@@ -122,10 +143,6 @@ unsigned long PlayerState::queensChamberHurryUpValue() {
 
 unsigned long PlayerState::queensChamberScoreValue() {
   return queensChamberScoreValue_;
-}
-
-unsigned long PlayerState::rightDropTargetsFinishedTime() {
-  return rightDropTargetsFinishedTime_;
 }
 
 unsigned long PlayerState::rightDropTargetsScoreValue() {
@@ -143,36 +160,7 @@ void PlayerState::completeSelectedMode() {
 }
 
 void PlayerState::decreaseBonus() {
-  int currentBonus = bonus();
-
-  if ((currentBonus - 1) < 0) {
-    setBonus(0);
-  } else {
-    setBonus(currentBonus - 1);
-  }
-}
-
-void PlayerState::dropRightDropTargets() {
-  int lag = 1000;
-
-  if (rightDropTargets_[0] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
-    lag += 250;
-  }
-
-  if (rightDropTargets_[1] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
-    lag += 250;
-  }
-
-  if (rightDropTargets_[2] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
-    lag += 250;
-  }
-
-  if (rightDropTargets_[3] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
-  }
+  bonus_ -= 1;
 }
 
 void PlayerState::flashOrbsDropTargetsLamps() {
@@ -430,17 +418,6 @@ void PlayerState::setBonus(byte value) {
 void PlayerState::setBonusMultiplier(byte value) {
   if (value > MAX_BONUS_MULTIPLIER) value = MAX_BONUS_MULTIPLIER;
   bonusMultiplier_ = value;
-}
-
-void PlayerState::setRightDropTargetsFinishedTime() {
-  int lag = 0;
-  for (byte dropTargetIterator = 0; dropTargetIterator < 4; dropTargetIterator++) {
-    if (rightDropTargets_[dropTargetIterator] == true) {
-      lag += 250;
-    }
-  }
-
-  rightDropTargetsFinishedTime_ = g_machineState.currentTime() + 1250 + lag;
 }
 
 void PlayerState::setScore(unsigned long value) {
