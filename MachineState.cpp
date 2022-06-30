@@ -238,9 +238,9 @@ int MachineState::initNewBall(bool curStateChanged) {
 
     BSOS_EnableSolenoidStack();
     BSOS_SetDisableFlippers(false);
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_DROPS_RESET_STRENGTH, currentTime_ + 500);
-    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_DROPS_RESET_STRENGTH, currentTime_ + 600);
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, currentTime_ + 700);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_ORBS_DROPS_RESET_STRENGTH,   currentTime_ + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_INLINE_DROPS_RESET_STRENGTH, currentTime_ + 600);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_RIGHT_DROPS_RESET_STRENGTH,  currentTime_ + 700);
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
 
@@ -490,7 +490,7 @@ void MachineState::resetInlineDropTargets(boolean activateSolenoid) {
 void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
       SOL_ORBS_TARGET_RESET,
-      SOL_DROPS_RESET_STRENGTH,
+      SOL_ORBS_DROPS_RESET_STRENGTH,
       currentTime_ + 500
       );
 
@@ -500,7 +500,7 @@ void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
 void MachineState::resetRightDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
       SOL_4_RIGHT_DROP_TARGET_RESET,
-      SOL_DROPS_RESET_STRENGTH,
+      SOL_RIGHT_DROPS_RESET_STRENGTH,
       currentTime_ + 500
       );
 

@@ -19,9 +19,9 @@ byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
   }
 
   if (secondsRemaining_ == 0) {
-    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 500);
-    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 600);
-    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 700);
+    BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_ORBS_DROPS_RESET_STRENGTH,   g_machineState.currentTime() + 500);
+    BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_INLINE_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 600);
+    BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_RIGHT_DROPS_RESET_STRENGTH,  g_machineState.currentTime() + 700);
 
     g_displayHelper.overrideCredits(g_machineState.credits());
     g_machineState.completeSelectedMode();
@@ -40,9 +40,9 @@ void OrbMode1::manageNewMode() {
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
 
-  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 500);
-  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 600);
-  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 700);
+  BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET,         SOL_ORBS_DROPS_RESET_STRENGTH,   g_machineState.currentTime() + 500);
+  BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET,  SOL_INLINE_DROPS_RESET_STRENGTH, g_machineState.currentTime() + 600);
+  BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_RIGHT_DROPS_RESET_STRENGTH,  g_machineState.currentTime() + 700);
 
   modeStartedTime_ = g_machineState.currentTime();
   secondsRemaining_ = ORB_MODE_1_TOTAL_SECONDS;
