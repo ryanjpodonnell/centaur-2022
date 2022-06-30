@@ -201,14 +201,6 @@ void PlayerState::increaseQualifiedScoreMultiplier() {
   qualifiedScoreMultiplier_ += 1;
 }
 
-void PlayerState::increaseQueensChamberBonusValue() {
-  queensChamberBonusValue_ += 1;
-}
-
-void PlayerState::increaseQueensChamberScoreValue() {
-  queensChamberScoreValue_ += 10000;
-}
-
 void PlayerState::increaseScore(unsigned long amountToAdd) {
   tempScore_ += amountToAdd;
 }
@@ -240,6 +232,27 @@ void PlayerState::registerGuardianRollover(byte switchHit) {
   if (switchHit == SW_LEFT_RETURN_LANE)  guardianLights_[1] = true;
   if (switchHit == SW_RIGHT_RETURN_LANE) guardianLights_[2] = true;
   if (switchHit == SW_RIGHT_OUTLANE)     guardianLights_[3] = true;
+}
+
+void PlayerState::registerInlineDropTarget(byte switchHit) {
+  if (switchHit == SW_1ST_INLINE_DROP_TARGET) {
+    if (inlineDropTargets_[0] == true) return;
+    inlineDropTargets_[0] = true;
+  }
+  if (switchHit == SW_2ND_INLINE_DROP_TARGET) {
+    if (inlineDropTargets_[1] == true) return;
+    inlineDropTargets_[1] = true;
+  }
+  if (switchHit == SW_3RD_INLINE_DROP_TARGET) {
+    if (inlineDropTargets_[2] == true) return;
+    inlineDropTargets_[2] = true;
+  }
+  if (switchHit == SW_4TH_INLINE_DROP_TARGET) {
+    if (inlineDropTargets_[3] == true) return;
+    inlineDropTargets_[3] = true;
+  }
+
+  manageInlineTargetScoring(switchHit);
 }
 
 void PlayerState::registerOrbsDropTarget(byte switchHit) {
@@ -298,6 +311,15 @@ void PlayerState::resetGuardianRollovers() {
   guardianLights_[3] = false;
 }
 
+void PlayerState::resetInlineDropTargets() {
+  activeInlineDropTarget_ = SW_1ST_INLINE_DROP_TARGET;
+
+  inlineDropTargets_[0] = false;
+  inlineDropTargets_[1] = false;
+  inlineDropTargets_[2] = false;
+  inlineDropTargets_[3] = false;
+}
+
 void PlayerState::resetModeStatus() {
   modeStatus_[0] = MODE_STATUS_NOT_QUALIFIED;
   modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
@@ -315,20 +337,14 @@ void PlayerState::resetOrbsDropTargets() {
   orbsDropTargets_[3] = false;
 }
 
-void PlayerState::resetQueensChamberBonusValue() {
-  queensChamberBonusValue_ = 1;
-}
-
-void PlayerState::resetQueensChamberScoreValue() {
-  queensChamberScoreValue_ = 10000;
-}
-
 void PlayerState::resetPlayerState() {
   activeRightDropTarget_            = SW_RIGHT_4_DROP_TARGET_1;
   rightDropTargetsCompletedInOrder_ = true;
 
   activeOrbsDropTarget_             = SW_O_DROP_TARGET;
   orbsDropTargetsCompletedInOrder_  = true;
+
+  activeInlineDropTarget_           = SW_1ST_INLINE_DROP_TARGET;
 
   rightDropTargetsResetQualified_ = false;
 
@@ -344,6 +360,7 @@ void PlayerState::resetPlayerState() {
   resetGuardianRollovers();
   resetTopRollovers();
 
+  resetInlineDropTargets();
   resetOrbsDropTargets();
   resetRightDropTargets();
 
@@ -485,31 +502,31 @@ void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
 }
 
 void PlayerState::updateQueensChamberLamps() {
-  if (queensChamberBonusValue_ == 1 && queensChamberScoreValue_ == 10000) {
+  if (activeInlineDropTarget_ == SW_1ST_INLINE_DROP_TARGET) {
     g_lampsHelper.showLamp(LAMP_10_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-  } else if (queensChamberBonusValue_ == 2 && queensChamberScoreValue_ == 20000) {
+  } else if (activeInlineDropTarget_ == SW_2ND_INLINE_DROP_TARGET) {
     g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
     g_lampsHelper.showLamp(LAMP_20_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-  } else if (queensChamberBonusValue_ == 3 && queensChamberScoreValue_ == 30000) {
+  } else if (activeInlineDropTarget_ == SW_3RD_INLINE_DROP_TARGET) {
     g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
     g_lampsHelper.showLamp(LAMP_30_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-  } else if (queensChamberBonusValue_ == 4 && queensChamberScoreValue_ == 40000) {
+  } else if (activeInlineDropTarget_ == SW_4TH_INLINE_DROP_TARGET) {
     g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
     g_lampsHelper.showLamp(LAMP_40_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-  } else if (queensChamberBonusValue_ == 5 && queensChamberScoreValue_ == 50000) {
+  } else if (activeInlineDropTarget_ == SW_INLINE_BACK_TARGET) {
     g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
     g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
@@ -627,6 +644,35 @@ void PlayerState::launchLockedBallsIntoPlay() {
     g_machineState.increaseNumberOfBallsInPlay();
 
     lag += 2000;
+  }
+}
+
+void PlayerState::manageInlineTargetScoring(byte switchHit) {
+  if (switchHit == activeInlineDropTarget_) {
+    if (switchHit == SW_1ST_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 1;
+      queensChamberScoreValue_ = 10000;
+      activeInlineDropTarget_ = SW_2ND_INLINE_DROP_TARGET;
+    }
+    if (switchHit == SW_2ND_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 2;
+      queensChamberScoreValue_ = 20000;
+      activeInlineDropTarget_ = SW_3RD_INLINE_DROP_TARGET;
+    }
+    if (switchHit == SW_3RD_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 3;
+      queensChamberScoreValue_ = 30000;
+      activeInlineDropTarget_ = SW_4TH_INLINE_DROP_TARGET;
+    }
+    if (switchHit == SW_4TH_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 4;
+      queensChamberScoreValue_ = 40000;
+      activeInlineDropTarget_ = SW_INLINE_BACK_TARGET;
+    }
+    if (switchHit == SW_INLINE_BACK_TARGET) {
+      queensChamberBonusValue_ = 5;
+      queensChamberScoreValue_ = 50000;
+    }
   }
 }
 

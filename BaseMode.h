@@ -3,8 +3,9 @@
 
 class Base {
   private:
-    void manageDefaultScoringLogic(unsigned long value);
-    void manageSignificantSwitchHit();
+    byte inlineMultiplier();
+    void manageDefaultScoringLogic(unsigned long value, byte switchHit);
+    void manageInlineTargetLogic(byte defaultSound, byte switchHit);
 
   public:
     Base();

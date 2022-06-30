@@ -21,6 +21,7 @@ int GameMode::run(boolean curStateChanged) {
   manageShotIndicatorShow();
   manageShootAgainLamp();
   managePlayerBonusLamps();
+  manageHurryUp();
 
   int returnState = runGameLoop();
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
@@ -127,15 +128,15 @@ int GameMode::manageBallInTrough() {
 
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
+    if (g_machineState.hurryUpActivated()) g_machineState.endHurryUp();
 
     g_machineState.updatePlayerScore(false, false);
     g_bonusLightShow.end();
     g_bonusLightShow.reset();
 
     g_machineState.completeSelectedMode();
+    g_machineState.resetInlineDropTargets(false);
     g_machineState.resetOrbsDropTargets(false);
-    g_machineState.resetQueensChamberBonusValue();
-    g_machineState.resetQueensChamberScoreValue();
     g_machineState.resetTopRollovers();
     g_machineState.unqualifyMode();
     if (!g_machineState.currentPlayerTilted()) g_soundHelper.stopAudio();
@@ -203,6 +204,12 @@ int GameMode::runGameModes() {
   return returnState;
 }
 
+void GameMode::manageHurryUp() {
+  if (!g_machineState.hurryUpActivated()) return;
+
+  g_machineState.manageHurryUp();
+}
+
 void GameMode::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
   while (BSOS_PullFirstFromSwitchStack() != SWITCH_STACK_EMPTY) {}
@@ -247,15 +254,15 @@ void GameMode::manageShootAgainLamp() {
 }
 
 void GameMode::manageShotIndicatorShow() {
-  if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
-  if (!g_machineState.playfieldValidated()) return;
-  if ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) < 10000) return;
-  if (indicatorPlayed_) return;
-
   if (g_bonusLightShow.running()) {
     g_bonusLightShow.run();
     return;
   }
+
+  if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
+  if (!g_machineState.playfieldValidated()) return;
+  if ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) < 10000) return;
+  if (indicatorPlayed_) return;
 
   if (g_machineState.orbsDropTargetsAllStanding() && g_machineState.rightDropTargetsAllStanding()) {
     indicatorPlayed_ = true;

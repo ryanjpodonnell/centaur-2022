@@ -17,6 +17,7 @@ class PlayerState {
     boolean       orbsDropTargetsCompletedInOrder_;
     boolean       rightDropTargetsCompletedInOrder_;
     boolean       rightDropTargetsResetQualified_;
+    byte          activeInlineDropTarget_;
     byte          activeOrbsDropTarget_;
     byte          activeRightDropTarget_;
     byte          bonusMultiplier_;
@@ -32,6 +33,7 @@ class PlayerState {
     unsigned long score_;
     unsigned long tempScore_;
     boolean       guardianLights_[4];
+    boolean       inlineDropTargets_[4];
     boolean       orbsDropTargets_[4];
     boolean       rightDropTargets_[4];
     boolean       topLaneLights_[3];
@@ -39,6 +41,7 @@ class PlayerState {
 
     boolean       anyModeStarted();
     void          launchLockedBallsIntoPlay();
+    void          manageInlineTargetScoring(byte switchHit);
     void          manageOrbsDropTargetScoring(byte switchHit);
     void          manageRightDropTargetScoring(byte switchHit);
     void          manageSpotRightDropTarget();
@@ -76,22 +79,20 @@ class PlayerState {
     void          increaseBonus(byte amountToAdd = 1);
     void          increaseBonusMultiplier();
     void          increaseQualifiedScoreMultiplier();
-    void          increaseQueensChamberBonusValue();
-    void          increaseQueensChamberScoreValue();
     void          increaseScore(unsigned long amountToAdd);
     void          overridePlayerScore(unsigned long value);
     void          qualifyMode();
     void          qualifyRightDropTargetsReset();
     void          registerGuardianRollover(byte switchHit);
+    void          registerInlineDropTarget(byte switchHit);
     void          registerOrbsDropTarget(byte switchHit);
     void          registerRightDropTarget(byte switchHit);
     void          registerTopRollover(byte switchHit);
     void          resetGuardianRollovers();
+    void          resetInlineDropTargets();
     void          resetModeStatus();
     void          resetOrbsDropTargets();
     void          resetPlayerState();
-    void          resetQueensChamberBonusValue();
-    void          resetQueensChamberScoreValue();
     void          resetRightDropTargets();
     void          resetTopRollovers();
     void          rotatePlayerLamps();

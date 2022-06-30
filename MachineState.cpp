@@ -52,8 +52,7 @@ boolean MachineState::currentPlayerTilted() {
 }
 
 boolean MachineState::firstBallActive() {
-  return g_machineState.currentPlayerNumber() == 0 &&
-         g_machineState.currentBallInPlay()   == 1;
+  return currentPlayerNumber() == 0 && currentBallInPlay() == 1;
 }
 
 boolean MachineState::guardianRolloversCompleted() {
@@ -345,6 +344,17 @@ void MachineState::dropRightDropTargets() {
   currentPlayer_->dropRightDropTargets();
 }
 
+void MachineState::endHurryUp() {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
+
+  hurryUpActivated_ = false;
+  g_displayHelper.showPlayerScores(0xFF);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+  resetGuardianRollovers();
+  updateGuardianRolloverLamps();
+  updateQueensChamberLamps();
+}
+
 void MachineState::flashOrbsDropTargetsLamps() {
   currentPlayer_->flashOrbsDropTargetsLamps();
 }
@@ -388,21 +398,30 @@ void MachineState::increaseQualifiedScoreMultiplier() {
   currentPlayer_->increaseQualifiedScoreMultiplier();
 }
 
-void MachineState::increaseQueensChamberBonusValue() {
-  currentPlayer_->increaseQueensChamberBonusValue();
-}
-
-void MachineState::increaseQueensChamberScoreValue() {
-  currentPlayer_->increaseQueensChamberScoreValue();
-}
-
 void MachineState::increaseScore(unsigned long amountToAdd) {
   currentPlayer_->increaseScore(amountToAdd);
 }
 
 void MachineState::launchBallIntoPlay(int lag) {
-  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime() + 100 + lag);
-  BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, currentTime() + 1000 + lag);
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime_ + 100 + lag);
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, currentTime_ + 1000 + lag);
+}
+
+void MachineState::manageHurryUp() {
+  updateHurryUpValue();
+
+  unsigned long seed = currentTime_ / 50; // .05 seconds
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+
+    byte currentStep = seed % 5;
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
+    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
+    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
+    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40_CHAMBER);
+    if (currentStep == 4) g_lampsHelper.showLamp(LAMP_50_CHAMBER);
+  }
 }
 
 void MachineState::overridePlayerScore(unsigned long value) {
@@ -424,6 +443,10 @@ void MachineState::readStoredParameters() {
 
 void MachineState::registerGuardianRollover(byte switchHit) {
   currentPlayer_->registerGuardianRollover(switchHit);
+}
+
+void MachineState::registerInlineDropTarget(byte switchHit) {
+  currentPlayer_->registerInlineDropTarget(switchHit);
 }
 
 void MachineState::registerOrbsDropTarget(byte switchHit) {
@@ -450,7 +473,7 @@ void MachineState::registerTiltWarning() {
 
       g_soundHelper.stopAudio();
       g_soundHelper.playSoundWithoutInterruptions(SOUND_POWERING_DOWN);
-      g_machineState.setBonus(0);
+      setBonus(0);
     }
   }
 }
@@ -463,29 +486,31 @@ void MachineState::resetGuardianRollovers() {
   currentPlayer_->resetGuardianRollovers();
 }
 
+void MachineState::resetInlineDropTargets(boolean activateSolenoid) {
+  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
+      SOL_INLINE_DROP_TARGET_RESET,
+      SOL_INLINE_DROPS_RESET_STRENGTH,
+      currentTime_ + 500
+      );
+
+  currentPlayer_->resetInlineDropTargets();
+}
+
 void MachineState::resetOrbsDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
       SOL_ORBS_TARGET_RESET,
       SOL_DROPS_RESET_STRENGTH,
-      g_machineState.currentTime() + 500
+      currentTime_ + 500
       );
 
   currentPlayer_->resetOrbsDropTargets();
-}
-
-void MachineState::resetQueensChamberBonusValue() {
-  currentPlayer_->resetQueensChamberBonusValue();
-}
-
-void MachineState::resetQueensChamberScoreValue() {
-  currentPlayer_->resetQueensChamberScoreValue();
 }
 
 void MachineState::resetRightDropTargets(boolean activateSolenoid) {
   if (activateSolenoid) BSOS_PushToTimedSolenoidStack(
       SOL_4_RIGHT_DROP_TARGET_RESET,
       SOL_DROPS_RESET_STRENGTH,
-      g_machineState.currentTime() + 500
+      currentTime_ + 500
       );
 
   currentPlayer_->resetRightDropTargets();
@@ -551,14 +576,6 @@ void MachineState::setHighScore(unsigned long value) {
   highScore_ = value;
 }
 
-void MachineState::setHurryUpActivated(boolean value) {
-  hurryUpActivated_ = value;
-}
-
-void MachineState::setHurryUpValue(unsigned long value) {
-  hurryUpValue_ = value;
-}
-
 void MachineState::setMachineState(int id) {
   if (id != machineStateId_) {
     machineStateChanged_ = true;
@@ -611,6 +628,18 @@ void MachineState::showAllPlayerLamps() {
   updateRightOrbsReleaseLamp();
   updateScoreMultiplierLamps();
   updateTopRolloverLamps();
+}
+
+void MachineState::startHurryUp(unsigned long value, int seconds) {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
+
+  g_soundHelper.playSoundWithoutInterruptions(SOUND_SIREN_2);
+  hurryUpActivated_           = true;
+  hurryUpValue_               = value;
+  hurryUpInitialValue_        = value;
+  hurryUpStartedTime_         = currentTime_;
+  hurryUpEndTime_             = currentTime_ + (1000 * seconds) + HURRY_UP_GRACE_PERIOD;
+  hurryUpValuePerMillisecond_ = value / (1000 * seconds);
 }
 
 void MachineState::unqualifyMode() {
@@ -701,4 +730,16 @@ void MachineState::resetMachineState() {
   hurryUpActivated_      = false;
 
   currentBallFirstSwitchHitTime_ = 0;
+}
+
+void MachineState::updateHurryUpValue() {
+  unsigned long timeSinceHurryUpStarted = currentTime_ - hurryUpStartedTime_;
+  if (timeSinceHurryUpStarted < HURRY_UP_GRACE_PERIOD) return;
+
+  unsigned long value = hurryUpValuePerMillisecond_ * (timeSinceHurryUpStarted - HURRY_UP_GRACE_PERIOD);
+  hurryUpValue_ = hurryUpInitialValue_ - value;
+
+  if (currentTime_ >= hurryUpEndTime_) {
+    endHurryUp();
+  }
 }
