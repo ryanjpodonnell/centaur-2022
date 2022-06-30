@@ -13,7 +13,6 @@
 #define BALLS_PER_GAME                  3
 #define BALL_SAVE_NUMBER_OF_SECONDS     5
 #define DEFAULT_HIGH_SCORE              10000
-#define HURRY_UP_GRACE_PERIOD           2000
 #define MAXIMUM_NUMBER_OF_BALLS_IN_PLAY 5
 #define MAXIMUM_NUMBER_OF_CREDITS       99
 #define MAXIMUM_NUMBER_OF_TILT_WARNINGS 2
@@ -46,20 +45,13 @@ class MachineState {
     int           machineStateId_;
     unsigned long ballEnteredTroughTime_;
     unsigned long currentBallFirstSwitchHitTime_;
-    unsigned long currentFlashCycle_;
     unsigned long currentTime_;
     unsigned long highScore_;
-    unsigned long hurryUpEndTime_;
-    unsigned long hurryUpInitialValue_;
-    unsigned long hurryUpStartedTime_;
-    unsigned long hurryUpValuePerMillisecond_;
     unsigned long hurryUpValue_;
-    unsigned long lastFlash_;
     unsigned long lastTiltWarningTime_;
     unsigned long mostRecentSwitchHitTime_;
 
     void          resetMachineState();
-    void          updateHurryUpValue();
 
   public:
     MachineState();
@@ -118,7 +110,6 @@ class MachineState {
     void          decreaseBonus();
     void          decreaseNumberOfBallsInPlay();
     void          dropRightDropTargets();
-    void          endHurryUp();
     void          flashOrbsDropTargetsLamps();
     void          flashRightDropTargetsLamps();
     void          hideAllPlayerLamps();
@@ -129,7 +120,8 @@ class MachineState {
     void          increaseQualifiedScoreMultiplier();
     void          increaseScore(unsigned long amountToAdd);
     void          launchBallIntoPlay(int lag = 0);
-    void          manageHurryUp();
+    void          manageCoinDrop(byte switchHit);
+    void          manageCreditButton();
     void          overridePlayerScore(unsigned long value);
     void          qualifyMode();
     void          qualifyRightDropTargetsReset();
@@ -158,6 +150,8 @@ class MachineState {
     void          setCurrentPlayer(byte value);
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
+    void          setHurryUpActivated(boolean value);
+    void          setHurryUpValue(unsigned long value);
     void          setMachineState(int id);
     void          setMostRecentSwitchHit(byte value);
     void          setMostRecentSwitchHitTime();
@@ -167,7 +161,6 @@ class MachineState {
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();
-    void          startHurryUp(unsigned long value, int seconds);
     void          unqualifyMode();
     void          unqualifyRightDropTargetsReset();
     void          updateBonusLamps();

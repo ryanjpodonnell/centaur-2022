@@ -25,7 +25,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.updateGuardianRolloverLamps();
 
       if (g_machineState.guardianRolloversCompleted()) {
-        g_machineState.startHurryUp(100000, 10);
+        g_machineState.resetGuardianRollovers();
+        g_gameMode.startHurryUp(100000, 10);
       }
       break;
 
@@ -64,9 +65,9 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.qualifyMode();
           g_machineState.updateCaptiveOrbsLamps();
           g_machineState.updateRightOrbsReleaseLamp();
-
-          g_machineState.resetOrbsDropTargets(true);
         }
+
+        g_machineState.resetOrbsDropTargets(true);
       }
 
       break;
@@ -117,7 +118,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
     case SW_ORBS_RIGHT_LANE_TARGET:
       if (g_machineState.anyModeQualified()) {
-        if (g_machineState.hurryUpActivated()) g_machineState.endHurryUp();
+        if (g_machineState.hurryUpActivated()) g_gameMode.endHurryUp();
 
         returnState = g_machineState.startQualifiedMode();
         g_machineState.updateScoreMultiplierLamps();

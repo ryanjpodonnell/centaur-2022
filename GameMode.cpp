@@ -34,6 +34,14 @@ int GameMode::run(boolean curStateChanged) {
   return returnState;
 }
 
+void GameMode::endHurryUp() {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
+
+  g_displayHelper.showPlayerScores(0xFF);
+  g_machineState.setHurryUpActivated(false);
+  g_machineState.updateQueensChamberLamps();
+}
+
 void GameMode::setGameMode(byte id) {
   if (id != gameModeId_) {
     gameModeChanged_ = true;
@@ -45,6 +53,18 @@ void GameMode::setGameMode(byte id) {
 
 void GameMode::setScoreIncreased(boolean value) {
   scoreIncreased_ = value;
+}
+
+void GameMode::startHurryUp(unsigned long value, int seconds) {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
+
+  g_soundHelper.playSoundWithoutInterruptions(SOUND_SIREN_2);
+  g_machineState.setHurryUpActivated(true);
+  g_machineState.setHurryUpValue(value);
+  hurryUpInitialValue_        = value;
+  hurryUpStartedTime_         = g_machineState.currentTime();
+  hurryUpEndTime_             = g_machineState.currentTime() + (1000 * seconds) + HURRY_UP_GRACE_PERIOD;
+  hurryUpValuePerMillisecond_ = value / (1000 * seconds);
 }
 
 /*********************************************************************
@@ -128,7 +148,7 @@ int GameMode::manageBallInTrough() {
 
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
-    if (g_machineState.hurryUpActivated()) g_machineState.endHurryUp();
+    if (g_machineState.hurryUpActivated()) endHurryUp();
 
     g_machineState.updatePlayerScore(false, false);
     g_bonusLightShow.end();
@@ -158,8 +178,10 @@ int GameMode::manageTilt() {
       case SW_COIN_1:
       case SW_COIN_2:
       case SW_COIN_3:
-        g_machineState.writeCoinToAudit(switchHit);
-        g_machineState.increaseCredits(true, 1);
+        g_machineState.manageCoinDrop(switchHit);
+        break;
+      case SW_CREDIT_BUTTON:
+        g_machineState.manageCreditButton();
         break;
     }
 
@@ -207,7 +229,20 @@ int GameMode::runGameModes() {
 void GameMode::manageHurryUp() {
   if (!g_machineState.hurryUpActivated()) return;
 
-  g_machineState.manageHurryUp();
+  updateHurryUpValue();
+
+  unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+
+    byte currentStep = seed % 5;
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
+    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
+    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
+    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40_CHAMBER);
+    if (currentStep == 4) g_lampsHelper.showLamp(LAMP_50_CHAMBER);
+  }
 }
 
 void GameMode::manageNewMode() {
@@ -311,4 +346,16 @@ void GameMode::runGameMode(byte switchHit) {
 
   setGameMode(newGameMode);
   if(gameModeChanged_) runGameMode(switchHit);
+}
+
+void GameMode::updateHurryUpValue() {
+  unsigned long timeSinceHurryUpStarted = g_machineState.currentTime() - hurryUpStartedTime_;
+  if (timeSinceHurryUpStarted < HURRY_UP_GRACE_PERIOD) return;
+
+  unsigned long value = hurryUpValuePerMillisecond_ * (timeSinceHurryUpStarted - HURRY_UP_GRACE_PERIOD);
+  g_machineState.setHurryUpValue(hurryUpInitialValue_ - value);
+
+  if (g_machineState.currentTime() >= hurryUpEndTime_) {
+    endHurryUp();
+  }
 }

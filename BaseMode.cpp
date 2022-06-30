@@ -19,23 +19,11 @@ int Base::run(byte switchHit) {
     case SW_COIN_1:
     case SW_COIN_2:
     case SW_COIN_3:
-      g_soundHelper.playSound(SOUND_ENERGIZE_ME);
-      g_machineState.writeCoinToAudit(switchHit);
-      g_machineState.increaseCredits(true, 1);
+      g_machineState.manageCoinDrop(switchHit);
       break;
 
     case SW_CREDIT_BUTTON:
-      if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
-
-      if (g_machineState.currentBallInPlay() == 1) {
-        g_machineState.increaseNumberOfPlayers();
-      } else if (g_machineState.resetPlayers()) {
-        BSOS_DisableSolenoidStack();
-        BSOS_SetDisableFlippers(true);
-        BSOS_SetDisplayCredits(g_machineState.credits());
-        g_gameMode.setGameMode(GAME_MODE_RESTART_GAME);
-      }
-
+      g_machineState.manageCreditButton();
       break;
 
     case SW_LEFT_THUMPER_BUMPER:
@@ -166,7 +154,7 @@ void Base::manageInlineTargetLogic(byte defaultSound, byte switchHit) {
   if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(defaultSound);
 
   if (g_machineState.hurryUpActivated()) {
-    g_machineState.endHurryUp();
+    g_gameMode.endHurryUp();
     manageDefaultScoringLogic(g_machineState.hurryUpValue() * multiplier, switchHit);
   } else {
     g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
