@@ -153,7 +153,7 @@ void PlayerState::decreaseBonus() {
 }
 
 void PlayerState::dropRightDropTargets() {
-  int lag = 750;
+  int lag = 1000;
 
   if (rightDropTargets_[0] == true) {
     BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime() + lag);
@@ -210,7 +210,7 @@ void PlayerState::increaseQualifiedScoreMultiplier() {
 }
 
 void PlayerState::increaseScore(unsigned long amountToAdd) {
-  tempScore_ += amountToAdd;
+  tempScore_ += (amountToAdd * g_machineState.numberOfBallsInPlay());
 }
 
 void PlayerState::overridePlayerScore(unsigned long value) {
@@ -440,8 +440,7 @@ void PlayerState::setRightDropTargetsFinishedTime() {
     }
   }
 
-  if (lag == 0) rightDropTargetsFinishedTime_ = g_machineState.currentTime() + 750;
-  if (lag > 0)  rightDropTargetsFinishedTime_ = g_machineState.currentTime() + 750 + lag;
+  rightDropTargetsFinishedTime_ = g_machineState.currentTime() + 1250 + lag;
 }
 
 void PlayerState::setScore(unsigned long value) {

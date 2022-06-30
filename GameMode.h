@@ -14,6 +14,7 @@
 
 class GameMode {
   private:
+    boolean       bonusIncreased_;
     boolean       gameModeChanged_;
     boolean       indicatorPlayed_;
     boolean       pushingBallFromOutlane_;
@@ -46,10 +47,12 @@ class GameMode {
   public:
     GameMode();
 
+    boolean bonusIncreased();
     boolean scoreIncreased();
     int     run(boolean curStateChanged);
     void    endHurryUp();
     void    resetIndicatorPlayed();
+    void    setBonusIncreased(boolean value);
     void    setGameMode(byte id);
     void    setScoreIncreased(boolean value);
     void    startHurryUp(unsigned long value, int seconds);

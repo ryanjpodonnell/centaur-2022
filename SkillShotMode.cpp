@@ -66,6 +66,7 @@ byte SkillShot::checkRollover(byte switchHit) {
     g_machineState.increaseScore(scoreValue_);
     g_machineState.increaseBonus(bonusValue_);
     g_gameMode.setScoreIncreased(true);
+    g_gameMode.setBonusIncreased(true);
   }
 
   return GAME_MODE_UNSTRUCTURED_PLAY;

@@ -5,8 +5,13 @@ GameMode::GameMode() {
   gameModeChanged_        = true;
 
   pushingBallFromOutlane_ = false;
+  bonusIncreased_         = false;
   scoreIncreased_         = false;
   indicatorPlayed_        = false;
+}
+
+boolean GameMode::bonusIncreased() {
+  return bonusIncreased_;
 }
 
 boolean GameMode::scoreIncreased() {
@@ -40,6 +45,10 @@ void GameMode::endHurryUp() {
   g_displayHelper.showPlayerScores(0xFF);
   g_machineState.setHurryUpActivated(false);
   g_machineState.updateQueensChamberLamps();
+}
+
+void GameMode::setBonusIncreased(boolean value) {
+  bonusIncreased_ = value;
 }
 
 void GameMode::setGameMode(byte id) {
@@ -107,8 +116,7 @@ int GameMode::manageBallInTrough() {
     g_machineState.setBallEnteredTroughTime();
   }
 
-  if (
-      (g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 ||
+  if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 ||
       pushingBallFromOutlane_ ||
       g_machineState.scoreIncreasing()
      ) {
@@ -155,9 +163,6 @@ int GameMode::manageBallInTrough() {
     g_bonusLightShow.reset();
 
     g_machineState.completeSelectedMode();
-    g_machineState.resetInlineDropTargets(false);
-    g_machineState.resetOrbsDropTargets(false);
-    g_machineState.resetTopRollovers();
     g_machineState.unqualifyMode();
     if (!g_machineState.currentPlayerTilted()) g_soundHelper.stopAudio();
 
@@ -217,6 +222,7 @@ int GameMode::runGameModes() {
 
     runGameMode(switchHit);
     returnState = g_base.run(switchHit);
+    bonusIncreased_ = false;
     scoreIncreased_ = false;
     executedSwitchStack = true;
   }

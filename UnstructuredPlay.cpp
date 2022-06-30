@@ -6,6 +6,7 @@ UnstructuredPlay::UnstructuredPlay() {
 byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) manageNewMode();
   int returnState = GAME_MODE_UNSTRUCTURED_PLAY;
+  byte multiplier = 0xFF;
 
   switch (switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
@@ -14,7 +15,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.updateGuardianRolloverLamps();
         g_machineState.updateTopRolloverLamps();
       }
-
       break;
 
     case SW_LEFT_OUTLANE:
@@ -52,7 +52,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
       g_machineState.registerOrbsDropTarget(switchHit);
-      g_machineState.updateOrbsDropTargetsLamps();
 
       if (g_machineState.orbsDropTargetsCompleted()) {
         if (g_machineState.orbsDropTargetsCompletedInOrder()) {
@@ -68,9 +67,10 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.updateRightOrbsReleaseLamp();
         }
 
-        g_machineState.resetOrbsDropTargets(true);
+        g_machineState.resetOrbsDropTargets(true, true);
       }
 
+      g_machineState.updateOrbsDropTargetsLamps();
       break;
 
     case SW_RIGHT_4_DROP_TARGET_1:
@@ -87,7 +87,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.increaseQualifiedScoreMultiplier();
           g_machineState.updateScoreMultiplierLamps();
 
-          if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true);
+          if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true, true);
         } else {
           g_machineState.qualifyRightDropTargetsReset();
           g_bonusLightShow.start(BONUS_LIGHT_SHOW_RESET_1_THROUGH_4_ARROW);
@@ -98,6 +98,8 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.updateRightDropTargetsResetLamp();
       g_machineState.updateRightDropTargetsSpotLamp();
 
+      g_machineState.increaseScore(g_machineState.rightDropTargetsScoreValue());
+      g_gameMode.setScoreIncreased(true);
       break;
 
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
@@ -107,14 +109,13 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.unqualifyRightDropTargetsReset();
         g_machineState.increaseQualifiedScoreMultiplier();
 
-        if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true);
+        if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true, true);
 
         g_machineState.updateRightDropTargetsLamps();
         g_machineState.updateRightDropTargetsResetLamp();
         g_machineState.updateRightDropTargetsSpotLamp();
         g_machineState.updateScoreMultiplierLamps();
       }
-
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
@@ -125,7 +126,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
         g_machineState.updateScoreMultiplierLamps();
         g_machineState.updateRightOrbsReleaseLamp();
       }
-
       break;
 
     case SW_LEFT_THUMPER_BUMPER:
@@ -152,6 +152,23 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_INLINE_BACK_TARGET:
       g_machineState.registerInlineDropTarget(switchHit);
       g_machineState.updateQueensChamberLamps();
+
+      multiplier = 1;
+      if (g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
+          g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 1500) {
+        multiplier = 2;
+      }
+
+      if (g_machineState.hurryUpActivated()) {
+        g_gameMode.endHurryUp();
+        g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
+        g_machineState.increaseScore(g_machineState.hurryUpValue()            * multiplier);
+      } else {
+        g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
+        g_machineState.increaseScore(g_machineState.queensChamberScoreValue() * multiplier);
+      }
+      g_gameMode.setBonusIncreased(true);
+      g_gameMode.setScoreIncreased(true);
 
       break;
 

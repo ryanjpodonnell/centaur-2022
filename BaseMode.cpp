@@ -5,6 +5,7 @@ Base::Base() {
 
 int Base::run(byte switchHit) {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
+  byte multiplier = 0xFF;
 
   switch (switchHit) {
     case SW_TILT:
@@ -58,7 +59,7 @@ int Base::run(byte switchHit) {
     case SW_B_DROP_TARGET:
     case SW_S_DROP_TARGET:
       g_soundHelper.playSound(SOUND_1K_SWITCH);
-      g_machineState.increaseBonus(1);
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1);
       manageDefaultScoringLogic(1000, switchHit);
       break;
 
@@ -67,30 +68,40 @@ int Base::run(byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_3:
     case SW_RIGHT_4_DROP_TARGET_4:
       g_soundHelper.playSound(SOUND_SPOT_1_THROUGH_4);
-      g_machineState.increaseBonus(1);
-      manageDefaultScoringLogic(g_machineState.rightDropTargetsScoreValue(), switchHit);
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1);
+      manageDefaultScoringLogic(500, switchHit);
       break;
 
     case SW_1ST_INLINE_DROP_TARGET:
     case SW_2ND_INLINE_DROP_TARGET:
     case SW_3RD_INLINE_DROP_TARGET:
     case SW_4TH_INLINE_DROP_TARGET:
-      manageInlineTargetLogic(SOUND_DROP_TARGET, switchHit);
+      multiplier = inlineMultiplier();
+      if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
+      if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_DROP_TARGET);
+
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1 * multiplier);
+      manageDefaultScoringLogic(10000, switchHit);
       break;
 
     case SW_INLINE_BACK_TARGET:
-      manageInlineTargetLogic(SOUND_INLINE_BACK_TARGET, switchHit);
+      multiplier = inlineMultiplier();
+      if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
+      if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_INLINE_BACK_TARGET);
+
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1 * multiplier);
+      manageDefaultScoringLogic(10000, switchHit);
       break;
 
     case SW_TOP_LEFT_LANE_RO_BUTTON:
       g_soundHelper.playSound(SOUND_5K_SWITCH);
-      g_machineState.increaseBonus(1);
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1);
       manageDefaultScoringLogic(5000, switchHit);
       break;
 
     case SW_LEFT_SIDE_RO_BUTTON:
       g_soundHelper.playSound(SOUND_QUEENS_CHAMBER_ROLLOVER);
-      g_machineState.increaseBonus(1);
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1);
       manageDefaultScoringLogic(5000, switchHit);
       break;
 
@@ -101,7 +112,7 @@ int Base::run(byte switchHit) {
 
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
       g_soundHelper.playSound(SOUND_RESET_1_THROUGH_4);
-      g_machineState.increaseBonus(1);
+      if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1);
       manageDefaultScoringLogic(5000, switchHit);
       break;
 
@@ -133,9 +144,7 @@ byte Base::inlineMultiplier() {
 }
 
 void Base::manageDefaultScoringLogic(unsigned long value, byte switchHit) {
-  if (!g_gameMode.scoreIncreased()) {
-    g_machineState.increaseScore(value * g_machineState.numberOfBallsInPlay());
-  }
+  if (!g_gameMode.scoreIncreased()) g_machineState.increaseScore(value);
 
   g_gameMode.resetIndicatorPlayed();
   g_machineState.setMostRecentSwitchHit(switchHit);
@@ -144,21 +153,5 @@ void Base::manageDefaultScoringLogic(unsigned long value, byte switchHit) {
   if (!g_machineState.playfieldValidated()) {
     g_machineState.setPlayfieldValidated();
     g_machineState.setCurrentBallFirstSwitchHitTime();
-  }
-}
-
-void Base::manageInlineTargetLogic(byte defaultSound, byte switchHit) {
-  byte multiplier = inlineMultiplier();
-
-  if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
-  if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(defaultSound);
-
-  if (g_machineState.hurryUpActivated()) {
-    g_gameMode.endHurryUp();
-    g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
-    manageDefaultScoringLogic(g_machineState.hurryUpValue() * multiplier, switchHit);
-  } else {
-    g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
-    manageDefaultScoringLogic(g_machineState.queensChamberScoreValue() * multiplier, switchHit);
   }
 }

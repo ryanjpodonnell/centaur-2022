@@ -134,9 +134,9 @@ class MachineState {
     void          registerTiltWarning();
     void          registerTopRollover(byte switchHit);
     void          resetGuardianRollovers();
-    void          resetInlineDropTargets(boolean activateSolenoid = false);
-    void          resetOrbsDropTargets(boolean activateSolenoid = false);
-    void          resetRightDropTargets(boolean activateSolenoid = false);
+    void          resetInlineDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long lag = 500);
+    void          resetOrbsDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long lag = 500);
+    void          resetRightDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long lag = 500);
     void          resetTiltWarnings();
     void          resetTopRollovers();
     void          rotatePlayerLamps();
