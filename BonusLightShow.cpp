@@ -73,7 +73,7 @@ void BonusLightShow::start(byte lightShowId) {
   endTime_     = g_machineState.currentTime() + showDurations_[lightShowId_];
 
   if (lightShowId_ == BONUS_LIGHT_SHOW_SPIN) g_soundHelper.stopAudio();
-  g_soundHelper.playSound(SOUND_BONUS);
+  g_soundHelper.playSoundWithoutInterruptions(SOUND_BONUS);
 }
 
 /*********************************************************************
@@ -113,7 +113,7 @@ void BonusLightShow::manageResetArrowShow() {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 0) return;
   if (currentStep == 1) g_lampsHelper.showLamp(LAMP_4K_BONUS);
-  if (currentStep == 2) g_lampsHelper.showLamp(LAMP_5K_BONUS);
+  if (currentStep == 2) g_lampsHelper.showLamp(LAMP_5X_BONUS);
   if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40K_BONUS);
   if (currentStep == 4) g_lampsHelper.showLamp(LAMP_2X_BONUS);
   if (currentStep == 5) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_RESET_ARROW);
