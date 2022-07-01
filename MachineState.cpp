@@ -414,7 +414,7 @@ void MachineState::launchBallIntoPlay(int lag) {
   BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime_ + 100 + lag);
   BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, currentTime_ + 1000 + lag);
 
-  g_gameMode.setBallSaveStartTime(g_machineState.currentTime());
+  g_gameMode.setBallSaveStartTime();
 }
 
 void MachineState::manageCoinDrop(byte switchHit) {

@@ -53,7 +53,7 @@ class GameMode {
     int     run(boolean curStateChanged);
     void    endHurryUp();
     void    resetIndicatorPlayed();
-    void    setBallSaveStartTime(unsigned long value);
+    void    setBallSaveStartTime();
     void    setBonusIncreased(boolean value);
     void    setGameMode(byte id);
     void    setScoreIncreased(boolean value);

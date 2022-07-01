@@ -4,10 +4,11 @@ GameMode::GameMode() {
   gameModeId_             = GAME_MODE_INITIALIZE;
   gameModeChanged_        = true;
 
-  pushingBallFromOutlane_ = false;
+  ballSaveStartTime_      = 0;
   bonusIncreased_         = false;
-  scoreIncreased_         = false;
   indicatorPlayed_        = false;
+  pushingBallFromOutlane_ = false;
+  scoreIncreased_         = false;
 }
 
 boolean GameMode::bonusIncreased() {
@@ -327,8 +328,8 @@ void GameMode::resetIndicatorPlayed() {
   indicatorPlayed_ = false;
 }
 
-void GameMode::setBallSaveStartTime(unsigned long value) {
-  ballSaveStartTime_;
+void GameMode::setBallSaveStartTime() {
+  ballSaveStartTime_ = g_machineState.currentTime();
 }
 
 void GameMode::runGameMode(byte switchHit) {
