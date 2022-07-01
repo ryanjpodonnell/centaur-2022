@@ -276,10 +276,6 @@ unsigned long MachineState::ballEnteredTroughTime() {
   return ballEnteredTroughTime_;
 }
 
-unsigned long MachineState::currentBallFirstSwitchHitTime() {
-  return currentBallFirstSwitchHitTime_;
-}
-
 unsigned long MachineState::currentTime() {
   return currentTime_;
 }
@@ -417,6 +413,8 @@ void MachineState::increaseScore(unsigned long amountToAdd) {
 void MachineState::launchBallIntoPlay(int lag) {
   BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime_ + 100 + lag);
   BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, currentTime_ + 1000 + lag);
+
+  g_gameMode.setBallSaveStartTime(g_machineState.currentTime());
 }
 
 void MachineState::manageCoinDrop(byte switchHit) {
@@ -539,10 +537,6 @@ void MachineState::setBonusMultiplier(byte value) {
 void MachineState::setCredits(byte value) {
   credits_ = value;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
-}
-
-void MachineState::setCurrentBallFirstSwitchHitTime() {
-  currentBallFirstSwitchHitTime_ = currentTime_;
 }
 
 void MachineState::setCurrentPlayer(byte value) {
@@ -702,6 +696,5 @@ void MachineState::resetMachineState() {
   troughSwitchActivated_ = false;
   hurryUpActivated_      = false;
 
-  currentBallFirstSwitchHitTime_ = 0;
   numberOfTiltWarnings_          = 0;
 }

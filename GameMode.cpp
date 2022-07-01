@@ -22,11 +22,11 @@ int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) manageNewMode();
   if (gameModeId_ == GAME_MODE_RESTART_GAME) return manageGameRestart();
 
+  manageBallSave();
+  manageHurryUp();
+  managePlayerBonusLamps();
   managePlayerScore();
   manageShotIndicatorShow();
-  manageShootAgainLamp();
-  managePlayerBonusLamps();
-  manageHurryUp();
 
   int returnState = runGameLoop();
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
@@ -83,7 +83,7 @@ boolean GameMode::ballSaveActive() {
   if (g_machineState.currentPlayerTilted()) return false;
   if (!g_machineState.playfieldValidated()) return true;
 
-  return (g_machineState.mostRecentSwitchHitTime() - g_machineState.currentBallFirstSwitchHitTime())
+  return (g_machineState.mostRecentSwitchHitTime() - ballSaveStartTime_)
     < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
 }
 
@@ -91,7 +91,7 @@ boolean GameMode::ballSaveLampActive() {
   if (g_machineState.currentPlayerTilted()) return false;
   if (!g_machineState.playfieldValidated()) return true;
 
-  return (g_machineState.currentTime() - g_machineState.currentBallFirstSwitchHitTime())
+  return (g_machineState.currentTime() - ballSaveStartTime_)
     < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
 }
 
@@ -130,7 +130,7 @@ int GameMode::manageBallInTrough() {
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  } else if (!g_machineState.ballSaveUsed() && ballSaveActive()) {
+  } else if (ballSaveActive()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
     BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime() + 100);
@@ -138,7 +138,6 @@ int GameMode::manageBallInTrough() {
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,         SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime() + 1100);
     pushingBallFromOutlane_ = true;
 
-    g_machineState.setBallSaveUsed(true);
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
   } else if (g_machineState.numberOfBallsInPlay() > 1) {
@@ -149,6 +148,7 @@ int GameMode::manageBallInTrough() {
 
     g_machineState.decreaseNumberOfBallsInPlay();
     g_machineState.updateScoreMultiplierLamps();
+
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
   } else if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 || pushingBallFromOutlane_) {
@@ -231,6 +231,18 @@ int GameMode::runGameModes() {
   return returnState;
 }
 
+void GameMode::manageBallSave() {
+  if (ballSaveActive()) {
+    g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
+    g_lampsHelper.showLamp(LAMP_RELEASE_ORB, true);
+  }
+
+  if (g_machineState.currentPlayerTilted() || !ballSaveLampActive()) {
+    g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
+    g_lampsHelper.hideLamp(LAMP_RELEASE_ORB);
+  }
+}
+
 void GameMode::manageHurryUp() {
   if (!g_machineState.hurryUpActivated()) return;
 
@@ -257,7 +269,6 @@ void GameMode::manageNewMode() {
   g_soundHelper.stopAudio();
   g_soundHelper.playSound(SOUND_CONTINIOUS_DRONE);
   g_machineState.increaseBonus(1);
-
   if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
 
   setGameMode(GAME_MODE_SKILL_SHOT);
@@ -276,21 +287,6 @@ void GameMode::managePlayerScore() {
     ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) > 2000) ? true : false;
 
   g_machineState.updatePlayerScore(shouldFlashScore, shouldDashScore);
-}
-
-void GameMode::manageShootAgainLamp() {
-  if (!BALL_SAVE_NUMBER_OF_SECONDS) return;
-
-  if (!g_machineState.ballSaveActivated()) {
-    g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, true);
-    g_machineState.setBallSaveActivated();
-  }
-
-  if (g_machineState.currentPlayerTilted() ||
-      g_machineState.ballSaveUsed() ||
-      !ballSaveLampActive()) {
-    g_lampsHelper.hideLamp(LAMP_SHOOT_AGAIN);
-  }
 }
 
 void GameMode::manageShotIndicatorShow() {
@@ -329,6 +325,10 @@ void GameMode::manageShotIndicatorShow() {
 
 void GameMode::resetIndicatorPlayed() {
   indicatorPlayed_ = false;
+}
+
+void GameMode::setBallSaveStartTime(unsigned long value) {
+  ballSaveStartTime_;
 }
 
 void GameMode::runGameMode(byte switchHit) {
