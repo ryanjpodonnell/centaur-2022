@@ -156,15 +156,14 @@ int GameMode::manageBallInTrough() {
 
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
-    if (g_machineState.hurryUpActivated()) endHurryUp();
 
-    g_machineState.updatePlayerScore(false, false);
-    g_bonusLightShow.end();
-    g_bonusLightShow.reset();
-
-    g_machineState.completeSelectedMode();
-    g_machineState.unqualifyMode();
     if (!g_machineState.currentPlayerTilted()) g_soundHelper.stopAudio();
+    if (g_bonusLightShow.running())            g_bonusLightShow.end();
+    if (g_machineState.anyModeStarted())       g_machineState.completeSelectedMode();
+    if (g_machineState.hurryUpActivated())     endHurryUp();
+
+    g_bonusLightShow.reset();
+    g_machineState.updatePlayerScore(false, false);
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }

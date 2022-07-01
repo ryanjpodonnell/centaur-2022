@@ -60,6 +60,7 @@ class MachineState {
     boolean       allModesQualified();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
+    boolean       anyModeStarted();
     boolean       ballSaveActivated();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();

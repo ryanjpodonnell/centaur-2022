@@ -27,6 +27,13 @@ boolean PlayerState::anyModeQualified() {
          modeStatus_[3] == MODE_STATUS_QUALIFIED;
 }
 
+boolean PlayerState::anyModeStarted() {
+  return modeStatus_[0] == MODE_STATUS_STARTED ||
+         modeStatus_[1] == MODE_STATUS_STARTED ||
+         modeStatus_[2] == MODE_STATUS_STARTED ||
+         modeStatus_[3] == MODE_STATUS_STARTED;
+}
+
 boolean PlayerState::guardianRolloversCompleted() {
   return guardianLights_[0] == true &&
          guardianLights_[1] == true &&
@@ -154,8 +161,6 @@ unsigned long PlayerState::score() {
 }
 
 void PlayerState::completeSelectedMode() {
-  if (modeStatus_[selectedMode_] != MODE_STATUS_STARTED) return;
-
   modeStatus_[selectedMode_] = MODE_STATUS_COMPLETED;
 }
 
@@ -614,13 +619,6 @@ void PlayerState::updateTopRolloverLamps() {
 /*********************************************************************
     Private
 *********************************************************************/
-boolean PlayerState::anyModeStarted() {
-  return modeStatus_[0] == MODE_STATUS_STARTED ||
-         modeStatus_[1] == MODE_STATUS_STARTED ||
-         modeStatus_[2] == MODE_STATUS_STARTED ||
-         modeStatus_[3] == MODE_STATUS_STARTED;
-}
-
 void PlayerState::launchLockedBallsIntoPlay() {
   int lag = 0;
 

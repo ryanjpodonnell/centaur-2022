@@ -38,7 +38,6 @@ class PlayerState {
     boolean       topLaneLights_[3];
     byte          modeStatus_[4];
 
-    boolean       anyModeStarted();
     void          launchLockedBallsIntoPlay();
     void          manageInlineTargetScoring(byte switchHit);
     void          manageOrbsDropTargetScoring(byte switchHit);
@@ -51,6 +50,7 @@ class PlayerState {
     boolean       allModesQualified();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
+    boolean       anyModeStarted();
     boolean       guardianRolloversCompleted();
     boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();

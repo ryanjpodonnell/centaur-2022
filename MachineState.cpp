@@ -38,6 +38,10 @@ boolean MachineState::anyModeQualified() {
   return currentPlayer_->anyModeQualified();
 }
 
+boolean MachineState::anyModeStarted() {
+  return currentPlayer_->anyModeStarted();
+}
+
 boolean MachineState::ballSaveActivated() {
   return ballSaveActivated_;
 }
@@ -245,6 +249,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     activationTime_ = dropRightDropTargets(activationTime_);
 
     resetTopRollovers();
+    unqualifyMode();
 
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
