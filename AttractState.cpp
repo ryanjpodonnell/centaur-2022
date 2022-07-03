@@ -40,7 +40,7 @@ int Attract::run(boolean curStateChanged) {
     case SW_SELF_TEST_SWITCH:
       if (g_machineState.currentTime() - g_selfTestAndAudit.lastSelfTestChangedTime() > 250) {
         returnState = MACHINE_STATE_TEST_LIGHTS;
-        g_selfTestAndAudit.setLastSelfTestChangedTime(g_machineState.currentTime());
+        g_selfTestAndAudit.setLastSelfTestChangedTime();
       }
       break;
     case SW_RIGHT_FLIPPER_BUTTON:

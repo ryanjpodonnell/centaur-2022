@@ -296,6 +296,6 @@ unsigned long SelfTestAndAudit::lastSelfTestChangedTime() {
 }
 
 
-void SelfTestAndAudit::setLastSelfTestChangedTime(unsigned long setSelfTestChange) {
-  lastSelfTestChange_ = setSelfTestChange;
+void SelfTestAndAudit::setLastSelfTestChangedTime() {
+  lastSelfTestChange_ = g_machineState.currentTime();
 }

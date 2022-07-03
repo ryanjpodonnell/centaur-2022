@@ -41,7 +41,7 @@ class SelfTestAndAudit {
     int           run(int curState, boolean curStateChanged);
     int           runBase(int curState, boolean curStateChanged, byte resetSwitch, byte slamSwitch=0xFF);
     unsigned long lastSelfTestChangedTime();
-    void          setLastSelfTestChangedTime(unsigned long setSelfTestChange);
+    void          setLastSelfTestChangedTime();
 };
 
 #endif

@@ -170,7 +170,7 @@ int GameMode::manageTilt() {
     switch (switchHit) {
       case SW_SELF_TEST_SWITCH:
         returnState = MACHINE_STATE_TEST_LIGHTS;
-        g_selfTestAndAudit.setLastSelfTestChangedTime(g_machineState.currentTime());
+        g_selfTestAndAudit.setLastSelfTestChangedTime();
         break;
       case SW_COIN_1:
       case SW_COIN_2:
