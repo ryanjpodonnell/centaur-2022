@@ -152,6 +152,6 @@ void Base::manageDefaultScoringLogic(unsigned long value, byte switchHit) {
 
   if (!g_machineState.playfieldValidated()) {
     g_machineState.setPlayfieldValidated();
-    g_gameMode.setBallSaveStartTime();
+    g_gameMode.setBallSaveEndTime(g_machineState.currentTime() + ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000));
   }
 }

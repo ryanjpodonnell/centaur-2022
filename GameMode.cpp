@@ -4,7 +4,7 @@ GameMode::GameMode() {
   gameModeId_             = GAME_MODE_INITIALIZE;
   gameModeChanged_        = true;
 
-  ballSaveStartTime_      = 0;
+  ballSaveEndTime_        = 0;
   bonusIncreased_         = false;
   indicatorPlayed_        = false;
   pushingBallFromOutlane_ = false;
@@ -81,19 +81,11 @@ void GameMode::startHurryUp(unsigned long value, int seconds) {
     Private
 *********************************************************************/
 boolean GameMode::ballSaveActive() {
-  if (g_machineState.currentPlayerTilted()) return false;
-  if (!g_machineState.playfieldValidated()) return true;
-
-  return (g_machineState.mostRecentSwitchHitTime() - ballSaveStartTime_)
-    < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
+  return g_machineState.mostRecentSwitchHitTime() < ballSaveEndTime_;
 }
 
 boolean GameMode::ballSaveLampActive() {
-  if (g_machineState.currentPlayerTilted()) return false;
-  if (!g_machineState.playfieldValidated()) return true;
-
-  return (g_machineState.currentTime() - ballSaveStartTime_)
-    < ((unsigned long)BALL_SAVE_NUMBER_OF_SECONDS * 1000);
+  return g_machineState.currentTime() < ballSaveEndTime_;
 }
 
 int GameMode::manageGameRestart() {
@@ -131,7 +123,7 @@ int GameMode::manageBallInTrough() {
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
-  } else if (ballSaveActive()) {
+  } else if (ballSaveActive() && !g_machineState.currentPlayerTilted()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
     BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime() + 100);
@@ -272,6 +264,8 @@ void GameMode::manageNewMode() {
   g_machineState.increaseBonus(1);
   if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
 
+  ballSaveEndTime_ = 0;
+
   setGameMode(GAME_MODE_SKILL_SHOT);
 }
 
@@ -328,8 +322,8 @@ void GameMode::resetIndicatorPlayed() {
   indicatorPlayed_ = false;
 }
 
-void GameMode::setBallSaveStartTime() {
-  ballSaveStartTime_ = g_machineState.currentTime();
+void GameMode::setBallSaveEndTime(unsigned long value) {
+  ballSaveEndTime_ = value;
 }
 
 void GameMode::runGameMode(byte switchHit) {

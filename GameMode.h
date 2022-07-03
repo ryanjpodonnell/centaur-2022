@@ -20,7 +20,7 @@ class GameMode {
     boolean       pushingBallFromOutlane_;
     boolean       scoreIncreased_;
     byte          gameModeId_;
-    unsigned long ballSaveStartTime_;
+    unsigned long ballSaveEndTime_;
     unsigned long ballTimeInTrough_;
     unsigned long currentFlashCycle_;
     unsigned long hurryUpEndTime_;
@@ -53,7 +53,7 @@ class GameMode {
     int     run(boolean curStateChanged);
     void    endHurryUp();
     void    resetIndicatorPlayed();
-    void    setBallSaveStartTime();
+    void    setBallSaveEndTime(unsigned long value);
     void    setBonusIncreased(boolean value);
     void    setGameMode(byte id);
     void    setScoreIncreased(boolean value);
