@@ -449,8 +449,12 @@ void MachineState::qualifyRightDropTargetsReset() {
 }
 
 void MachineState::readStoredParameters() {
-  setHighScore(BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, DEFAULT_HIGH_SCORE));
   setCredits(BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE));
+  setHighScore(BSOS_ReadULFromEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, DEFAULT_HIGH_SCORE));
+  setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_1_SCORE_START_BYTE, 0), 0);
+  setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_2_SCORE_START_BYTE, 0), 1);
+  setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_3_SCORE_START_BYTE, 0), 2);
+  setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_4_SCORE_START_BYTE, 0), 3);
 }
 
 void MachineState::registerGuardianRollover(byte switchHit) {
