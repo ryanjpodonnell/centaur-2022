@@ -7,8 +7,10 @@ Debug::Debug() {
 int Debug::run(boolean curStateChanged) {
   if (curStateChanged) manageNewState();
 
-  unsigned long timeSinceStateStarted = g_machineState.currentTime() - stateStartedTime_;
-  if (timeSinceStateStarted >= 3000) return MACHINE_STATE_ATTRACT;
+  if ((g_machineState.currentTime() - stateStartedTime_) >= 3000) {
+    g_machineState.readStoredParameters();
+    return MACHINE_STATE_ATTRACT;
+  }
 
   return MACHINE_STATE_DEBUG;
 }

@@ -92,10 +92,10 @@ void Attract::manageNewState() {
   score2_ = g_machineState.score(1);
   score3_ = g_machineState.score(2);
   score4_ = g_machineState.score(3);
-  BSOS_WriteByteToEEProm(BSOS_PLAYER_1_SCORE_START_BYTE, score1_);
-  BSOS_WriteByteToEEProm(BSOS_PLAYER_2_SCORE_START_BYTE, score2_);
-  BSOS_WriteByteToEEProm(BSOS_PLAYER_3_SCORE_START_BYTE, score3_);
-  BSOS_WriteByteToEEProm(BSOS_PLAYER_4_SCORE_START_BYTE, score4_);
+  BSOS_WriteULToEEProm(BSOS_PLAYER_1_SCORE_START_BYTE, score1_);
+  BSOS_WriteULToEEProm(BSOS_PLAYER_2_SCORE_START_BYTE, score2_);
+  BSOS_WriteULToEEProm(BSOS_PLAYER_3_SCORE_START_BYTE, score3_);
+  BSOS_WriteULToEEProm(BSOS_PLAYER_4_SCORE_START_BYTE, score4_);
 
   unsigned long previousHighScore = g_machineState.highScore();
   if (score1_ > g_machineState.highScore()) g_machineState.setHighScore(score1_);
@@ -105,7 +105,7 @@ void Attract::manageNewState() {
 
   if (g_machineState.highScore() > previousHighScore) {
     if (DEBUG_MESSAGES) Serial.write("Updating High Score\n\r");
-    BSOS_WriteByteToEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, g_machineState.highScore());
+    BSOS_WriteULToEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, g_machineState.highScore());
   }
 
   BSOS_SetDisplayCredits(g_machineState.credits());

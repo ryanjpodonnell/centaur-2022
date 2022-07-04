@@ -37,8 +37,6 @@ void setup() {
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
   BSOS_SetCoinLockout(false);
-
-  g_machineState.readStoredParameters();
 }
 
 void loop() {
