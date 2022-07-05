@@ -43,6 +43,7 @@ class GameMode {
     void    managePlayerScore();
     void    manageShotIndicatorShow();
     void    runGameMode(byte switchHit);
+    void    updateHurryUpLamps();
     void    updateHurryUpValue();
 
   public:

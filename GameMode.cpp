@@ -240,19 +240,8 @@ void GameMode::manageHurryUp() {
   if (!g_machineState.hurryUpActivated()) return;
 
   updateHurryUpValue();
+  updateHurryUpLamps();
 
-  unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
-  if (seed != lastFlash_) {
-    lastFlash_ = seed;
-    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
-
-    byte currentStep = seed % 5;
-    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
-    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
-    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
-    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40_CHAMBER);
-    if (currentStep == 4) g_lampsHelper.showLamp(LAMP_50_CHAMBER);
-  }
 }
 
 void GameMode::manageNewMode() {
@@ -346,6 +335,53 @@ void GameMode::runGameMode(byte switchHit) {
 
   setGameMode(newGameMode);
   if(gameModeChanged_) runGameMode(switchHit);
+}
+
+void GameMode::updateHurryUpLamps() {
+  unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+
+    byte currentStep = seed % 5;
+    if (g_machineState.queensChamberHurryUpValue() == 100000) {
+      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+    } else if (g_machineState.queensChamberHurryUpValue() == 200000) {
+      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+    } else if (g_machineState.queensChamberHurryUpValue() == 300000) {
+      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+    } else if (g_machineState.queensChamberHurryUpValue() == 400000) {
+      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
+    } else if (g_machineState.queensChamberHurryUpValue() == 500000) {
+      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
+      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
+    }
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
+    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
+    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
+    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40_CHAMBER);
+    if (currentStep == 4) g_lampsHelper.showLamp(LAMP_50_CHAMBER);
+
+    currentStep = seed % 4;
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_GI);
+    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_1);
+    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_2);
+    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_3);
+    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_4);
+  }
 }
 
 void GameMode::updateHurryUpValue() {
