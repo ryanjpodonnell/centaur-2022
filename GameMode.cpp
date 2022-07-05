@@ -244,7 +244,7 @@ void GameMode::manageNewMode() {
 }
 
 void GameMode::managePlayerBonusLamps() {
-  if (gameModeId_ == GAME_MODE_ORBS_1) return;
+  if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
   if (g_bonusLightShow.running()) return;
 
   g_machineState.updateBonusLamps();

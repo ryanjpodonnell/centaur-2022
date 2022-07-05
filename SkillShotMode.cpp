@@ -8,8 +8,8 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
 
   switch(switchHit) {
     case SW_RIGHT_FLIPPER_BUTTON:
-      bonusValue_ = 1;
-      scoreValue_ = 100;
+      bonusValue_ = 5;
+      scoreValue_ = 1000;
 
       g_lampsHelper.hideLamps(LAMP_COLLECTION_TOP_ROLLOVERS);
       if(activeRollover_ == SW_TOP_LEFT_LANE) {
@@ -77,7 +77,7 @@ void SkillShot::manageNewMode() {
   g_machineState.hideAllPlayerLamps();
 
   bonusValue_ = 10;
-  scoreValue_ = 1000;
+  scoreValue_ = 10000;
 
   long randomNumber = random(3);
   if (randomNumber == 0) {

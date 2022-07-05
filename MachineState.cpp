@@ -387,6 +387,7 @@ void MachineState::hideAllPlayerLamps() {
   g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
   g_lampsHelper.hideLamp(LAMP_SPOT_1_THROUGH_4);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_CAPTIVE_ORBS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
@@ -604,6 +605,7 @@ void MachineState::setTroughSwitchActivated(boolean value) {
 }
 
 void MachineState::showAllPlayerLamps() {
+  updateBonusLamps();
   updateCaptiveOrbsLamps();
   updateGuardianRolloverLamps();
   updateOrbsDropTargetsLamps();
