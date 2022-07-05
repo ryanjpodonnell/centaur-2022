@@ -28,7 +28,7 @@ int Attract::run(boolean curStateChanged) {
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
     case(SW_CREDIT_BUTTON):
-      if (g_machineState.resetPlayers()) g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
+      if (g_machineState.resetPlayers()) return MACHINE_STATE_RESTART_GAME;
       break;
     case SW_COIN_1:
     case SW_COIN_2:
@@ -55,11 +55,6 @@ int Attract::run(boolean curStateChanged) {
     switchHit = BSOS_PullFirstFromSwitchStack();
   }
 
-  if (g_bonusLightShow.ended()) {
-    featureShowRunning_ = false;
-    returnState         = MACHINE_STATE_INIT_GAMEPLAY;
-  }
-
   return returnState;
 }
 
@@ -83,11 +78,11 @@ void Attract::manageNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Attract State\n\r");
 
   g_bonusLightShow.reset();
-
+  g_lampsHelper.hideAllLamps();
   BSOS_DisableSolenoidStack();
-  BSOS_TurnOffAllLamps();
   BSOS_SetDisableFlippers(true);
 
+  featureShowRunning_ = false;
   score1_ = g_machineState.score(0);
   score2_ = g_machineState.score(1);
   score3_ = g_machineState.score(2);

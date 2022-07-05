@@ -8,6 +8,7 @@
 #define MACHINE_STATE_NORMAL_GAMEPLAY 4
 #define MACHINE_STATE_COUNTDOWN_BONUS 99
 #define MACHINE_STATE_BALL_OVER       100
+#define MACHINE_STATE_RESTART_GAME    101
 #define MACHINE_STATE_MATCH_MODE      110
 
 #define BALLS_PER_GAME                   3
@@ -88,6 +89,7 @@ class MachineState {
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
     byte          increaseCurrentPlayer();
+    byte          manageCreditButton();
     byte          mostRecentSwitchHit();
     byte          numberOfBallsInPlay();
     byte          numberOfPlayers();
@@ -126,7 +128,6 @@ class MachineState {
     void          increaseScore(unsigned long amountToAdd);
     void          launchBallIntoPlay(int lag = 0);
     void          manageCoinDrop(byte switchHit);
-    void          manageCreditButton();
     void          overridePlayerScore(unsigned long value);
     void          qualifyMode();
     void          qualifyRightDropTargetsReset();

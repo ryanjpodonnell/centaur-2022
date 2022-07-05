@@ -111,7 +111,6 @@ boolean MachineState::resetPlayers() {
   if (!FREE_PLAY) {
     credits_ -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
-    BSOS_SetDisplayCredits(credits_);
   }
 
   player1_.resetPlayerState();
@@ -120,6 +119,7 @@ boolean MachineState::resetPlayers() {
   player4_.resetPlayerState();
   numberOfPlayers_ = 1;
   g_displayHelper.showPlayerScores(0xFF);
+  BSOS_SetDisplayCredits(credits_);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
 
@@ -194,6 +194,17 @@ byte MachineState::increaseCurrentPlayer() {
     return MACHINE_STATE_ATTRACT;
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
+  }
+}
+
+byte MachineState::manageCreditButton() {
+  if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
+
+  if (currentBallInPlay() == 1) {
+    increaseNumberOfPlayers();
+    return MACHINE_STATE_NORMAL_GAMEPLAY;
+  } else if (resetPlayers()) {
+    return MACHINE_STATE_RESTART_GAME;
   }
 }
 
@@ -346,7 +357,7 @@ void MachineState::awardExtraBall() {
 
   extraBallCollected_ = true;
   samePlayerShootsAgain_ = true;
-  BSOS_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain_);
+  g_lampsHelper.showLamp(LAMP_SHOOT_AGAIN, false);
 }
 
 void MachineState::completeSelectedMode() {
@@ -374,9 +385,11 @@ void MachineState::flashRightDropTargetsLamps() {
 void MachineState::hideAllPlayerLamps() {
   g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
   g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
+  g_lampsHelper.hideLamp(LAMP_SPOT_1_THROUGH_4);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ALL_ROLLOVERS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_CAPTIVE_ORBS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
 }
 
@@ -421,19 +434,6 @@ void MachineState::manageCoinDrop(byte switchHit) {
   g_soundHelper.playSound(SOUND_ENERGIZE_ME);
   writeCoinToAudit(switchHit);
   increaseCredits(true, 1);
-}
-
-void MachineState::manageCreditButton() {
-  if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
-
-  if (currentBallInPlay() == 1) {
-    increaseNumberOfPlayers();
-  } else if (resetPlayers()) {
-    BSOS_DisableSolenoidStack();
-    BSOS_SetDisableFlippers(true);
-    BSOS_SetDisplayCredits(credits_);
-    g_gameMode.setGameMode(GAME_MODE_RESTART_GAME);
-  }
 }
 
 void MachineState::overridePlayerScore(unsigned long value) {
@@ -482,10 +482,10 @@ void MachineState::registerTiltWarning() {
     if (currentPlayerTilted()) {
       if (DEBUG_MESSAGES) Serial.write("Ball Tilted\n\r");
 
+      g_lampsHelper.hideAllLamps();
+      g_lampsHelper.showLamp(LAMP_TILT, false);
       BSOS_DisableSolenoidStack();
       BSOS_SetDisableFlippers(true);
-      BSOS_TurnOffAllLamps();
-      BSOS_SetLampState(LAMP_TILT, 1);
 
       g_soundHelper.stopAudio();
       g_soundHelper.playSoundWithoutInterruptions(SOUND_POWERING_DOWN);

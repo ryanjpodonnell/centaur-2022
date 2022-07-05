@@ -11,6 +11,7 @@ HertzLogging     g_hertzLogging;
 LampsHelper      g_lampsHelper;
 MachineState     g_machineState;
 OrbMode1         g_orbMode1;
+RestartGame      g_restartGame;
 SelfTestAndAudit g_selfTestAndAudit;
 SkillShot        g_skillShot;
 SoundHelper      g_soundHelper;
@@ -70,6 +71,9 @@ void loop() {
 
   } else if (machineState == MACHINE_STATE_COUNTDOWN_BONUS) {
     machineState = g_countdownBonus.run(machineStateChanged);
+
+  } else if (machineState == MACHINE_STATE_RESTART_GAME) {
+    machineState = g_restartGame.run(machineStateChanged);
 
   } else if (machineState == MACHINE_STATE_BALL_OVER && g_machineState.samePlayerShootsAgain()) {
     machineState = g_machineState.initNewBall(machineStateChanged);

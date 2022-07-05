@@ -7,7 +7,6 @@
 #define GAME_MODE_ORBS_2            3
 #define GAME_MODE_ORBS_3            4
 #define GAME_MODE_ORBS_4            5
-#define GAME_MODE_RESTART_GAME      254
 #define GAME_MODE_INITIALIZE        255
 
 #define HURRY_UP_GRACE_PERIOD       2000
@@ -32,7 +31,6 @@ class GameMode {
     boolean ballSaveActive();
     boolean ballSaveLampActive();
     int     manageBallInTrough();
-    int     manageGameRestart();
     int     manageTilt();
     int     runGameLoop();
     int     runGameModes();

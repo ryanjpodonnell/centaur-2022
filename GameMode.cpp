@@ -21,7 +21,7 @@ boolean GameMode::scoreIncreased() {
 
 int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) manageNewMode();
-  if (gameModeId_ == GAME_MODE_RESTART_GAME) return manageGameRestart();
+  if (g_bonusLightShow.running()) g_bonusLightShow.run();
 
   manageBallSave();
   manageHurryUp();
@@ -88,21 +88,6 @@ boolean GameMode::ballSaveLampActive() {
   return g_machineState.currentTime() < ballSaveEndTime_;
 }
 
-int GameMode::manageGameRestart() {
-  if (g_bonusLightShow.running()) {
-    g_bonusLightShow.run();
-  } else {
-    g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
-  }
-
-  if (g_bonusLightShow.ended()) {
-    g_bonusLightShow.reset();
-    return MACHINE_STATE_INIT_GAMEPLAY;
-  }
-
-  return MACHINE_STATE_NORMAL_GAMEPLAY;
-}
-
 int GameMode::manageBallInTrough() {
   if (!g_machineState.troughSwitchActivated()) {
     g_machineState.setTroughSwitchActivated(true);
@@ -155,7 +140,6 @@ int GameMode::manageBallInTrough() {
     if (g_machineState.anyModeStarted())       g_machineState.completeSelectedMode();
     if (g_machineState.hurryUpActivated())     endHurryUp();
 
-    g_bonusLightShow.reset();
     g_machineState.updatePlayerScore(false, false);
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
@@ -178,7 +162,7 @@ int GameMode::manageTilt() {
         g_machineState.manageCoinDrop(switchHit);
         break;
       case SW_CREDIT_BUTTON:
-        g_machineState.manageCreditButton();
+        returnState = g_machineState.manageCreditButton();
         break;
     }
 
@@ -248,6 +232,7 @@ void GameMode::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
   while (BSOS_PullFirstFromSwitchStack() != SWITCH_STACK_EMPTY) {}
 
+  g_bonusLightShow.reset();
   g_soundHelper.stopAudio();
   g_soundHelper.playSound(SOUND_CONTINIOUS_DRONE);
   g_machineState.increaseBonus(1);
@@ -259,6 +244,7 @@ void GameMode::manageNewMode() {
 }
 
 void GameMode::managePlayerBonusLamps() {
+  if (gameModeId_ == GAME_MODE_ORBS_1) return;
   if (g_bonusLightShow.running()) return;
 
   g_machineState.updateBonusLamps();
@@ -274,12 +260,9 @@ void GameMode::managePlayerScore() {
 }
 
 void GameMode::manageShotIndicatorShow() {
-  if (g_bonusLightShow.running()) {
-    g_bonusLightShow.run();
-    return;
-  }
-
   if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
+  if (g_bonusLightShow.running()) return;
+
   if (!g_machineState.playfieldValidated()) return;
   if ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) < 10000) return;
   if (indicatorPlayed_) return;

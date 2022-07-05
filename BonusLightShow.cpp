@@ -24,8 +24,13 @@ void BonusLightShow::end() {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
   g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
-  g_machineState.updateOrbsDropTargetsLamps();
-  g_machineState.updateRightDropTargetsLamps();
+
+  if (lightShowId_ == BONUS_LIGHT_SHOW_ORBS_AND_RIGHT_DROPS_ARROW ||
+      lightShowId_ == BONUS_LIGHT_SHOW_ORBS_DROPS_ARROW ||
+      lightShowId_ == BONUS_LIGHT_SHOW_RIGHT_DROPS_ARROW) {
+    g_machineState.updateOrbsDropTargetsLamps();
+    g_machineState.updateRightDropTargetsLamps();
+  }
 }
 
 void BonusLightShow::reset() {
@@ -72,7 +77,6 @@ void BonusLightShow::start(byte lightShowId) {
   lightShowId_ = lightShowId;
   endTime_     = g_machineState.currentTime() + showDurations_[lightShowId_];
 
-  if (lightShowId_ == BONUS_LIGHT_SHOW_SPIN) g_soundHelper.stopAudio();
   g_soundHelper.playSoundWithoutInterruptions(SOUND_BONUS);
 }
 
@@ -134,7 +138,7 @@ void BonusLightShow::manageRightDropsArrowShow() {
 void BonusLightShow::manageSpinShow() {
   byte currentStep = lastFlash_ % 5;
 
-  g_lampsHelper.hideAllLamps();
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 0) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_1);
   if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_2);
   if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_COUNTDOWN_STEP_3);

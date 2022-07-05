@@ -1,7 +1,7 @@
 #ifndef ORB_MODE_1_H
 #define ORB_MODE_1_H
 
-#define ORB_MODE_1_TOTAL_SECONDS 5
+#define ORB_MODE_1_TOTAL_SECONDS 15
 
 class OrbMode1 {
   private:
@@ -9,6 +9,7 @@ class OrbMode1 {
     byte totalSeconds_;
     unsigned long modeStartedTime_;
 
+    byte endMode();
     void manageNewMode();
 
   public:
