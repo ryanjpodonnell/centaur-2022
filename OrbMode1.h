@@ -7,9 +7,10 @@
 class OrbMode1 {
   private:
     boolean       allowAddTime_;
-    int           modeTotalTime_;
     int           secondsRemaining_;
-    unsigned long modeStartedTime_;
+    int           totalTime_;
+    unsigned long jackpotValue_;
+    unsigned long startedTime_;
 
     byte endMode();
     void manageBonusLightShow();
@@ -20,7 +21,8 @@ class OrbMode1 {
   public:
     OrbMode1();
 
-    byte run(boolean currentStateChanged, byte switchHit);
+    byte          run(boolean currentStateChanged, byte switchHit);
+    unsigned long jackpotValue();
 };
 
 #endif

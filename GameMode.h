@@ -49,6 +49,7 @@ class GameMode {
 
     boolean bonusIncreased();
     boolean scoreIncreased();
+    byte    gameMode();
     int     run(boolean curStateChanged);
     void    endHurryUp();
     void    resetIndicatorPlayed();

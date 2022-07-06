@@ -19,6 +19,10 @@ boolean GameMode::scoreIncreased() {
   return scoreIncreased_;
 }
 
+byte GameMode::gameMode() {
+  return gameModeId_;
+}
+
 int GameMode::run(boolean curStateChanged) {
   if (curStateChanged) manageNewMode();
   if (g_bonusLightShow.running()) g_bonusLightShow.run();

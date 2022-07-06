@@ -11,18 +11,25 @@ byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
   switch(switchHit) {
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
       if (allowAddTime_) {
-        modeTotalTime_ += 5;
+        totalTime_ += 5;
 
-        if (modeTotalTime_ >= ORB_MODE_1_MAX_SECONDS) {
-          modeTotalTime_ = ORB_MODE_1_MAX_SECONDS;
+        if (totalTime_ >= ORB_MODE_1_MAX_SECONDS) {
+          totalTime_ = ORB_MODE_1_MAX_SECONDS;
           allowAddTime_ = false;
         }
       }
       break;
+
+    case SW_TOP_SPOT_1_THROUGH_4_TARGET:
+      return endMode();
   }
 
   if (secondsRemaining_ == 0) return endMode();
   return GAME_MODE_ORBS_1;
+}
+
+unsigned long OrbMode1::jackpotValue() {
+  return jackpotValue_;
 }
 
 /*********************************************************************
@@ -36,6 +43,7 @@ byte OrbMode1::endMode() {
 
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
   g_displayHelper.overrideCredits(g_machineState.credits());
+  g_displayHelper.showPlayerScores(0xFF);
   g_machineState.completeSelectedMode();
 
   return GAME_MODE_UNSTRUCTURED_PLAY;
@@ -53,6 +61,7 @@ void OrbMode1::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 1\n\r");
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
+  g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
 
   unsigned long activationTime_ = g_machineState.currentTime() + 500;
   activationTime_ = g_machineState.resetInlineDropTargets(true, false, activationTime_);
@@ -60,17 +69,18 @@ void OrbMode1::manageNewMode() {
   activationTime_ = g_machineState.resetRightDropTargets (true, false, activationTime_);
 
   allowAddTime_     = true;
-  modeStartedTime_  = g_machineState.currentTime();
-  modeTotalTime_    = ORB_MODE_1_TOTAL_SECONDS;
+  jackpotValue_     = 100000;
   secondsRemaining_ = ORB_MODE_1_TOTAL_SECONDS;
+  startedTime_      = g_machineState.currentTime();
+  totalTime_        = ORB_MODE_1_TOTAL_SECONDS;
 
   g_displayHelper.overrideCredits(secondsRemaining_);
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
 }
 
 void OrbMode1::manageTimeRemaining() {
-  byte secondsSinceModeStarted = (g_machineState.currentTime() - modeStartedTime_) / 1000;
-  byte secondsRemaining = (modeTotalTime_ - secondsSinceModeStarted);
+  byte secondsSinceModeStarted = (g_machineState.currentTime() - startedTime_) / 1000;
+  byte secondsRemaining = (totalTime_ - secondsSinceModeStarted);
 
   if (secondsRemaining != secondsRemaining_) {
     secondsRemaining_ = secondsRemaining;
