@@ -46,7 +46,6 @@ class MachineState {
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     int           machineStateId_;
-    unsigned long activationTime_;
     unsigned long ballEnteredTroughTime_;
     unsigned long currentTime_;
     unsigned long highScore_;
@@ -61,7 +60,6 @@ class MachineState {
     boolean       allModesQualified();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
-    boolean       anyModeStarted();
     boolean       ballSaveActivated();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();

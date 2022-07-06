@@ -50,7 +50,6 @@ class PlayerState {
     boolean       allModesQualified();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
-    boolean       anyModeStarted();
     boolean       guardianRolloversCompleted();
     boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
@@ -66,7 +65,7 @@ class PlayerState {
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
     byte          startQualifiedMode();
-    unsigned long dropRightDropTargets(unsigned long activationTime_);
+    unsigned long dropRightDropTargets(unsigned long activationTime);
     unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
     unsigned long rightDropTargetsScoreValue();

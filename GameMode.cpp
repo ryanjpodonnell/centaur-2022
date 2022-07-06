@@ -139,10 +139,14 @@ int GameMode::manageBallInTrough() {
   } else {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
-    if (!g_machineState.currentPlayerTilted()) g_soundHelper.stopAudio();
-    if (g_bonusLightShow.running())            g_bonusLightShow.end();
-    if (g_machineState.anyModeStarted())       g_machineState.completeSelectedMode();
-    if (g_machineState.hurryUpActivated())     endHurryUp();
+    if (!g_machineState.currentPlayerTilted())     g_soundHelper.stopAudio();
+    if (g_bonusLightShow.running())                g_bonusLightShow.end();
+    if (g_machineState.hurryUpActivated())         endHurryUp();
+
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_1) g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) g_orbMode1.endModeViaBallEnded();
 
     g_machineState.updatePlayerScore(false, false);
 

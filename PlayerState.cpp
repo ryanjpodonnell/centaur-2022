@@ -27,13 +27,6 @@ boolean PlayerState::anyModeQualified() {
          modeStatus_[3] == MODE_STATUS_QUALIFIED;
 }
 
-boolean PlayerState::anyModeStarted() {
-  return modeStatus_[0] == MODE_STATUS_STARTED ||
-         modeStatus_[1] == MODE_STATUS_STARTED ||
-         modeStatus_[2] == MODE_STATUS_STARTED ||
-         modeStatus_[3] == MODE_STATUS_STARTED;
-}
-
 boolean PlayerState::guardianRolloversCompleted() {
   return guardianLights_[0] == true &&
          guardianLights_[1] == true &&
@@ -119,25 +112,25 @@ byte PlayerState::startQualifiedMode() {
   if (selectedMode_ == 3) return GAME_MODE_ORBS_1;
 }
 
-unsigned long PlayerState::dropRightDropTargets(unsigned long activationTime_) {
+unsigned long PlayerState::dropRightDropTargets(unsigned long activationTime) {
   if (rightDropTargets_[0] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, activationTime_);
-    activationTime_ += SOLENOID_BUFFER_TIME;
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, activationTime);
+    activationTime += SOLENOID_BUFFER_TIME;
   }
   if (rightDropTargets_[1] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, activationTime_);
-    activationTime_ += SOLENOID_BUFFER_TIME;
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, activationTime);
+    activationTime += SOLENOID_BUFFER_TIME;
   }
   if (rightDropTargets_[2] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, activationTime_);
-    activationTime_ += SOLENOID_BUFFER_TIME;
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, activationTime);
+    activationTime += SOLENOID_BUFFER_TIME;
   }
   if (rightDropTargets_[3] == true) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, activationTime_);
-    activationTime_ += SOLENOID_BUFFER_TIME;
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, activationTime);
+    activationTime += SOLENOID_BUFFER_TIME;
   }
 
-  return activationTime_;
+  return activationTime;
 }
 
 unsigned long PlayerState::queensChamberHurryUpValue() {

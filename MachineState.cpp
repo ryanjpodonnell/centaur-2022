@@ -16,7 +16,6 @@ MachineState::MachineState() {
   numberOfPlayers_             = 0;
   highScore_                   = 0;
 
-  activationTime_              = 0;
   currentTime_                 = 0;
   ballEnteredTroughTime_       = 0;
   lastTiltWarningTime_         = 0;
@@ -36,10 +35,6 @@ boolean MachineState::allowRightDropTargetProgress() {
 
 boolean MachineState::anyModeQualified() {
   return currentPlayer_->anyModeQualified();
-}
-
-boolean MachineState::anyModeStarted() {
-  return currentPlayer_->anyModeStarted();
 }
 
 boolean MachineState::ballSaveActivated() {
@@ -242,6 +237,8 @@ int MachineState::initGamePlay() {
 }
 
 int MachineState::initNewBall(bool curStateChanged) {
+  unsigned long activationTime = 0;
+
   if (curStateChanged) {
     if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
 
@@ -253,11 +250,11 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_EnableSolenoidStack();
     BSOS_SetDisableFlippers(false);
 
-    activationTime_ = currentTime_ + 500;
-    activationTime_ = resetInlineDropTargets(true, true,  activationTime_);
-    activationTime_ = resetOrbsDropTargets  (true, true,  activationTime_);
-    activationTime_ = resetRightDropTargets (true, false, activationTime_);
-    activationTime_ = dropRightDropTargets(activationTime_);
+    activationTime = currentTime_ + 500;
+    activationTime = resetInlineDropTargets(true, true,  activationTime);
+    activationTime = resetOrbsDropTargets  (true, true,  activationTime);
+    activationTime = resetRightDropTargets (true, false, activationTime);
+    activationTime = dropRightDropTargets(activationTime);
 
     resetTopRollovers();
     unqualifyMode();
@@ -269,10 +266,10 @@ int MachineState::initNewBall(bool curStateChanged) {
     g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
     g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
 
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime_);
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime);
   }
 
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) || currentTime_ < activationTime_) {
+  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) || currentTime_ < activationTime) {
     return MACHINE_STATE_INIT_NEW_BALL;
   } else {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -291,8 +288,8 @@ unsigned long MachineState::currentTime() {
   return currentTime_;
 }
 
-unsigned long MachineState::dropRightDropTargets(unsigned long activationTime_) {
-  return currentPlayer_->dropRightDropTargets(activationTime_);
+unsigned long MachineState::dropRightDropTargets(unsigned long activationTime) {
+  return currentPlayer_->dropRightDropTargets(activationTime);
 }
 
 unsigned long MachineState::highScore() {
@@ -319,25 +316,25 @@ unsigned long MachineState::queensChamberScoreValue() {
   return currentPlayer_->queensChamberScoreValue();
 }
 
-unsigned long MachineState::resetInlineDropTargets(boolean activateSolenoid, boolean resetProgress, unsigned long activationTime_) {
-  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, SOL_INLINE_DROPS_RESET_STRENGTH, activationTime_);
+unsigned long MachineState::resetInlineDropTargets(boolean activateSolenoid, boolean resetProgress, unsigned long activationTime) {
+  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(SOL_INLINE_DROP_TARGET_RESET, SOL_INLINE_DROPS_RESET_STRENGTH, activationTime);
   if (resetProgress)    currentPlayer_->resetInlineDropTargets();
 
-  return activationTime_ + SOLENOID_BUFFER_TIME;
+  return activationTime + SOLENOID_BUFFER_TIME;
 }
 
-unsigned long MachineState::resetOrbsDropTargets(boolean activateSolenoid, boolean resetProgress, unsigned long activationTime_) {
-  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, SOL_ORBS_DROPS_RESET_STRENGTH, activationTime_);
+unsigned long MachineState::resetOrbsDropTargets(boolean activateSolenoid, boolean resetProgress, unsigned long activationTime) {
+  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(SOL_ORBS_TARGET_RESET, SOL_ORBS_DROPS_RESET_STRENGTH, activationTime);
   if (resetProgress)    currentPlayer_->resetOrbsDropTargets();
 
-  return activationTime_ + SOLENOID_BUFFER_TIME;
+  return activationTime + SOLENOID_BUFFER_TIME;
 }
 
-unsigned long MachineState::resetRightDropTargets(boolean activateSolenoid, boolean resetProgress, unsigned long activationTime_) {
-  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_RIGHT_DROPS_RESET_STRENGTH, activationTime_);
+unsigned long MachineState::resetRightDropTargets(boolean activateSolenoid, boolean resetProgress, unsigned long activationTime) {
+  if (activateSolenoid) BSOS_PushToTimedSolenoidStack(SOL_4_RIGHT_DROP_TARGET_RESET, SOL_RIGHT_DROPS_RESET_STRENGTH, activationTime);
   if (resetProgress)    currentPlayer_->resetRightDropTargets();
 
-  return activationTime_ + SOLENOID_BUFFER_TIME;
+  return activationTime + SOLENOID_BUFFER_TIME;
 }
 
 unsigned long MachineState::rightDropTargetsScoreValue() {
@@ -645,6 +642,9 @@ void MachineState::updateOrbsDropTargetsLamps() {
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
   if (hurryUpActivated_)                         currentPlayer_->overridePlayerScore(hurryUpValue_);
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_1) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
 
   currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
 }
