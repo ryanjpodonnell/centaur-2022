@@ -83,6 +83,7 @@ class MachineState {
     boolean       troughSwitchActivated();
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
+    byte          closestStandingInlineDropTarget();
     byte          credits();
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
@@ -118,12 +119,12 @@ class MachineState {
     void          flashOrbsDropTargetsLamps();
     void          flashRightDropTargetsLamps();
     void          hideAllPlayerLamps();
-    void          increaseBonus(byte amountToAdd = 1);
+    void          increaseBonus(byte amountToAdd = 1, boolean checkQueensChamberMultiplier = false);
     void          increaseBonusMultiplier();
     void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
     void          increaseNumberOfBallsInPlay();
     void          increaseQualifiedScoreMultiplier();
-    void          increaseScore(unsigned long amountToAdd);
+    void          increaseScore(unsigned long amountToAdd, boolean checkQueensChamberMultiplier = false);
     void          launchBallIntoPlay(int lag = 0);
     void          manageCoinDrop(byte switchHit);
     void          overridePlayerScore(unsigned long value);

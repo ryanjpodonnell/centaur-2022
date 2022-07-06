@@ -307,11 +307,13 @@ void GameMode::setBallSaveEndTime(unsigned long value) {
 }
 
 void GameMode::runGameMode(byte switchHit) {
-  byte newGameMode = gameModeId_;
+  byte newGameMode    = gameModeId_;
+  boolean rerunSwitch = false;
 
   switch (gameModeId_) {
     case GAME_MODE_SKILL_SHOT:
       newGameMode = g_skillShot.run(gameModeChanged_, switchHit);
+      rerunSwitch = true;
       break;
     case GAME_MODE_UNSTRUCTURED_PLAY:
       newGameMode = g_unstructuredPlay.run(gameModeChanged_, switchHit);
@@ -325,7 +327,7 @@ void GameMode::runGameMode(byte switchHit) {
   }
 
   setGameMode(newGameMode);
-  if(gameModeChanged_) runGameMode(switchHit);
+  if(gameModeChanged_ && rerunSwitch) runGameMode(switchHit);
 }
 
 void GameMode::updateHurryUpLamps() {

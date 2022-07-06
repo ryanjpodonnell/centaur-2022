@@ -20,6 +20,32 @@ byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
       }
       break;
 
+    case SW_ORBS_RIGHT_LANE_TARGET:
+      if (currentJackpotTarget_ == SW_ORBS_RIGHT_LANE_TARGET) {
+        g_machineState.increaseScore(jackpotValue_);
+        g_gameMode.setScoreIncreased(true);
+
+        jackpotValue_         += 100000;
+        currentJackpotTarget_  = SW_INLINE_BACK_TARGET;
+      }
+      break;
+
+    case SW_1ST_INLINE_DROP_TARGET:
+    case SW_2ND_INLINE_DROP_TARGET:
+    case SW_3RD_INLINE_DROP_TARGET:
+    case SW_4TH_INLINE_DROP_TARGET:
+    case SW_INLINE_BACK_TARGET:
+      g_machineState.registerInlineDropTarget(switchHit);
+
+      if (currentJackpotTarget_ == SW_INLINE_BACK_TARGET) {
+        g_machineState.increaseScore(jackpotValue_);
+        g_gameMode.setScoreIncreased(true);
+
+        jackpotValue_         += 100000;
+        currentJackpotTarget_  = SW_ORBS_RIGHT_LANE_TARGET;
+      }
+      break;
+
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       return endMode();
   }
@@ -51,6 +77,9 @@ byte OrbMode1::endMode() {
   activationTime = g_machineState.resetOrbsDropTargets  (true, true, activationTime);
   activationTime = g_machineState.resetRightDropTargets (true, true, activationTime);
 
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+  g_lampsHelper.hideLamp(LAMP_COLLECT_BONUS_ARROW);
+
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
   g_displayHelper.overrideCredits(g_machineState.credits());
   g_displayHelper.showPlayerScores(0xFF);
@@ -64,18 +93,30 @@ void OrbMode1::manageBonusLightShow() {
 }
 
 void OrbMode1::manageModeLamps() {
-  allowAddTime_ ? g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW) : g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
+  allowAddTime_                                      ? g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW)   : g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
+  currentJackpotTarget_ == SW_ORBS_RIGHT_LANE_TARGET ? g_lampsHelper.showLamp(LAMP_COLLECT_BONUS_ARROW, true) : g_lampsHelper.hideLamp(LAMP_COLLECT_BONUS_ARROW);
+
+  if (currentJackpotTarget_ == SW_INLINE_BACK_TARGET) {
+    if (g_machineState.closestStandingInlineDropTarget() == SW_1ST_INLINE_DROP_TARGET) g_lampsHelper.showLamp(LAMP_10_CHAMBER, true);
+    if (g_machineState.closestStandingInlineDropTarget() == SW_2ND_INLINE_DROP_TARGET) g_lampsHelper.showLamp(LAMP_20_CHAMBER, true);
+    if (g_machineState.closestStandingInlineDropTarget() == SW_3RD_INLINE_DROP_TARGET) g_lampsHelper.showLamp(LAMP_30_CHAMBER, true);
+    if (g_machineState.closestStandingInlineDropTarget() == SW_4TH_INLINE_DROP_TARGET) g_lampsHelper.showLamp(LAMP_40_CHAMBER, true);
+    if (g_machineState.closestStandingInlineDropTarget() == SW_INLINE_BACK_TARGET)     g_lampsHelper.showLamp(LAMP_50_CHAMBER, true);
+  } else {
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+  }
 }
 
 void OrbMode1::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 1\n\r");
   if (g_machineState.hurryUpActivated()) g_gameMode.endHurryUp();
 
-  allowAddTime_     = true;
-  jackpotValue_     = 100000;
-  secondsRemaining_ = ORB_MODE_1_TOTAL_SECONDS;
-  startedTime_      = g_machineState.currentTime();
-  totalTime_        = ORB_MODE_1_TOTAL_SECONDS;
+  allowAddTime_         = true;
+  currentJackpotTarget_ = SW_ORBS_RIGHT_LANE_TARGET;
+  jackpotValue_         = 100000;
+  secondsRemaining_     = ORB_MODE_1_INITIAL_SECONDS;
+  startedTime_          = g_machineState.currentTime();
+  totalTime_            = ORB_MODE_1_INITIAL_SECONDS;
 
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
@@ -85,9 +126,9 @@ void OrbMode1::manageNewMode() {
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
 
   unsigned long activationTime = g_machineState.currentTime() + 500;
-  activationTime = g_machineState.resetInlineDropTargets(true, false, activationTime);
-  activationTime = g_machineState.resetOrbsDropTargets  (true, false, activationTime);
-  activationTime = g_machineState.resetRightDropTargets (true, false, activationTime);
+  activationTime = g_machineState.resetInlineDropTargets(true, true, activationTime);
+  activationTime = g_machineState.resetOrbsDropTargets  (true, true, activationTime);
+  activationTime = g_machineState.resetRightDropTargets (true, true, activationTime);
 }
 
 void OrbMode1::manageTimeRemaining() {

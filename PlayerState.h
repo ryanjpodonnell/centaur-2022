@@ -62,6 +62,7 @@ class PlayerState {
     boolean       topRolloversCompleted();
     byte          bonus();
     byte          bonusMultiplier();
+    byte          closestStandingInlineDropTarget();
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
     byte          startQualifiedMode();

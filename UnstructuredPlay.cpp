@@ -153,20 +153,15 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.registerInlineDropTarget(switchHit);
       g_machineState.updateQueensChamberLamps();
 
-      multiplier = 1;
-      if (g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
-          g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 1500) {
-        multiplier = 2;
-      }
-
       if (g_machineState.hurryUpActivated()) {
         g_gameMode.endHurryUp();
-        g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
-        g_machineState.increaseScore(g_machineState.hurryUpValue()            * multiplier);
+        g_machineState.increaseBonus(g_machineState.queensChamberBonusValue(), true);
+        g_machineState.increaseScore(g_machineState.hurryUpValue(),            true);
       } else {
-        g_machineState.increaseBonus(g_machineState.queensChamberBonusValue() * multiplier);
-        g_machineState.increaseScore(g_machineState.queensChamberScoreValue() * multiplier);
+        g_machineState.increaseBonus(g_machineState.queensChamberBonusValue(), true);
+        g_machineState.increaseScore(g_machineState.queensChamberScoreValue(), true);
       }
+
       g_gameMode.setBonusIncreased(true);
       g_gameMode.setScoreIncreased(true);
 

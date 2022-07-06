@@ -165,6 +165,10 @@ byte MachineState::bonusMultiplier() {
   return currentPlayer_->bonusMultiplier();
 }
 
+byte MachineState::closestStandingInlineDropTarget() {
+  return currentPlayer_->closestStandingInlineDropTarget();
+}
+
 byte MachineState::credits() {
   return credits_;
 }
@@ -391,8 +395,15 @@ void MachineState::hideAllPlayerLamps() {
   g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
 }
 
-void MachineState::increaseBonus(byte amountToAdd) {
-  currentPlayer_->increaseBonus(amountToAdd);
+void MachineState::increaseBonus(byte amountToAdd, boolean checkQueensChamberMultiplier) {
+  byte multiplier = 1;
+  if (checkQueensChamberMultiplier &&
+      g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
+      g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 1500) {
+    multiplier = 2;
+  }
+
+  currentPlayer_->increaseBonus(amountToAdd * multiplier);
 }
 
 void MachineState::increaseBonusMultiplier() {
@@ -417,8 +428,15 @@ void MachineState::increaseQualifiedScoreMultiplier() {
   currentPlayer_->increaseQualifiedScoreMultiplier();
 }
 
-void MachineState::increaseScore(unsigned long amountToAdd) {
-  currentPlayer_->increaseScore(amountToAdd);
+void MachineState::increaseScore(unsigned long amountToAdd, boolean checkQueensChamberMultiplier) {
+  byte multiplier = 1;
+  if (checkQueensChamberMultiplier &&
+      g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
+      g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 1500) {
+    multiplier = 2;
+  }
+
+  currentPlayer_->increaseScore(amountToAdd * multiplier);
 }
 
 void MachineState::launchBallIntoPlay(int lag) {
