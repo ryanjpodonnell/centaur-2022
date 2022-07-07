@@ -73,6 +73,8 @@ void BonusLightShow::run() {
 }
 
 void BonusLightShow::start(byte lightShowId) {
+  if (running_) return;
+
   ended_       = false;
   running_     = true;
   lightShowId_ = lightShowId;
