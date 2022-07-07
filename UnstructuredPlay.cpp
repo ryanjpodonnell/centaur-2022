@@ -169,9 +169,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_gameMode.setScoreIncreased(true);
 
       break;
-
-    case 0xFF:
-      break;
   }
 
   return returnState;
