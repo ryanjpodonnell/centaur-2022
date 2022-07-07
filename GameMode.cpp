@@ -200,17 +200,25 @@ int GameMode::runGameModes() {
 
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
-    if (DEBUG_MESSAGES && switchHit != 20) {
-      char buf[128];
-      sprintf(buf, "Switch Hit = %d\n", switchHit);
-      Serial.write(buf);
-    }
+    char buf[128];
 
-    runGameMode(switchHit);
-    returnState = g_base.run(switchHit);
-    bonusIncreased_ = false;
-    scoreIncreased_ = false;
-    executedSwitchStack = true;
+    if (switchHit == g_machineState.mostRecentSwitchHit() && (g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 100)) {
+      if (DEBUG_MESSAGES && switchHit != SW_LEFT_FLIPPER_BUTTON) {
+        sprintf(buf, "Skipped Switch Hit = %d\n", switchHit);
+        Serial.write(buf);
+      }
+    } else {
+      if (DEBUG_MESSAGES && switchHit != SW_LEFT_FLIPPER_BUTTON) {
+        sprintf(buf, "Switch Hit = %d\n", switchHit);
+        Serial.write(buf);
+      }
+
+      runGameMode(switchHit);
+      returnState = g_base.run(switchHit);
+      bonusIncreased_ = false;
+      scoreIncreased_ = false;
+      executedSwitchStack = true;
+    }
   }
 
   if (!executedSwitchStack) runGameMode(0xFF);
