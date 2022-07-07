@@ -207,6 +207,80 @@ void PlayerState::increaseScore(unsigned long amountToAdd) {
   tempScore_ += (amountToAdd * g_machineState.numberOfBallsInPlay());
 }
 
+void PlayerState::manageInlineTargetScoring(byte switchHit) {
+  if (switchHit == activeInlineDropTarget_) {
+    if (switchHit == SW_1ST_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 1;
+      queensChamberScoreValue_ = 10000;
+      activeInlineDropTarget_ = SW_2ND_INLINE_DROP_TARGET;
+    }
+    if (switchHit == SW_2ND_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 2;
+      queensChamberScoreValue_ = 20000;
+      activeInlineDropTarget_ = SW_3RD_INLINE_DROP_TARGET;
+    }
+    if (switchHit == SW_3RD_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 3;
+      queensChamberScoreValue_ = 30000;
+      activeInlineDropTarget_ = SW_4TH_INLINE_DROP_TARGET;
+    }
+    if (switchHit == SW_4TH_INLINE_DROP_TARGET) {
+      queensChamberBonusValue_ = 4;
+      queensChamberScoreValue_ = 40000;
+      activeInlineDropTarget_ = SW_INLINE_BACK_TARGET;
+    }
+    if (switchHit == SW_INLINE_BACK_TARGET) {
+      queensChamberBonusValue_ = 5;
+      queensChamberScoreValue_ = 50000;
+    }
+  }
+}
+
+void PlayerState::manageOrbsDropTargetScoring(byte switchHit) {
+  if (switchHit == activeOrbsDropTarget_) {
+    if (switchHit == SW_O_DROP_TARGET) {
+      activeOrbsDropTarget_ = SW_R_DROP_TARGET;
+    }
+    if (switchHit == SW_R_DROP_TARGET) {
+      activeOrbsDropTarget_ = SW_B_DROP_TARGET;
+    }
+    if (switchHit == SW_B_DROP_TARGET) {
+      activeOrbsDropTarget_ = SW_S_DROP_TARGET;
+    }
+    if (switchHit == SW_S_DROP_TARGET) {
+      activeOrbsDropTarget_ = 0xFF;
+    }
+  } else if (switchHit != activeOrbsDropTarget_) {
+    activeOrbsDropTarget_ = 0xFF;
+    orbsDropTargetsCompletedInOrder_ = false;
+  }
+}
+
+void PlayerState::manageRightDropTargetScoring(byte switchHit) {
+  if (switchHit == activeRightDropTarget_) {
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_1) {
+      rightDropTargetsScoreValue_ = 10000;
+      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_2;
+    }
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_2) {
+      rightDropTargetsScoreValue_ = 20000;
+      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_3;
+    }
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_3) {
+      rightDropTargetsScoreValue_ = 40000;
+      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_4;
+    }
+    if (switchHit == SW_RIGHT_4_DROP_TARGET_4) {
+      rightDropTargetsScoreValue_ = 80000;
+      activeRightDropTarget_ = 0xFF;
+    }
+  } else if (switchHit != activeRightDropTarget_) {
+    rightDropTargetsScoreValue_ = 500;
+    activeRightDropTarget_ = 0xFF;
+    rightDropTargetsCompletedInOrder_ = false;
+  }
+}
+
 void PlayerState::overridePlayerScore(unsigned long value) {
   byte adjacentScoreDisplay = (displayNumber_ + 2) % 4;
   g_displayHelper.overrideScoreDisplay(adjacentScoreDisplay, value);
@@ -254,8 +328,6 @@ void PlayerState::registerInlineDropTarget(byte switchHit) {
     if (inlineDropTargets_[3] == true) return;
     inlineDropTargets_[3] = true;
   }
-
-  manageInlineTargetScoring(switchHit);
 }
 
 void PlayerState::registerOrbsDropTarget(byte switchHit) {
@@ -275,8 +347,6 @@ void PlayerState::registerOrbsDropTarget(byte switchHit) {
     if (orbsDropTargets_[3] == true) return;
     orbsDropTargets_[3] = true;
   }
-
-  manageOrbsDropTargetScoring(switchHit);
 }
 
 void PlayerState::registerRightDropTarget(byte switchHit) {
@@ -296,9 +366,6 @@ void PlayerState::registerRightDropTarget(byte switchHit) {
     if (rightDropTargets_[3] == true) return;
     rightDropTargets_[3] = true;
   }
-
-  manageRightDropTargetScoring(switchHit);
-  if (switchHit == 0xFF) manageSpotRightDropTarget();
 }
 
 void PlayerState::registerTopRollover(byte switchHit) {
@@ -631,83 +698,7 @@ void PlayerState::launchLockedBallsIntoPlay() {
   }
 }
 
-void PlayerState::manageInlineTargetScoring(byte switchHit) {
-  if (switchHit == activeInlineDropTarget_) {
-    if (switchHit == SW_1ST_INLINE_DROP_TARGET) {
-      queensChamberBonusValue_ = 1;
-      queensChamberScoreValue_ = 10000;
-      activeInlineDropTarget_ = SW_2ND_INLINE_DROP_TARGET;
-    }
-    if (switchHit == SW_2ND_INLINE_DROP_TARGET) {
-      queensChamberBonusValue_ = 2;
-      queensChamberScoreValue_ = 20000;
-      activeInlineDropTarget_ = SW_3RD_INLINE_DROP_TARGET;
-    }
-    if (switchHit == SW_3RD_INLINE_DROP_TARGET) {
-      queensChamberBonusValue_ = 3;
-      queensChamberScoreValue_ = 30000;
-      activeInlineDropTarget_ = SW_4TH_INLINE_DROP_TARGET;
-    }
-    if (switchHit == SW_4TH_INLINE_DROP_TARGET) {
-      queensChamberBonusValue_ = 4;
-      queensChamberScoreValue_ = 40000;
-      activeInlineDropTarget_ = SW_INLINE_BACK_TARGET;
-    }
-    if (switchHit == SW_INLINE_BACK_TARGET) {
-      queensChamberBonusValue_ = 5;
-      queensChamberScoreValue_ = 50000;
-    }
-  }
-}
-
-void PlayerState::manageOrbsDropTargetScoring(byte switchHit) {
-  if (switchHit == activeOrbsDropTarget_) {
-    if (switchHit == SW_O_DROP_TARGET) {
-      activeOrbsDropTarget_ = SW_R_DROP_TARGET;
-    }
-    if (switchHit == SW_R_DROP_TARGET) {
-      activeOrbsDropTarget_ = SW_B_DROP_TARGET;
-    }
-    if (switchHit == SW_B_DROP_TARGET) {
-      activeOrbsDropTarget_ = SW_S_DROP_TARGET;
-    }
-    if (switchHit == SW_S_DROP_TARGET) {
-      activeOrbsDropTarget_ = 0xFF;
-    }
-  } else if (switchHit != activeOrbsDropTarget_) {
-    activeOrbsDropTarget_ = 0xFF;
-    orbsDropTargetsCompletedInOrder_ = false;
-  }
-}
-
-void PlayerState::manageRightDropTargetScoring(byte switchHit) {
-  if (switchHit == 0xFF) return;
-
-  if (switchHit == activeRightDropTarget_) {
-    if (switchHit == SW_RIGHT_4_DROP_TARGET_1) {
-      rightDropTargetsScoreValue_ = 10000;
-      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_2;
-    }
-    if (switchHit == SW_RIGHT_4_DROP_TARGET_2) {
-      rightDropTargetsScoreValue_ = 20000;
-      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_3;
-    }
-    if (switchHit == SW_RIGHT_4_DROP_TARGET_3) {
-      rightDropTargetsScoreValue_ = 40000;
-      activeRightDropTarget_ = SW_RIGHT_4_DROP_TARGET_4;
-    }
-    if (switchHit == SW_RIGHT_4_DROP_TARGET_4) {
-      rightDropTargetsScoreValue_ = 80000;
-      activeRightDropTarget_ = 0xFF;
-    }
-  } else if (switchHit != activeRightDropTarget_) {
-    rightDropTargetsScoreValue_ = 500;
-    activeRightDropTarget_ = 0xFF;
-    rightDropTargetsCompletedInOrder_ = false;
-  }
-}
-
-void PlayerState::manageSpotRightDropTarget() {
+void PlayerState::spotRightDropTarget() {
   if (rightDropTargets_[0] == false) {
     BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
     return;

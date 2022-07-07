@@ -127,6 +127,9 @@ class MachineState {
     void          increaseScore(unsigned long amountToAdd, boolean checkQueensChamberMultiplier = false);
     void          launchBallIntoPlay(int lag = 0);
     void          manageCoinDrop(byte switchHit);
+    void          manageInlineTargetScoring(byte switchHit);
+    void          manageOrbsDropTargetScoring(byte switchHit);
+    void          manageRightDropTargetScoring(byte switchHit);
     void          overridePlayerScore(unsigned long value);
     void          qualifyMode();
     void          qualifyRightDropTargetsReset();
@@ -161,6 +164,7 @@ class MachineState {
     void          setScore(unsigned long value, byte player = 0xFF);
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();
+    void          spotRightDropTarget();
     void          unqualifyMode();
     void          unqualifyRightDropTargetsReset();
     void          updateBonusLamps();

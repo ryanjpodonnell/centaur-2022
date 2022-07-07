@@ -62,8 +62,7 @@ void OrbMode1::endModeViaBallEnded() {
   g_machineState.resetOrbsDropTargets  (false, true, 0);
   g_machineState.resetRightDropTargets (false, true, 0);
 
-  g_displayHelper.overrideCredits(g_machineState.credits());
-  g_displayHelper.showPlayerScores(0xFF);
+  BSOS_SetDisplayCredits(g_machineState.credits());
   g_machineState.completeSelectedMode();
 }
 
@@ -80,8 +79,7 @@ byte OrbMode1::endMode() {
   g_lampsHelper.hideLamp(LAMP_COLLECT_BONUS_ARROW);
 
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
-  g_displayHelper.overrideCredits(g_machineState.credits());
-  g_displayHelper.showPlayerScores(0xFF);
+  BSOS_SetDisplayCredits(g_machineState.credits());
   g_machineState.completeSelectedMode();
 
   return GAME_MODE_UNSTRUCTURED_PLAY;
@@ -117,7 +115,7 @@ void OrbMode1::manageNewMode() {
   g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
   g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
 
-  g_displayHelper.overrideCredits(secondsRemaining_);
+  BSOS_SetDisplayCredits(secondsRemaining_);
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
 
   unsigned long activationTime = g_machineState.currentTime() + 500;
@@ -132,7 +130,7 @@ void OrbMode1::manageTimeRemaining() {
 
   if (secondsRemaining != secondsRemaining_) {
     secondsRemaining_ = secondsRemaining;
-    g_displayHelper.overrideCredits(secondsRemaining_);
+    BSOS_SetDisplayCredits(secondsRemaining_);
     if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
 
     if (secondsRemaining_ == 10) g_soundHelper.playSoundWithoutInterruptions(SOUND_CHIRP_6);

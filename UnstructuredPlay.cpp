@@ -52,6 +52,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
       g_machineState.registerOrbsDropTarget(switchHit);
+      g_machineState.manageOrbsDropTargetScoring(switchHit);
 
       if (g_machineState.orbsDropTargetsCompleted()) {
         if (g_machineState.orbsDropTargetsCompletedInOrder()) {
@@ -80,6 +81,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
       g_machineState.registerRightDropTarget(switchHit);
+      g_machineState.manageRightDropTargetScoring(switchHit);
 
       if (g_machineState.rightDropTargetsCompleted()) {
         if (g_machineState.rightDropTargetsCompletedInOrder()) {
@@ -140,7 +142,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
       if (g_machineState.allowRightDropTargetProgress() &&
           !g_machineState.rightDropTargetsCompleted()) {
-        g_machineState.registerRightDropTarget(0xFF);
+        g_machineState.spotRightDropTarget();
       }
 
       break;
@@ -151,6 +153,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_4TH_INLINE_DROP_TARGET:
     case SW_INLINE_BACK_TARGET:
       g_machineState.registerInlineDropTarget(switchHit);
+      g_machineState.manageInlineTargetScoring(switchHit);
       g_machineState.updateQueensChamberLamps();
 
       if (g_machineState.hurryUpActivated()) {

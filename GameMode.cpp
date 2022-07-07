@@ -148,8 +148,9 @@ int GameMode::manageBallInTrough() {
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) g_orbMode1.endModeViaBallEnded();
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) g_orbMode1.endModeViaBallEnded();
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) g_orbMode1.endModeViaBallEnded();
+    gameModeId_ = GAME_MODE_INITIALIZE;
 
-    g_machineState.updatePlayerScore(false, false);
+    g_displayHelper.showPlayerScores(0xFF);
 
     return MACHINE_STATE_COUNTDOWN_BONUS;
   }

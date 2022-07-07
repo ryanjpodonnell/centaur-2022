@@ -11,10 +11,6 @@ DisplayHelper::DisplayHelper() {
   scoreOverrideStatus_[3] = false;
 }
 
-void DisplayHelper::overrideCredits(byte value) {
-  BSOS_SetDisplayCredits(value);
-}
-
 void DisplayHelper::overrideScoreDisplay(byte displayNum, unsigned long score) {
   scoreOverrideStatus_[displayNum] = true;
   scoreOverrideValue_[displayNum] = score;

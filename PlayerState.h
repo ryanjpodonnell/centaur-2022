@@ -39,10 +39,6 @@ class PlayerState {
     byte          modeStatus_[4];
 
     void          launchLockedBallsIntoPlay();
-    void          manageInlineTargetScoring(byte switchHit);
-    void          manageOrbsDropTargetScoring(byte switchHit);
-    void          manageRightDropTargetScoring(byte switchHit);
-    void          manageSpotRightDropTarget();
 
   public:
     PlayerState();
@@ -79,6 +75,9 @@ class PlayerState {
     void          increaseBonusMultiplier();
     void          increaseQualifiedScoreMultiplier();
     void          increaseScore(unsigned long amountToAdd);
+    void          manageInlineTargetScoring(byte switchHit);
+    void          manageOrbsDropTargetScoring(byte switchHit);
+    void          manageRightDropTargetScoring(byte switchHit);
     void          overridePlayerScore(unsigned long value);
     void          qualifyMode();
     void          qualifyRightDropTargetsReset();
@@ -99,6 +98,7 @@ class PlayerState {
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setScore(unsigned long value);
+    void          spotRightDropTarget();
     void          unqualifyMode();
     void          unqualifyRightDropTargetsReset();
     void          updateBonusLamps();

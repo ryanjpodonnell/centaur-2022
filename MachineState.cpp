@@ -73,6 +73,8 @@ boolean MachineState::increaseNumberOfPlayers() {
 
   setScore(0, numberOfPlayers_);
   numberOfPlayers_ += 1;
+
+  g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
   g_displayHelper.showPlayerScores(0xFF);
 
   BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
@@ -452,6 +454,18 @@ void MachineState::manageCoinDrop(byte switchHit) {
   increaseCredits(true, 1);
 }
 
+void MachineState::manageInlineTargetScoring(byte switchHit) {
+  currentPlayer_->manageInlineTargetScoring(switchHit);
+}
+
+void MachineState::manageOrbsDropTargetScoring(byte switchHit) {
+  currentPlayer_->manageOrbsDropTargetScoring(switchHit);
+}
+
+void MachineState::manageRightDropTargetScoring(byte switchHit) {
+  currentPlayer_->manageRightDropTargetScoring(switchHit);
+}
+
 void MachineState::overridePlayerScore(unsigned long value) {
   currentPlayer_->overridePlayerScore(value);
 }
@@ -631,6 +645,10 @@ void MachineState::showAllPlayerLamps() {
   updateRightOrbsReleaseLamp();
   updateScoreMultiplierLamps();
   updateTopRolloverLamps();
+}
+
+void MachineState::spotRightDropTarget() {
+  return currentPlayer_->spotRightDropTarget();
 }
 
 void MachineState::unqualifyMode() {
