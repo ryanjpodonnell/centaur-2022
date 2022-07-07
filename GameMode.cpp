@@ -48,6 +48,7 @@ void GameMode::endHurryUp() {
   if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
 
   g_displayHelper.showPlayerScores(0xFF);
+  g_lampsHelper.showLamps(LAMP_COLLECTION_QUEENS_CHAMBER_GI);
   g_machineState.setHurryUpActivated(false);
   g_machineState.updateQueensChamberLamps();
 }
