@@ -87,13 +87,12 @@ void BonusLightShow::start(byte lightShowId) {
 void BonusLightShow::manageOrbsAndRightDropsArrowShow() {
   byte currentStep = lastFlash_ % 11;
 
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0)  return;
+  if (currentStep == 0)  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 1)  g_lampsHelper.showLamp(LAMP_60K_BONUS);
   if (currentStep == 2)  g_lampsHelper.showLamp(LAMP_40K_BONUS);
   if (currentStep == 3)  g_lampsHelper.showLamp(LAMP_20K_BONUS);
   if (currentStep == 4)  g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_ORBS_DROPS_ARROW);
-  if (currentStep == 5)  return;
+  if (currentStep == 5)  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 6)  g_lampsHelper.showLamp(LAMP_7K_BONUS);
   if (currentStep == 7)  g_lampsHelper.showLamp(LAMP_4X_BONUS);
   if (currentStep == 8)  g_lampsHelper.showLamp(LAMP_40K_BONUS);
@@ -104,8 +103,7 @@ void BonusLightShow::manageOrbsAndRightDropsArrowShow() {
 void BonusLightShow::manageOrbsDropsArrowShow() {
   byte currentStep = lastFlash_ % 5;
 
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0) return;
+  if (currentStep == 0) g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 1) g_lampsHelper.showLamp(LAMP_60K_BONUS);
   if (currentStep == 2) g_lampsHelper.showLamp(LAMP_40K_BONUS);
   if (currentStep == 3) g_lampsHelper.showLamp(LAMP_20K_BONUS);
@@ -115,8 +113,7 @@ void BonusLightShow::manageOrbsDropsArrowShow() {
 void BonusLightShow::manageResetArrowShow() {
   byte currentStep = lastFlash_ % 6;
 
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0) return;
+  if (currentStep == 0) g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 1) g_lampsHelper.showLamp(LAMP_4K_BONUS);
   if (currentStep == 2) g_lampsHelper.showLamp(LAMP_5X_BONUS);
   if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40K_BONUS);
@@ -127,8 +124,7 @@ void BonusLightShow::manageResetArrowShow() {
 void BonusLightShow::manageRightDropsArrowShow() {
   byte currentStep = lastFlash_ % 6;
 
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  if (currentStep == 0) return;
+  if (currentStep == 0) g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   if (currentStep == 1) g_lampsHelper.showLamp(LAMP_7K_BONUS);
   if (currentStep == 2) g_lampsHelper.showLamp(LAMP_4X_BONUS);
   if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40K_BONUS);
