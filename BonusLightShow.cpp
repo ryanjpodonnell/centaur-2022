@@ -80,6 +80,7 @@ void BonusLightShow::start(byte lightShowId) {
   lightShowId_ = lightShowId;
   endTime_     = g_machineState.currentTime() + showDurations_[lightShowId_];
 
+  g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
   g_soundHelper.playSoundWithoutInterruptions(SOUND_BONUS);
 }
 
