@@ -155,6 +155,14 @@ boolean MachineState::troughSwitchActivated() {
   return troughSwitchActivated_;
 }
 
+byte MachineState::activeOrbsDropTarget() {
+  return currentPlayer_->activeOrbsDropTarget();
+}
+
+byte MachineState::activeRightDropTarget() {
+  return currentPlayer_->activeRightDropTarget();
+}
+
 byte MachineState::bonus(byte player) {
   if (player == 0xFF) player = currentPlayerNumber();
   if (player == 0) return player1_.bonus();

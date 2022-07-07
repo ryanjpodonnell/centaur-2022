@@ -61,6 +61,7 @@ void BSOS_WriteULToEEProm(unsigned short startByte, unsigned long value);
 //   Swtiches
 byte BSOS_PullFirstFromSwitchStack();
 boolean BSOS_ReadSingleSwitchState(byte switchNum);
+void BSOS_PushToSwitchStack(byte switchNum);
 
 //   Solenoids
 void BSOS_PushToSolenoidStack(byte solenoidNumber, byte numPushes, boolean disableOverride = false);

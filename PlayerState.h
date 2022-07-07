@@ -56,6 +56,8 @@ class PlayerState {
     boolean       rightDropTargetsResetQualified();
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
+    byte          activeOrbsDropTarget();
+    byte          activeRightDropTarget();
     byte          bonus();
     byte          bonusMultiplier();
     byte          closestStandingInlineDropTarget();

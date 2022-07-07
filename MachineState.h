@@ -81,6 +81,8 @@ class MachineState {
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
     boolean       troughSwitchActivated();
+    byte          activeOrbsDropTarget();
+    byte          activeRightDropTarget();
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
     byte          closestStandingInlineDropTarget();

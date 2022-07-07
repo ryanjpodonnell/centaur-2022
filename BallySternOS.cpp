@@ -553,6 +553,9 @@ boolean BSOS_ReadSingleSwitchState(byte switchNum) {
   else return false;
 }
 
+void BSOS_PushToSwitchStack(byte switchNumber) {
+  PushToSwitchStack(switchNumber);
+}
 
 int SpaceLeftOnSolenoidStack() {
   if (SolenoidStackFirst>=SOLENOID_STACK_SIZE || SolenoidStackLast>=SOLENOID_STACK_SIZE) return 0;

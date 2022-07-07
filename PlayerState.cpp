@@ -84,6 +84,14 @@ boolean PlayerState::topRolloversCompleted() {
          topLaneLights_[2] == true;
 }
 
+byte PlayerState::activeOrbsDropTarget() {
+  return activeOrbsDropTarget_;
+}
+
+byte PlayerState::activeRightDropTarget() {
+  return activeRightDropTarget_;
+}
+
 byte PlayerState::bonus() {
   return bonus_;
 }

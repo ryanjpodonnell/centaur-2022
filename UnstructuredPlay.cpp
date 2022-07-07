@@ -51,8 +51,26 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_S_DROP_TARGET:
       if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
-      g_machineState.registerOrbsDropTarget(switchHit);
-      g_machineState.manageOrbsDropTargetScoring(switchHit);
+      if (g_machineState.activeOrbsDropTarget() != 0xFF &&
+          g_machineState.activeOrbsDropTarget() != switchHit &&
+          rerunOrbsSwitch_ == false) {
+        rerunOrbsSwitchHit_  = switchHit;
+        rerunOrbsSwitchTime_ = g_machineState.currentTime() + 110;
+        g_gameMode.setScoreIncreased(true);
+      } else if (rerunOrbsSwitch_ == true) {
+        rerunOrbsSwitchHit_  = 0xFF;
+        rerunOrbsSwitchTime_ = 0;
+        rerunOrbsSwitch_     = false;
+        g_machineState.registerOrbsDropTarget(switchHit);
+        g_machineState.manageOrbsDropTargetScoring(switchHit);
+        g_machineState.increaseScore(1000);
+        g_gameMode.setScoreIncreased(true);
+      } else {
+        g_machineState.registerOrbsDropTarget(switchHit);
+        g_machineState.manageOrbsDropTargetScoring(switchHit);
+        g_machineState.increaseScore(1000);
+        g_gameMode.setScoreIncreased(true);
+      }
 
       if (g_machineState.orbsDropTargetsCompleted()) {
         if (g_machineState.orbsDropTargetsCompletedInOrder()) {
@@ -80,8 +98,26 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_4:
       if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
-      g_machineState.registerRightDropTarget(switchHit);
-      g_machineState.manageRightDropTargetScoring(switchHit);
+      if (g_machineState.activeRightDropTarget() != 0xFF &&
+          g_machineState.activeRightDropTarget() != switchHit &&
+          rerunRightSwitch_ == false) {
+        rerunRightSwitchHit_  = switchHit;
+        rerunRightSwitchTime_ = g_machineState.currentTime() + 110;
+        g_gameMode.setScoreIncreased(true);
+      } else if (rerunRightSwitch_ == true) {
+        rerunRightSwitchHit_  = 0xFF;
+        rerunRightSwitchTime_ = 0;
+        rerunRightSwitch_     = false;
+        g_machineState.registerRightDropTarget(switchHit);
+        g_machineState.manageRightDropTargetScoring(switchHit);
+        g_machineState.increaseScore(g_machineState.rightDropTargetsScoreValue());
+        g_gameMode.setScoreIncreased(true);
+      } else {
+        g_machineState.registerRightDropTarget(switchHit);
+        g_machineState.manageRightDropTargetScoring(switchHit);
+        g_machineState.increaseScore(g_machineState.rightDropTargetsScoreValue());
+        g_gameMode.setScoreIncreased(true);
+      }
 
       if (g_machineState.rightDropTargetsCompleted()) {
         if (g_machineState.rightDropTargetsCompletedInOrder()) {
@@ -99,9 +135,6 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.updateRightDropTargetsLamps();
       g_machineState.updateRightDropTargetsResetLamp();
       g_machineState.updateRightDropTargetsSpotLamp();
-
-      g_machineState.increaseScore(g_machineState.rightDropTargetsScoreValue());
-      g_gameMode.setScoreIncreased(true);
       break;
 
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
@@ -171,6 +204,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       break;
   }
 
+  manageSwitchReruns();
   return returnState;
 }
 
@@ -179,5 +213,26 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 *********************************************************************/
 void UnstructuredPlay::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
+  rerunOrbsSwitchHit_   = 0xFF;
+  rerunOrbsSwitchTime_  = 0;
+  rerunOrbsSwitch_      = false;
+  rerunRightSwitchHit_  = 0xFF;
+  rerunRightSwitchTime_ = 0;
+  rerunRightSwitch_     = false;
+
   g_machineState.showAllPlayerLamps();
+}
+
+void UnstructuredPlay::manageSwitchReruns() {
+  if (rerunOrbsSwitchHit_ != 0xFF && rerunOrbsSwitchTime_ < g_machineState.currentTime()) {
+    if (DEBUG_MESSAGES) Serial.write("Rerunning Orbs Switch Hit\n\r");
+    BSOS_PushToSwitchStack(rerunOrbsSwitchHit_);
+    rerunOrbsSwitch_ = true;
+  }
+
+  if (rerunRightSwitchHit_ != 0xFF && rerunRightSwitchTime_ < g_machineState.currentTime()) {
+    if (DEBUG_MESSAGES) Serial.write("Rerunning Right Switch Hit\n\r");
+    BSOS_PushToSwitchStack(rerunRightSwitchHit_);
+    rerunRightSwitch_ = true;
+  }
 }
