@@ -40,7 +40,10 @@ void BonusLightShow::reset() {
 }
 
 void BonusLightShow::run() {
-  if (endTime_ && (g_machineState.currentTime() > endTime_)) end();
+  if (endTime_ && (g_machineState.currentTime() > endTime_)) {
+    end();
+    return;
+  }
 
   unsigned long seed = g_machineState.currentTime() / 100;   // .10 seconds
   if (seed == lastFlash_) return;
