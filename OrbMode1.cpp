@@ -4,7 +4,6 @@ OrbMode1::OrbMode1() {}
 
 byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) manageNewMode();
-  manageBonusLightShow();
   manageModeLamps();
   manageTimeRemaining();
 
@@ -86,10 +85,6 @@ byte OrbMode1::endMode() {
   g_machineState.completeSelectedMode();
 
   return GAME_MODE_UNSTRUCTURED_PLAY;
-}
-
-void OrbMode1::manageBonusLightShow() {
-  if (g_bonusLightShow.running()) g_bonusLightShow.run();
 }
 
 void OrbMode1::manageModeLamps() {

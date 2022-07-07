@@ -14,7 +14,6 @@ class OrbMode1 {
     unsigned long startedTime_;
 
     byte endMode();
-    void manageBonusLightShow();
     void manageModeLamps();
     void manageNewMode();
     void manageTimeRemaining();
