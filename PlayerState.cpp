@@ -123,7 +123,7 @@ byte PlayerState::startQualifiedMode() {
   modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
 
   if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
-  if (selectedMode_ == 1) return GAME_MODE_ORBS_1;
+  if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
   if (selectedMode_ == 2) return GAME_MODE_ORBS_1;
   if (selectedMode_ == 3) return GAME_MODE_ORBS_1;
 }

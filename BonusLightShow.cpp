@@ -22,10 +22,10 @@ void BonusLightShow::end() {
   running_ = false;
 
   g_lampsHelper.hideLamps(LAMP_COLLECTION_BONUS_ALL);
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
-  g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
 
   if (g_gameMode.gameMode() == GAME_MODE_UNSTRUCTURED_PLAY) {
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
     g_machineState.updateOrbsDropTargetsLamps();
     g_machineState.updateRightDropTargetsLamps();
   }

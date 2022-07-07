@@ -168,6 +168,9 @@ byte* LampsHelper::lampsPointer(byte lampCollection) {
     case LAMP_COLLECTION_QUEENS_CHAMBER_GI:
       pointer = queensChamberGI_;
       break;
+    case LAMP_COLLECTION_GUARDIAN_ROLLOVERS:
+      pointer = guardianRolloverLamps_;
+      break;
   }
 
   return pointer;

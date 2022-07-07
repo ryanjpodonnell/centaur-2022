@@ -11,6 +11,7 @@ HertzLogging     g_hertzLogging;
 LampsHelper      g_lampsHelper;
 MachineState     g_machineState;
 OrbMode1         g_orbMode1;
+OrbMode2         g_orbMode2;
 RestartGame      g_restartGame;
 SelfTestAndAudit g_selfTestAndAudit;
 SkillShot        g_skillShot;

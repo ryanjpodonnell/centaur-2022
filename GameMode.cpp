@@ -145,7 +145,7 @@ int GameMode::manageBallInTrough() {
     if (g_machineState.hurryUpActivated())         endHurryUp();
 
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_1) g_orbMode1.endModeViaBallEnded();
-    if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) g_orbMode2.endModeViaBallEnded();
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) g_orbMode1.endModeViaBallEnded();
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) g_orbMode1.endModeViaBallEnded();
     gameModeId_ = GAME_MODE_INITIALIZE;
@@ -329,10 +329,12 @@ void GameMode::runGameMode(byte switchHit) {
       newGameMode = g_unstructuredPlay.run(gameModeChanged_, switchHit);
       break;
     case GAME_MODE_ORBS_1:
-    case GAME_MODE_ORBS_2:
     case GAME_MODE_ORBS_3:
     case GAME_MODE_ORBS_4:
       newGameMode = g_orbMode1.run(gameModeChanged_, switchHit);
+      break;
+    case GAME_MODE_ORBS_2:
+      newGameMode = g_orbMode2.run(gameModeChanged_, switchHit);
       break;
   }
 

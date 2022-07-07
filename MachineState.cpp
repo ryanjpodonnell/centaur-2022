@@ -686,7 +686,7 @@ void MachineState::updateOrbsDropTargetsLamps() {
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
   if (hurryUpActivated_)                         currentPlayer_->overridePlayerScore(hurryUpValue_);
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_1) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) currentPlayer_->overridePlayerScore(g_orbMode2.jackpotValue());
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
 
