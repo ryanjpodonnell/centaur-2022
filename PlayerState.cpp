@@ -100,14 +100,6 @@ byte PlayerState::bonusMultiplier() {
   return bonusMultiplier_;
 }
 
-byte PlayerState::closestStandingInlineDropTarget() {
-  if (inlineDropTargets_[0] == false) return SW_1ST_INLINE_DROP_TARGET;
-  if (inlineDropTargets_[1] == false) return SW_2ND_INLINE_DROP_TARGET;
-  if (inlineDropTargets_[2] == false) return SW_3RD_INLINE_DROP_TARGET;
-  if (inlineDropTargets_[3] == false) return SW_4TH_INLINE_DROP_TARGET;
-  return SW_INLINE_BACK_TARGET;
-}
-
 byte PlayerState::qualifiedScoreMultiplier() {
   return qualifiedScoreMultiplier_;
 }

@@ -175,10 +175,6 @@ byte MachineState::bonusMultiplier() {
   return currentPlayer_->bonusMultiplier();
 }
 
-byte MachineState::closestStandingInlineDropTarget() {
-  return currentPlayer_->closestStandingInlineDropTarget();
-}
-
 byte MachineState::credits() {
   return credits_;
 }

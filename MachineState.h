@@ -85,7 +85,6 @@ class MachineState {
     byte          activeRightDropTarget();
     byte          bonus(byte player = 0xFF);
     byte          bonusMultiplier();
-    byte          closestStandingInlineDropTarget();
     byte          credits();
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
