@@ -6,7 +6,6 @@ GameMode::GameMode() {
 
   ballSaveEndTime_        = 0;
   bonusIncreased_         = false;
-  indicatorPlayed_        = false;
   pushingBallFromOutlane_ = false;
   scoreIncreased_         = false;
 }
@@ -28,10 +27,7 @@ int GameMode::run(boolean curStateChanged) {
   if (g_bonusLightShow.running()) g_bonusLightShow.run();
 
   manageBallSave();
-  manageHurryUp();
-  managePlayerBonusLamps();
   managePlayerScore();
-  manageShotIndicatorShow();
 
   int returnState = runGameLoop();
   if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
@@ -42,15 +38,6 @@ int GameMode::run(boolean curStateChanged) {
   }
 
   return returnState;
-}
-
-void GameMode::endHurryUp() {
-  if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
-
-  g_displayHelper.showPlayerScores(0xFF);
-  g_lampsHelper.showLamps(LAMP_COLLECTION_QUEENS_CHAMBER_GI);
-  g_machineState.setHurryUpActivated(false);
-  g_machineState.updateQueensChamberLamps();
 }
 
 void GameMode::setBonusIncreased(boolean value) {
@@ -68,18 +55,6 @@ void GameMode::setGameMode(byte id) {
 
 void GameMode::setScoreIncreased(boolean value) {
   scoreIncreased_ = value;
-}
-
-void GameMode::startHurryUp(unsigned long value, int seconds) {
-  if (DEBUG_MESSAGES) Serial.write("Hurry Up Started\n\r");
-
-  g_soundHelper.playSoundWithoutInterruptions(SOUND_SIREN_2);
-  g_machineState.setHurryUpActivated(true);
-  g_machineState.setHurryUpValue(value);
-  hurryUpInitialValue_        = value;
-  hurryUpStartedTime_         = g_machineState.currentTime();
-  hurryUpEndTime_             = g_machineState.currentTime() + (1000 * seconds) + HURRY_UP_GRACE_PERIOD;
-  hurryUpValuePerMillisecond_ = value / (1000 * seconds);
 }
 
 /*********************************************************************
@@ -142,12 +117,12 @@ int GameMode::manageBallInTrough() {
 
     if (!g_machineState.currentPlayerTilted())     g_soundHelper.stopAudio();
     if (g_bonusLightShow.running())                g_bonusLightShow.end();
-    if (g_machineState.hurryUpActivated())         endHurryUp();
 
-    if (g_gameMode.gameMode() == GAME_MODE_ORBS_1) g_orbMode1.endModeViaBallEnded();
-    if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) g_orbMode2.endModeViaBallEnded();
-    if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) g_orbMode1.endModeViaBallEnded();
-    if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_UNSTRUCTURED_PLAY) g_unstructuredPlay.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_1)            g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_2)            g_orbMode2.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_3)            g_orbMode1.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_ORBS_4)            g_orbMode1.endModeViaBallEnded();
     gameModeId_ = GAME_MODE_INITIALIZE;
 
     g_displayHelper.showPlayerScores(0xFF);
@@ -238,14 +213,6 @@ void GameMode::manageBallSave() {
   }
 }
 
-void GameMode::manageHurryUp() {
-  if (!g_machineState.hurryUpActivated()) return;
-
-  updateHurryUpValue();
-  updateHurryUpLamps();
-
-}
-
 void GameMode::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Game Mode Loop\n\r");
   while (BSOS_PullFirstFromSwitchStack() != SWITCH_STACK_EMPTY) {}
@@ -261,13 +228,6 @@ void GameMode::manageNewMode() {
   setGameMode(GAME_MODE_SKILL_SHOT);
 }
 
-void GameMode::managePlayerBonusLamps() {
-  if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
-  if (g_bonusLightShow.running()) return;
-
-  g_machineState.updateBonusLamps();
-}
-
 void GameMode::managePlayerScore() {
   boolean shouldFlashScore = g_machineState.playfieldValidated() ? false : true;
   boolean shouldDashScore  =
@@ -275,41 +235,6 @@ void GameMode::managePlayerScore() {
     ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) > 2000) ? true : false;
 
   g_machineState.updatePlayerScore(shouldFlashScore, shouldDashScore);
-}
-
-void GameMode::manageShotIndicatorShow() {
-  if (gameModeId_ != GAME_MODE_UNSTRUCTURED_PLAY) return;
-  if (g_bonusLightShow.running()) return;
-
-  if (!g_machineState.playfieldValidated()) return;
-  if ((g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) < 10000) return;
-  if (indicatorPlayed_) return;
-
-  if (g_machineState.orbsDropTargetsAllStanding() && g_machineState.rightDropTargetsAllStanding()) {
-    indicatorPlayed_ = true;
-    g_lampsHelper.showLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS, true);
-    g_lampsHelper.showLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS, true);
-    g_bonusLightShow.start(BONUS_LIGHT_SHOW_ORBS_AND_RIGHT_DROPS_ARROW);
-    return;
-  }
-
-  if (g_machineState.orbsDropTargetsAllStanding()) {
-    indicatorPlayed_ = true;
-    g_lampsHelper.showLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS, true);
-    g_bonusLightShow.start(BONUS_LIGHT_SHOW_ORBS_DROPS_ARROW);
-    return;
-  }
-
-  if (g_machineState.rightDropTargetsAllStanding()) {
-    indicatorPlayed_ = true;
-    g_lampsHelper.showLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS, true);
-    g_bonusLightShow.start(BONUS_LIGHT_SHOW_RIGHT_DROPS_ARROW);
-    return;
-  }
-}
-
-void GameMode::resetIndicatorPlayed() {
-  indicatorPlayed_ = false;
 }
 
 void GameMode::setBallSaveEndTime(unsigned long value) {
@@ -340,63 +265,4 @@ void GameMode::runGameMode(byte switchHit) {
 
   setGameMode(newGameMode);
   if(gameModeChanged_ && rerunSwitch) runGameMode(switchHit);
-}
-
-void GameMode::updateHurryUpLamps() {
-  unsigned long seed = g_machineState.currentTime() / 50; // .05 seconds
-  if (seed != lastFlash_) {
-    lastFlash_ = seed;
-
-    byte currentStep = seed % 5;
-    if (g_machineState.queensChamberHurryUpValue() == 100000) {
-      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-    } else if (g_machineState.queensChamberHurryUpValue() == 200000) {
-      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-    } else if (g_machineState.queensChamberHurryUpValue() == 300000) {
-      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-    } else if (g_machineState.queensChamberHurryUpValue() == 400000) {
-      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_50_CHAMBER);
-    } else if (g_machineState.queensChamberHurryUpValue() == 500000) {
-      g_lampsHelper.hideLamp(LAMP_10_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_20_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_30_CHAMBER);
-      g_lampsHelper.hideLamp(LAMP_40_CHAMBER);
-    }
-    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_10_CHAMBER);
-    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_20_CHAMBER);
-    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_30_CHAMBER);
-    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_40_CHAMBER);
-    if (currentStep == 4) g_lampsHelper.showLamp(LAMP_50_CHAMBER);
-
-    currentStep = seed % 4;
-    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_GI);
-    if (currentStep == 0) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_1);
-    if (currentStep == 1) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_2);
-    if (currentStep == 2) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_3);
-    if (currentStep == 3) g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_4);
-  }
-}
-
-void GameMode::updateHurryUpValue() {
-  unsigned long timeSinceHurryUpStarted = g_machineState.currentTime() - hurryUpStartedTime_;
-  if (timeSinceHurryUpStarted < HURRY_UP_GRACE_PERIOD) return;
-
-  unsigned long value = hurryUpValuePerMillisecond_ * (timeSinceHurryUpStarted - HURRY_UP_GRACE_PERIOD);
-  g_machineState.setHurryUpValue(hurryUpInitialValue_ - value);
-
-  if (g_machineState.currentTime() >= hurryUpEndTime_) {
-    endHurryUp();
-  }
 }

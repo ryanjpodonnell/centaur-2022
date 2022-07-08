@@ -33,7 +33,6 @@ class MachineState {
     boolean       ballSaveActivated_;
     boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
-    boolean       hurryUpActivated_;
     boolean       machineStateChanged_;
     boolean       playfieldValidated_;
     boolean       samePlayerShootsAgain_;
@@ -49,7 +48,6 @@ class MachineState {
     unsigned long ballEnteredTroughTime_;
     unsigned long currentTime_;
     unsigned long highScore_;
-    unsigned long hurryUpValue_;
     unsigned long lastTiltWarningTime_;
     unsigned long mostRecentSwitchHitTime_;
 
@@ -65,7 +63,6 @@ class MachineState {
     boolean       currentPlayerTilted();
     boolean       firstBallActive();
     boolean       guardianRolloversCompleted();
-    boolean       hurryUpActivated();
     boolean       increaseNumberOfPlayers();
     boolean       machineStateChanged();
     boolean       orbsDropTargetsAllStanding();
@@ -103,7 +100,6 @@ class MachineState {
     unsigned long currentTime();
     unsigned long dropRightDropTargets(unsigned long activationTime_);
     unsigned long highScore();
-    unsigned long hurryUpValue();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentSwitchHitTime();
     unsigned long queensChamberHurryUpValue();
@@ -155,8 +151,6 @@ class MachineState {
     void          setCurrentPlayer(byte value);
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
-    void          setHurryUpActivated(boolean value);
-    void          setHurryUpValue(unsigned long value);
     void          setMachineState(int id);
     void          setMostRecentSwitchHit(byte value);
     void          setMostRecentSwitchHitTime();

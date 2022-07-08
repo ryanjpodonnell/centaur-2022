@@ -9,24 +9,16 @@
 #define GAME_MODE_ORBS_4            5
 #define GAME_MODE_INITIALIZE        255
 
-#define HURRY_UP_GRACE_PERIOD       2000
-
 class GameMode {
   private:
     boolean       bonusIncreased_;
     boolean       gameModeChanged_;
-    boolean       indicatorPlayed_;
     boolean       pushingBallFromOutlane_;
     boolean       scoreIncreased_;
     byte          gameModeId_;
     unsigned long ballSaveEndTime_;
     unsigned long ballTimeInTrough_;
     unsigned long currentFlashCycle_;
-    unsigned long hurryUpEndTime_;
-    unsigned long hurryUpInitialValue_;
-    unsigned long hurryUpStartedTime_;
-    unsigned long hurryUpValuePerMillisecond_;
-    unsigned long lastFlash_;
 
     boolean ballSaveActive();
     boolean ballSaveLampActive();
@@ -35,14 +27,9 @@ class GameMode {
     int     runGameLoop();
     int     runGameModes();
     void    manageBallSave();
-    void    manageHurryUp();
     void    manageNewMode();
-    void    managePlayerBonusLamps();
     void    managePlayerScore();
-    void    manageShotIndicatorShow();
     void    runGameMode(byte switchHit);
-    void    updateHurryUpLamps();
-    void    updateHurryUpValue();
 
   public:
     GameMode();
@@ -51,13 +38,10 @@ class GameMode {
     boolean scoreIncreased();
     byte    gameMode();
     int     run(boolean curStateChanged);
-    void    endHurryUp();
-    void    resetIndicatorPlayed();
     void    setBallSaveEndTime(unsigned long value);
     void    setBonusIncreased(boolean value);
     void    setGameMode(byte id);
     void    setScoreIncreased(boolean value);
-    void    startHurryUp(unsigned long value, int seconds);
 };
 
 #endif

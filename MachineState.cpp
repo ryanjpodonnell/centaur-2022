@@ -57,10 +57,6 @@ boolean MachineState::guardianRolloversCompleted() {
   return currentPlayer_->guardianRolloversCompleted();
 }
 
-boolean MachineState::hurryUpActivated() {
-  return hurryUpActivated_;
-}
-
 boolean MachineState::increaseNumberOfPlayers() {
   if (credits_ < 1 && !FREE_PLAY) return false;
   if (numberOfPlayers_ >= 4) return false;
@@ -304,10 +300,6 @@ unsigned long MachineState::dropRightDropTargets(unsigned long activationTime) {
 
 unsigned long MachineState::highScore() {
   return highScore_;
-}
-
-unsigned long MachineState::hurryUpValue() {
-  return hurryUpValue_;
 }
 
 unsigned long MachineState::lastTiltWarningTime() {
@@ -592,14 +584,6 @@ void MachineState::setHighScore(unsigned long value) {
   highScore_ = value;
 }
 
-void MachineState::setHurryUpActivated(boolean value) {
-  hurryUpActivated_ = value;
-}
-
-void MachineState::setHurryUpValue(unsigned long value) {
-  hurryUpValue_ = value;
-}
-
 void MachineState::setMachineState(int id) {
   if (id != machineStateId_) {
     machineStateChanged_ = true;
@@ -680,11 +664,11 @@ void MachineState::updateOrbsDropTargetsLamps() {
 }
 
 void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
-  if (hurryUpActivated_)                         currentPlayer_->overridePlayerScore(hurryUpValue_);
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_1) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_2) currentPlayer_->overridePlayerScore(g_orbMode2.jackpotValue());
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_3) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_4) currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_UNSTRUCTURED_PLAY && g_unstructuredPlay.hurryUpActivated()) currentPlayer_->overridePlayerScore(g_unstructuredPlay.hurryUpValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_1)                                                     currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_2)                                                     currentPlayer_->overridePlayerScore(g_orbMode2.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_3)                                                     currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_4)                                                     currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
 
   currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
 }
@@ -742,7 +726,6 @@ void MachineState::resetMachineState() {
   playfieldValidated_    = false;
   samePlayerShootsAgain_ = false;
   troughSwitchActivated_ = false;
-  hurryUpActivated_      = false;
 
   numberOfTiltWarnings_          = 0;
 }

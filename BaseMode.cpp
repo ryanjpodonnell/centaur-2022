@@ -146,7 +146,6 @@ byte Base::inlineMultiplier() {
 void Base::manageDefaultScoringLogic(unsigned long value, byte switchHit) {
   if (!g_gameMode.scoreIncreased()) g_machineState.increaseScore(value);
 
-  g_gameMode.resetIndicatorPlayed();
   g_machineState.setMostRecentSwitchHit(switchHit);
   g_machineState.setMostRecentSwitchHitTime();
 

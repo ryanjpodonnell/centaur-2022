@@ -71,10 +71,6 @@ unsigned long OrbMode2::jackpotValue() {
 }
 
 void OrbMode2::endModeViaBallEnded() {
-  g_machineState.resetInlineDropTargets(false, true, 0);
-  g_machineState.resetOrbsDropTargets  (false, true, 0);
-  g_machineState.resetRightDropTargets (false, true, 0);
-
   BSOS_SetDisplayCredits(g_machineState.credits());
   g_machineState.completeSelectedMode();
 }
@@ -124,7 +120,6 @@ void OrbMode2::manageDropsReset() {
 
 void OrbMode2::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 2\n\r");
-  if (g_machineState.hurryUpActivated()) g_gameMode.endHurryUp();
 
   allowAddTime_         = true;
   jackpotValue_         = 25000;

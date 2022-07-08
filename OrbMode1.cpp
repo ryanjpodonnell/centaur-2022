@@ -60,10 +60,6 @@ unsigned long OrbMode1::jackpotValue() {
 }
 
 void OrbMode1::endModeViaBallEnded() {
-  g_machineState.resetInlineDropTargets(false, true, 0);
-  g_machineState.resetOrbsDropTargets  (false, true, 0);
-  g_machineState.resetRightDropTargets (false, true, 0);
-
   BSOS_SetDisplayCredits(g_machineState.credits());
   g_machineState.completeSelectedMode();
 }
@@ -96,7 +92,6 @@ void OrbMode1::manageModeLamps() {
 
 void OrbMode1::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 1\n\r");
-  if (g_machineState.hurryUpActivated()) g_gameMode.endHurryUp();
 
   allowAddTime_         = true;
   currentJackpotTarget_ = SW_1ST_INLINE_DROP_TARGET;
