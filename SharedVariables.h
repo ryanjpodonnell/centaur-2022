@@ -12,6 +12,8 @@
 #include "Lamps.h"
 #include "OrbMode1.h"
 #include "OrbMode2.h"
+#include "OrbMode3.h"
+#include "OrbMode4.h"
 #include "PinballMachineBase.h"
 #include "RestartGame.h"
 #include "SelfTestAndAudit.h"
@@ -38,6 +40,8 @@ extern LampsHelper      g_lampsHelper;
 extern MachineState     g_machineState;
 extern OrbMode1         g_orbMode1;
 extern OrbMode2         g_orbMode2;
+extern OrbMode3         g_orbMode3;
+extern OrbMode4         g_orbMode4;
 extern RestartGame      g_restartGame;
 extern SelfTestAndAudit g_selfTestAndAudit;
 extern SkillShot        g_skillShot;

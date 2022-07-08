@@ -94,7 +94,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.updateRightOrbsReleaseLamp();
         }
 
-        g_machineState.resetOrbsDropTargets(true, true);
+        g_machineState.resetOrbsDropTargets(true, true, g_machineState.currentTime() + 250);
       }
 
       g_machineState.updateOrbsDropTargetsLamps();
@@ -134,7 +134,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.increaseQualifiedScoreMultiplier();
           g_machineState.updateScoreMultiplierLamps();
 
-          if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true, true);
+          if (g_machineState.allowRightDropTargetProgress()) g_machineState.resetRightDropTargets(true, true, g_machineState.currentTime() + 250);
         } else {
           g_machineState.qualifyRightDropTargetsReset();
           g_bonusLightShow.start(BONUS_LIGHT_SHOW_RESET_1_THROUGH_4_ARROW);

@@ -667,8 +667,8 @@ void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) 
   if (g_gameMode.gameMode() == GAME_MODE_UNSTRUCTURED_PLAY && g_unstructuredPlay.hurryUpActivated()) currentPlayer_->overridePlayerScore(g_unstructuredPlay.hurryUpValue());
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_1)                                                     currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_2)                                                     currentPlayer_->overridePlayerScore(g_orbMode2.jackpotValue());
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_3)                                                     currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
-  if (g_gameMode.gameMode() == GAME_MODE_ORBS_4)                                                     currentPlayer_->overridePlayerScore(g_orbMode1.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_3)                                                     currentPlayer_->overridePlayerScore(g_orbMode3.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_ORBS_4)                                                     currentPlayer_->overridePlayerScore(g_orbMode4.jackpotValue());
 
   currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
 }

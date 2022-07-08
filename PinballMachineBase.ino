@@ -12,6 +12,8 @@ LampsHelper      g_lampsHelper;
 MachineState     g_machineState;
 OrbMode1         g_orbMode1;
 OrbMode2         g_orbMode2;
+OrbMode3         g_orbMode3;
+OrbMode4         g_orbMode4;
 RestartGame      g_restartGame;
 SelfTestAndAudit g_selfTestAndAudit;
 SkillShot        g_skillShot;
