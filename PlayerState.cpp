@@ -9,6 +9,13 @@ PlayerState::PlayerState(byte displayNumber) {
   resetPlayerState();
 }
 
+boolean PlayerState::allModesCompleted() {
+  return modeStatus_[0] == MODE_STATUS_COMPLETED &&
+         modeStatus_[1] == MODE_STATUS_COMPLETED &&
+         modeStatus_[2] == MODE_STATUS_COMPLETED &&
+         modeStatus_[3] == MODE_STATUS_COMPLETED;
+}
+
 boolean PlayerState::allowRightDropTargetProgress() {
   return (qualifiedScoreMultiplier_ != MAX_MODE_MULTIPLIER) && !rightDropTargetsResetQualified_;
 }
@@ -18,6 +25,10 @@ boolean PlayerState::anyModeQualified() {
          modeStatus_[1] == MODE_STATUS_QUALIFIED ||
          modeStatus_[2] == MODE_STATUS_QUALIFIED ||
          modeStatus_[3] == MODE_STATUS_QUALIFIED;
+}
+
+boolean PlayerState::destroyCentaurQualified() {
+  return destroyCentaurQualified_;
 }
 
 boolean PlayerState::guardianRolloversCompleted() {
@@ -103,14 +114,17 @@ byte PlayerState::queensChamberBonusValue() {
 
 byte PlayerState::startQualifiedMode() {
   launchLockedBallsIntoPlay();
-
   qualifiedScoreMultiplier_ = 1;
-  modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
 
-  if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
-  if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
-  if (selectedMode_ == 2) return GAME_MODE_ORBS_3;
-  if (selectedMode_ == 3) return GAME_MODE_ORBS_4;
+  if (destroyCentaurQualified_) return GAME_MODE_DESTROY_CENTAUR;
+  else {
+    modeStatus_[selectedMode_] = MODE_STATUS_STARTED;
+
+    if (selectedMode_ == 0) return GAME_MODE_ORBS_1;
+    if (selectedMode_ == 1) return GAME_MODE_ORBS_2;
+    if (selectedMode_ == 2) return GAME_MODE_ORBS_3;
+    if (selectedMode_ == 3) return GAME_MODE_ORBS_4;
+  }
 }
 
 unsigned long PlayerState::dropRightDropTargets(unsigned long activationTime) {
@@ -280,6 +294,11 @@ void PlayerState::overridePlayerScore(unsigned long value) {
 }
 
 void PlayerState::qualifyMode() {
+  if (allModesCompleted()) {
+    destroyCentaurQualified_ = true;
+    return;
+  }
+
   byte moddedModeIterator = 0;
   for (byte modeIterator = selectedMode_; modeIterator < (selectedMode_ + 4); modeIterator++) {
     moddedModeIterator = modeIterator % 4;
@@ -395,13 +414,6 @@ void PlayerState::resetInlineDropTargets() {
   inlineDropTargets_[3] = false;
 }
 
-void PlayerState::resetModeStatus() {
-  modeStatus_[0] = MODE_STATUS_NOT_QUALIFIED;
-  modeStatus_[1] = MODE_STATUS_NOT_QUALIFIED;
-  modeStatus_[2] = MODE_STATUS_NOT_QUALIFIED;
-  modeStatus_[3] = MODE_STATUS_NOT_QUALIFIED;
-}
-
 void PlayerState::resetOrbsDropTargets() {
   activeOrbsDropTarget_            = SW_O_DROP_TARGET;
   orbsDropTargetsCompletedInOrder_ = true;
@@ -422,6 +434,7 @@ void PlayerState::resetPlayerState() {
   activeInlineDropTarget_           = SW_1ST_INLINE_DROP_TARGET;
 
   rightDropTargetsResetQualified_ = false;
+  destroyCentaurQualified_        = false;
 
   bonusMultiplier_          = 1;
   bonus_                    = 0;
@@ -439,7 +452,7 @@ void PlayerState::resetPlayerState() {
   resetOrbsDropTargets();
   resetRightDropTargets();
 
-  resetModeStatus();
+  unqualifyAllModes();
 }
 
 void PlayerState::resetRightDropTargets() {
@@ -503,10 +516,45 @@ void PlayerState::setScore(unsigned long value) {
   tempScore_ = value;
 }
 
-void PlayerState::unqualifyMode() {
-  if (modeStatus_[selectedMode_] != MODE_STATUS_QUALIFIED) return;
+void PlayerState::spotRightDropTarget() {
+  if (rightDropTargets_[0] == false) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
+    return;
+  }
 
-  modeStatus_[selectedMode_] = MODE_STATUS_NOT_QUALIFIED;
+  if (rightDropTargets_[1] == false) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
+    return;
+  }
+
+  if (rightDropTargets_[2] == false) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
+    return;
+  }
+
+  if (rightDropTargets_[3] == false) {
+    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
+    return;
+  }
+}
+
+void PlayerState::unqualifyAllModes() {
+  destroyCentaurQualified_ = false;
+  modeStatus_[0]           = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[1]           = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[2]           = MODE_STATUS_NOT_QUALIFIED;
+  modeStatus_[3]           = MODE_STATUS_NOT_QUALIFIED;
+  selectedMode_            = 0;
+}
+
+void PlayerState::unqualifyMode() {
+  if (destroyCentaurQualified_) {
+    destroyCentaurQualified_ = false;
+  }
+
+  if (modeStatus_[selectedMode_] == MODE_STATUS_QUALIFIED) {
+    modeStatus_[selectedMode_] = MODE_STATUS_NOT_QUALIFIED;
+  }
 }
 
 void PlayerState::unqualifyRightDropTargetsReset() {
@@ -519,6 +567,11 @@ void PlayerState::updateBonusLamps() {
 }
 
 void PlayerState::updateCaptiveOrbsLamps() {
+  if (destroyCentaurQualified_) {
+    g_lampsHelper.showLamps(LAMP_COLLECTION_CAPTIVE_ORBS, true);
+    return;
+  }
+
   for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
     char buf[128];
     sprintf(buf, "Mode %d status = %d\n", modeIterator, modeStatus_[modeIterator]);
@@ -702,27 +755,5 @@ void PlayerState::launchLockedBallsIntoPlay() {
     g_machineState.increaseNumberOfBallsInPlay();
 
     lag += 2000;
-  }
-}
-
-void PlayerState::spotRightDropTarget() {
-  if (rightDropTargets_[0] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_1, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
-    return;
-  }
-
-  if (rightDropTargets_[1] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_2, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
-    return;
-  }
-
-  if (rightDropTargets_[2] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_3, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
-    return;
-  }
-
-  if (rightDropTargets_[3] == false) {
-    BSOS_PushToTimedSolenoidStack(SOL_RIGHT_4_DROP_TARGETS_4, SOL_SINGLE_DROP_STRENGTH, g_machineState.currentTime());
-    return;
   }
 }

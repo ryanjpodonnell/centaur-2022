@@ -7,6 +7,7 @@
 #define GAME_MODE_ORBS_2            3
 #define GAME_MODE_ORBS_3            4
 #define GAME_MODE_ORBS_4            5
+#define GAME_MODE_DESTROY_CENTAUR   6
 #define GAME_MODE_INITIALIZE        255
 
 class GameMode {

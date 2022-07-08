@@ -5,6 +5,7 @@ Base             g_base;
 BonusLightShow   g_bonusLightShow;
 CountdownBonus   g_countdownBonus;
 Debug            g_debug;
+DestroyCentaur   g_destroyCentaur;
 DisplayHelper    g_displayHelper;
 GameMode         g_gameMode;
 HertzLogging     g_hertzLogging;

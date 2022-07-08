@@ -88,12 +88,9 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.updateScoreMultiplierLamps();
         }
 
-        if (!g_machineState.anyModeQualified()) {
-          g_machineState.qualifyMode();
-          g_machineState.updateCaptiveOrbsLamps();
-          g_machineState.updateRightOrbsReleaseLamp();
-        }
-
+        g_machineState.qualifyMode();
+        g_machineState.updateCaptiveOrbsLamps();
+        g_machineState.updateRightOrbsReleaseLamp();
         g_machineState.resetOrbsDropTargets(true, true, g_machineState.currentTime() + 250);
       }
 
@@ -163,7 +160,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
-      if (g_machineState.anyModeQualified()) {
+      if (g_machineState.anyModeQualified() || g_machineState.destroyCentaurQualified()) {
         if (hurryUpActivated_) endHurryUp();
 
         returnState = g_machineState.startQualifiedMode();

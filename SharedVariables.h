@@ -6,6 +6,7 @@
 #include "BonusLightShow.h"
 #include "CountdownBonusState.h"
 #include "Debug.h"
+#include "DestroyCentaur.h"
 #include "Display.h"
 #include "GameMode.h"
 #include "HertzLogging.h"
@@ -33,6 +34,7 @@ extern Base             g_base;
 extern BonusLightShow   g_bonusLightShow;
 extern CountdownBonus   g_countdownBonus;
 extern Debug            g_debug;
+extern DestroyCentaur   g_destroyCentaur;
 extern DisplayHelper    g_displayHelper;
 extern GameMode         g_gameMode;
 extern HertzLogging     g_hertzLogging;

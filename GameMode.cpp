@@ -123,6 +123,7 @@ int GameMode::manageBallInTrough() {
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_2)            g_orbMode2.endModeViaBallEnded();
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_3)            g_orbMode3.endModeViaBallEnded();
     if (g_gameMode.gameMode() == GAME_MODE_ORBS_4)            g_orbMode4.endModeViaBallEnded();
+    if (g_gameMode.gameMode() == GAME_MODE_DESTROY_CENTAUR)   g_destroyCentaur.endModeViaBallEnded();
     gameModeId_ = GAME_MODE_INITIALIZE;
 
     g_displayHelper.showPlayerScores(0xFF);
@@ -264,6 +265,9 @@ void GameMode::runGameMode(byte switchHit) {
       break;
     case GAME_MODE_ORBS_4:
       newGameMode = g_orbMode4.run(gameModeChanged_, switchHit);
+      break;
+    case GAME_MODE_DESTROY_CENTAUR:
+      newGameMode = g_destroyCentaur.run(gameModeChanged_, switchHit);
       break;
   }
 

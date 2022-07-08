@@ -45,6 +45,10 @@ boolean MachineState::currentPlayerTilted() {
   return numberOfTiltWarnings_ > MAXIMUM_NUMBER_OF_TILT_WARNINGS;
 }
 
+boolean MachineState::destroyCentaurQualified() {
+  return currentPlayer_->destroyCentaurQualified();
+}
+
 boolean MachineState::firstBallActive() {
   return currentPlayerNumber() == 0 && currentBallInPlay() == 1;
 }
@@ -248,6 +252,8 @@ int MachineState::initNewBall(bool curStateChanged) {
     setCurrentPlayer(currentPlayerNumber_);
     setBonus(0);
     setBonusMultiplier(1);
+    resetTopRollovers();
+    unqualifyMode();
 
     BSOS_EnableSolenoidStack();
     BSOS_SetDisableFlippers(false);
@@ -257,9 +263,6 @@ int MachineState::initNewBall(bool curStateChanged) {
     activationTime = resetOrbsDropTargets  (true, true,  activationTime);
     activationTime = resetRightDropTargets (true, false, activationTime);
     activationTime = dropRightDropTargets(activationTime);
-
-    resetTopRollovers();
-    unqualifyMode();
 
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
@@ -635,6 +638,10 @@ void MachineState::spotRightDropTarget() {
   return currentPlayer_->spotRightDropTarget();
 }
 
+void MachineState::unqualifyAllModes() {
+  return currentPlayer_->unqualifyAllModes();
+}
+
 void MachineState::unqualifyMode() {
   return currentPlayer_->unqualifyMode();
 }
@@ -665,6 +672,7 @@ void MachineState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) 
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_2)                                                     currentPlayer_->overridePlayerScore(g_orbMode2.jackpotValue());
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_3)                                                     currentPlayer_->overridePlayerScore(g_orbMode3.jackpotValue());
   if (g_gameMode.gameMode() == GAME_MODE_ORBS_4)                                                     currentPlayer_->overridePlayerScore(g_orbMode4.jackpotValue());
+  if (g_gameMode.gameMode() == GAME_MODE_DESTROY_CENTAUR)                                            currentPlayer_->overridePlayerScore(g_destroyCentaur.jackpotValue());
 
   currentPlayer_->updatePlayerScore(flashCurrent, dashCurrent);
 }

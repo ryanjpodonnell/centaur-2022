@@ -60,6 +60,7 @@ class MachineState {
     boolean       ballSaveActivated();
     boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
+    boolean       destroyCentaurQualified();
     boolean       firstBallActive();
     boolean       guardianRolloversCompleted();
     boolean       increaseNumberOfPlayers();
@@ -159,6 +160,7 @@ class MachineState {
     void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();
     void          spotRightDropTarget();
+    void          unqualifyAllModes();
     void          unqualifyMode();
     void          unqualifyRightDropTargetsReset();
     void          updateBonusLamps();
