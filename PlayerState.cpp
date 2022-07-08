@@ -305,10 +305,22 @@ void PlayerState::qualifyRightDropTargetsReset() {
 }
 
 void PlayerState::registerGuardianRollover(byte switchHit) {
-  if (switchHit == SW_LEFT_OUTLANE)      guardianLights_[0] = true;
-  if (switchHit == SW_LEFT_RETURN_LANE)  guardianLights_[1] = true;
-  if (switchHit == SW_RIGHT_RETURN_LANE) guardianLights_[2] = true;
-  if (switchHit == SW_RIGHT_OUTLANE)     guardianLights_[3] = true;
+  if (switchHit == SW_LEFT_OUTLANE) {
+    if (guardianLights_[0] == true) g_soundHelper.playSoundWithoutInterruptions(SOUND_SLOW_ARENT_YOU);
+    guardianLights_[0] = true;
+  }
+  if (switchHit == SW_LEFT_RETURN_LANE) {
+    if (guardianLights_[1] == true) g_soundHelper.playSoundWithoutInterruptions(SOUND_SLOW_ARENT_YOU);
+    guardianLights_[1] = true;
+  }
+  if (switchHit == SW_RIGHT_RETURN_LANE) {
+    if (guardianLights_[2] == true) g_soundHelper.playSoundWithoutInterruptions(SOUND_SLOW_ARENT_YOU);
+    guardianLights_[2] = true;
+  }
+  if (switchHit == SW_RIGHT_OUTLANE) {
+    if (guardianLights_[3] == true) g_soundHelper.playSoundWithoutInterruptions(SOUND_SLOW_ARENT_YOU);
+    guardianLights_[3] = true;
+  }
 }
 
 void PlayerState::registerInlineDropTarget(byte switchHit) {
