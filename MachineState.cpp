@@ -198,12 +198,12 @@ byte MachineState::increaseCurrentPlayer() {
   }
 }
 
-byte MachineState::manageCreditButton() {
+byte MachineState::manageCreditButton(byte state) {
   if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
 
   if (currentBallInPlay() == 1) {
     increaseNumberOfPlayers();
-    return MACHINE_STATE_NORMAL_GAMEPLAY;
+    return state;
   } else if (resetPlayers()) {
     return MACHINE_STATE_RESTART_GAME;
   }

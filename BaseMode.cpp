@@ -24,7 +24,7 @@ int Base::run(byte switchHit) {
       break;
 
     case SW_CREDIT_BUTTON:
-      returnState = g_machineState.manageCreditButton();
+      returnState = g_machineState.manageCreditButton(MACHINE_STATE_NORMAL_GAMEPLAY);
       break;
 
     case SW_LEFT_THUMPER_BUMPER:

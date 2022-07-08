@@ -157,7 +157,7 @@ int GameMode::manageTilt() {
         g_machineState.manageCoinDrop(switchHit);
         break;
       case SW_CREDIT_BUTTON:
-        returnState = g_machineState.manageCreditButton();
+        returnState = g_machineState.manageCreditButton(MACHINE_STATE_NORMAL_GAMEPLAY);
         break;
     }
 

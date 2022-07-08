@@ -86,7 +86,7 @@ class MachineState {
     byte          currentBallInPlay();
     byte          currentPlayerNumber();
     byte          increaseCurrentPlayer();
-    byte          manageCreditButton();
+    byte          manageCreditButton(byte state);
     byte          mostRecentSwitchHit();
     byte          numberOfBallsInPlay();
     byte          numberOfPlayers();

@@ -28,7 +28,7 @@ int Attract::run(boolean curStateChanged) {
   while (switchHit != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
     case(SW_CREDIT_BUTTON):
-      if (g_machineState.resetPlayers()) return MACHINE_STATE_RESTART_GAME;
+      return g_machineState.manageCreditButton(MACHINE_STATE_ATTRACT);
       break;
     case SW_COIN_1:
     case SW_COIN_2:
