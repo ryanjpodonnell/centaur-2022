@@ -43,7 +43,6 @@ class PlayerState {
   public:
     PlayerState();
     PlayerState(byte displayNumber);
-    boolean       allModesQualified();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
     boolean       guardianRolloversCompleted();

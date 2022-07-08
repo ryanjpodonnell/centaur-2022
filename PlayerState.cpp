@@ -9,13 +9,6 @@ PlayerState::PlayerState(byte displayNumber) {
   resetPlayerState();
 }
 
-boolean PlayerState::allModesQualified() {
-  return modeStatus_[0] != MODE_STATUS_NOT_QUALIFIED &&
-         modeStatus_[1] != MODE_STATUS_NOT_QUALIFIED &&
-         modeStatus_[2] != MODE_STATUS_NOT_QUALIFIED &&
-         modeStatus_[3] != MODE_STATUS_NOT_QUALIFIED;
-}
-
 boolean PlayerState::allowRightDropTargetProgress() {
   return (qualifiedScoreMultiplier_ != MAX_MODE_MULTIPLIER) && !rightDropTargetsResetQualified_;
 }

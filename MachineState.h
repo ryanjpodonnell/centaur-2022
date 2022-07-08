@@ -55,7 +55,6 @@ class MachineState {
 
   public:
     MachineState();
-    boolean       allModesQualified();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
     boolean       ballSaveActivated();

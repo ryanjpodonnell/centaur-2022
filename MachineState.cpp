@@ -25,10 +25,6 @@ MachineState::MachineState() {
   resetMachineState();
 }
 
-boolean MachineState::allModesQualified() {
-  return currentPlayer_->allModesQualified();
-}
-
 boolean MachineState::allowRightDropTargetProgress() {
   return currentPlayer_->allowRightDropTargetProgress();
 }
