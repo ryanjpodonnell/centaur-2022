@@ -4,6 +4,7 @@
 class DestroyCentaur {
   private:
     unsigned long jackpotValue_;
+    unsigned long lastFlash_;
 
     byte endMode();
     void manageModeLamps();
