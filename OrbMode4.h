@@ -7,9 +7,11 @@
 class OrbMode4 {
   private:
     boolean       allowAddTime_;
+    byte          currentJackpotTarget_;
     int           secondsRemaining_;
     int           totalTime_;
     unsigned long jackpotValue_;
+    unsigned long lastFlash_;
     unsigned long resetInlineDropsTime_;
     unsigned long resetOrbsDropsTime_;
     unsigned long resetRightDropsTime_;

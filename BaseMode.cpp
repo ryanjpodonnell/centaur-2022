@@ -77,8 +77,10 @@ int Base::run(byte switchHit) {
     case SW_3RD_INLINE_DROP_TARGET:
     case SW_4TH_INLINE_DROP_TARGET:
       multiplier = inlineMultiplier();
-      if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
-      if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_DROP_TARGET);
+      if (!g_destroyCentaur.overrideBaseSound()) {
+        if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
+        if (multiplier == 2) g_soundHelper.playSound(SOUND_DROP_TARGET);
+      }
 
       if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1 * multiplier);
       manageDefaultScoringLogic(10000 * multiplier, switchHit);
@@ -86,8 +88,10 @@ int Base::run(byte switchHit) {
 
     case SW_INLINE_BACK_TARGET:
       multiplier = inlineMultiplier();
-      if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
-      if (multiplier == 2) g_soundHelper.playSoundWithoutInterruptions(SOUND_INLINE_BACK_TARGET);
+      if (!g_destroyCentaur.overrideBaseSound()) {
+        if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
+        if (multiplier == 2) g_soundHelper.playSound(SOUND_INLINE_BACK_TARGET);
+      }
 
       if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1 * multiplier);
       manageDefaultScoringLogic(10000 * multiplier, switchHit);

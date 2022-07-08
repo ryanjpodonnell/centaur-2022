@@ -1,21 +1,49 @@
 #include "SharedVariables.h"
 
-DestroyCentaur::DestroyCentaur() {}
+DestroyCentaur::DestroyCentaur() {
+  overrideBaseSound_ = false;
+}
+
+boolean DestroyCentaur::overrideBaseSound() {
+  return overrideBaseSound_;
+}
 
 byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) manageNewMode();
   manageModeLamps();
+  overrideBaseSound_ = false;
 
   switch(switchHit) {
     case SW_1ST_INLINE_DROP_TARGET:
+      g_machineState.registerInlineDropTarget(switchHit);
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_HA_HA_HA);
+      overrideBaseSound_ = true;
+      break;
+
     case SW_2ND_INLINE_DROP_TARGET:
+      g_machineState.registerInlineDropTarget(switchHit);
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_TRY);
+      overrideBaseSound_ = true;
+      break;
+
     case SW_3RD_INLINE_DROP_TARGET:
+      g_machineState.registerInlineDropTarget(switchHit);
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_BAD_MOVE_HUMAN);
+      overrideBaseSound_ = true;
+      break;
+
     case SW_4TH_INLINE_DROP_TARGET:
+      g_machineState.registerInlineDropTarget(switchHit);
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_CHALLENGE_ME);
+      overrideBaseSound_ = true;
+      break;
+
     case SW_INLINE_BACK_TARGET:
       g_machineState.registerInlineDropTarget(switchHit);
-
       g_machineState.increaseScore(jackpotValue_, true);
       g_gameMode.setScoreIncreased(true);
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_CRASH);
+      overrideBaseSound_ = true;
       return endMode();
   }
 
@@ -27,15 +55,19 @@ unsigned long DestroyCentaur::jackpotValue() {
 }
 
 void DestroyCentaur::endModeViaBallEnded() {
+  overrideBaseSound_ = false;
   g_machineState.unqualifyAllModes();
   g_lampsHelper.hideAllLamps();
   g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
+  g_soundHelper.playSoundWithoutInterruptions(SOUND_HA_HA_HA);
 }
 
 /*********************************************************************
     Private
 *********************************************************************/
 byte DestroyCentaur::endMode() {
+  overrideBaseSound_ = false;
+
   unsigned long activationTime = g_machineState.currentTime() + 500;
   activationTime = g_machineState.resetInlineDropTargets(true, true, activationTime);
   activationTime = g_machineState.resetOrbsDropTargets  (true, true, activationTime);
@@ -53,7 +85,6 @@ byte DestroyCentaur::endMode() {
 
 void DestroyCentaur::manageModeLamps() {
   unsigned long seed = g_machineState.currentTime() / 100;
-
   if (seed != lastFlash_) {
     lastFlash_ = seed;
     byte currentStep = seed % 24;
@@ -212,7 +243,8 @@ void DestroyCentaur::manageModeLamps() {
 void DestroyCentaur::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Destroy Centaur Mode\n\r");
 
-  jackpotValue_         = 1;
+  jackpotValue_      = 1;
+  overrideBaseSound_ = false;
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.hideLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
 

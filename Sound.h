@@ -22,8 +22,8 @@
 #define SOUND_SPOT_1_THROUGH_4                  25
 #define SOUND_5K_SWITCH                         26
 #define SOUND_1K_SWITCH                         27
-#define SOUND_CRASH_1                           28
-#define SOUND_LASERS_1                          29
+#define SOUND_CRASH                             28
+#define SOUND_LASERS                            29
 #define SOUND_DRONE_2                           30
 #define SOUND_BONUS                             31
 #define SOUND_CHIRP_1                           32

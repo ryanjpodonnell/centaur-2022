@@ -502,9 +502,10 @@ void MachineState::registerTiltWarning() {
   if ((currentTime_ - lastTiltWarningTime_) > TILT_WARNING_DEBOUNCE_TIME) {
     lastTiltWarningTime_ = currentTime_;
     numberOfTiltWarnings_ += 1;
-    g_soundHelper.playSoundWithoutInterruptions(SOUND_POWERING_DOWN);
 
-    if (currentPlayerTilted()) {
+    if (!currentPlayerTilted()) {
+      g_soundHelper.playSoundWithoutInterruptions(SOUND_NO_CLASS_HUMAN);
+    } else {
       if (DEBUG_MESSAGES) Serial.write("Ball Tilted\n\r");
 
       g_lampsHelper.hideAllLamps();

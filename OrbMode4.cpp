@@ -29,8 +29,11 @@ byte OrbMode4::run(boolean gameModeChanged, byte switchHit) {
     case SW_4TH_INLINE_DROP_TARGET:
     case SW_INLINE_BACK_TARGET:
       g_machineState.registerInlineDropTarget(switchHit);
-      g_machineState.increaseScore(jackpotValue_, true);
-      g_gameMode.setScoreIncreased(true);
+      if (currentJackpotTarget_ == switchHit) {
+        g_machineState.increaseScore(jackpotValue_, true);
+        g_gameMode.setScoreIncreased(true);
+        jackpotValue_ += 25000;
+      }
       resetInlineDropsTime_ = g_machineState.currentTime() + 1000;
       break;
 
@@ -39,8 +42,11 @@ byte OrbMode4::run(boolean gameModeChanged, byte switchHit) {
     case SW_B_DROP_TARGET:
     case SW_S_DROP_TARGET:
       g_machineState.registerOrbsDropTarget(switchHit);
-      g_machineState.increaseScore(jackpotValue_);
-      g_gameMode.setScoreIncreased(true);
+      if (currentJackpotTarget_ == switchHit) {
+        g_machineState.increaseScore(jackpotValue_, true);
+        g_gameMode.setScoreIncreased(true);
+        jackpotValue_ += 25000;
+      }
       resetOrbsDropsTime_ = g_machineState.currentTime() + 1000;
       break;
 
@@ -49,16 +55,12 @@ byte OrbMode4::run(boolean gameModeChanged, byte switchHit) {
     case SW_RIGHT_4_DROP_TARGET_3:
     case SW_RIGHT_4_DROP_TARGET_4:
       g_machineState.registerRightDropTarget(switchHit);
-      g_machineState.increaseScore(jackpotValue_);
-      g_gameMode.setScoreIncreased(true);
+      if (currentJackpotTarget_ == switchHit) {
+        g_machineState.increaseScore(jackpotValue_, true);
+        g_gameMode.setScoreIncreased(true);
+        jackpotValue_ += 25000;
+      }
       resetRightDropsTime_ = g_machineState.currentTime() + 1000;
-      break;
-
-    case SW_LEFT_OUTLANE:
-    case SW_LEFT_RETURN_LANE:
-    case SW_RIGHT_OUTLANE:
-    case SW_RIGHT_RETURN_LANE:
-      jackpotValue_ += 25000;
       break;
   }
 
@@ -99,6 +101,44 @@ byte OrbMode4::endMode() {
 
 void OrbMode4::manageModeLamps() {
   allowAddTime_ ? g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW) : g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
+
+  unsigned long seed = g_machineState.currentTime() / 3000;
+  if (seed != lastFlash_) {
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
+    g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
+
+    lastFlash_ = seed;
+    byte currentStep = seed % 9;
+    if (currentStep == 0) {
+      currentJackpotTarget_ = SW_1ST_INLINE_DROP_TARGET;
+      g_lampsHelper.showLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP, true);
+    } else if (currentStep == 1) {
+      currentJackpotTarget_ = SW_O_DROP_TARGET;
+      g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW, true);
+    } else if (currentStep == 2) {
+      currentJackpotTarget_ = SW_R_DROP_TARGET;
+      g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW, true);
+    } else if (currentStep == 3) {
+      currentJackpotTarget_ = SW_B_DROP_TARGET;
+      g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW, true);
+    } else if (currentStep == 4) {
+      currentJackpotTarget_ = SW_S_DROP_TARGET;
+      g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW, true);
+    } else if (currentStep == 5) {
+      currentJackpotTarget_ = SW_RIGHT_4_DROP_TARGET_1;
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
+    } else if (currentStep == 6) {
+      currentJackpotTarget_ = SW_RIGHT_4_DROP_TARGET_2;
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
+    } else if (currentStep == 7) {
+      currentJackpotTarget_ = SW_RIGHT_4_DROP_TARGET_3;
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
+    } else {
+      currentJackpotTarget_ = SW_RIGHT_4_DROP_TARGET_4;
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW, true);
+    }
+  }
 }
 
 void OrbMode4::manageDropsReset() {
@@ -122,6 +162,7 @@ void OrbMode4::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 4\n\r");
 
   allowAddTime_         = true;
+  currentJackpotTarget_ = 0xFF;
   jackpotValue_         = 25000;
   resetInlineDropsTime_ = 0;
   resetOrbsDropsTime_   = 0;
@@ -132,12 +173,6 @@ void OrbMode4::manageNewMode() {
 
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_4_CAPTIVE_ORBS);
-  g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
-
-  g_lampsHelper.showLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS,  true);
-  g_lampsHelper.showLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP,  true);
-  g_lampsHelper.showLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS, true);
-  g_lampsHelper.showLamps(LAMP_COLLECTION_GUARDIAN_ROLLOVERS, false);
 
   BSOS_SetDisplayCredits(secondsRemaining_);
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
