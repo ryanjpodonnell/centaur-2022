@@ -77,7 +77,7 @@ int Base::run(byte switchHit) {
     case SW_3RD_INLINE_DROP_TARGET:
     case SW_4TH_INLINE_DROP_TARGET:
       multiplier = inlineMultiplier();
-      if (!g_destroyCentaur.overrideBaseSound()) {
+      if (!g_gameMode.overrideSound()) {
         if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
         if (multiplier == 2) g_soundHelper.playSound(SOUND_DROP_TARGET);
       }
@@ -88,7 +88,7 @@ int Base::run(byte switchHit) {
 
     case SW_INLINE_BACK_TARGET:
       multiplier = inlineMultiplier();
-      if (!g_destroyCentaur.overrideBaseSound()) {
+      if (!g_gameMode.overrideSound()) {
         if (multiplier == 1) g_soundHelper.playSoundWithoutInterruptions(SOUND_ONLY_SINGLE_VALUE);
         if (multiplier == 2) g_soundHelper.playSound(SOUND_INLINE_BACK_TARGET);
       }

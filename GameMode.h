@@ -14,6 +14,7 @@ class GameMode {
   private:
     boolean       bonusIncreased_;
     boolean       gameModeChanged_;
+    boolean       overrideSound_;
     boolean       pushingBallFromOutlane_;
     boolean       scoreIncreased_;
     byte          gameModeId_;
@@ -36,12 +37,14 @@ class GameMode {
     GameMode();
 
     boolean bonusIncreased();
+    boolean overrideSound();
     boolean scoreIncreased();
     byte    gameMode();
     int     run(boolean curStateChanged);
     void    setBallSaveEndTime(unsigned long value);
     void    setBonusIncreased(boolean value);
     void    setGameMode(byte id);
+    void    setOverrideSound(boolean value);
     void    setScoreIncreased(boolean value);
 };
 

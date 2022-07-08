@@ -3,7 +3,6 @@
 
 class DestroyCentaur {
   private:
-    boolean       overrideBaseSound_;
     unsigned long jackpotValue_;
     unsigned long lastFlash_;
 
@@ -14,7 +13,6 @@ class DestroyCentaur {
   public:
     DestroyCentaur();
 
-    boolean       overrideBaseSound();
     byte          run(boolean currentStateChanged, byte switchHit);
     unsigned long jackpotValue();
     void          endModeViaBallEnded();

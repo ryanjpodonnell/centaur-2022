@@ -6,12 +6,17 @@ GameMode::GameMode() {
 
   ballSaveEndTime_        = 0;
   bonusIncreased_         = false;
+  overrideSound_          = false;
   pushingBallFromOutlane_ = false;
   scoreIncreased_         = false;
 }
 
 boolean GameMode::bonusIncreased() {
   return bonusIncreased_;
+}
+
+boolean GameMode::overrideSound() {
+  return overrideSound_;
 }
 
 boolean GameMode::scoreIncreased() {
@@ -51,6 +56,10 @@ void GameMode::setGameMode(byte id) {
   } else {
     gameModeChanged_ = false;
   }
+}
+
+void GameMode::setOverrideSound(boolean value) {
+  overrideSound_ = value;
 }
 
 void GameMode::setScoreIncreased(boolean value) {
@@ -190,10 +199,11 @@ int GameMode::runGameModes() {
       }
 
       runGameMode(switchHit);
-      returnState = g_base.run(switchHit);
-      bonusIncreased_ = false;
-      scoreIncreased_ = false;
+      returnState         = g_base.run(switchHit);
       executedSwitchStack = true;
+      bonusIncreased_     = false;
+      overrideSound_      = false;
+      scoreIncreased_     = false;
     }
   }
 

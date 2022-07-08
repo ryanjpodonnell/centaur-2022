@@ -173,6 +173,7 @@ void OrbMode4::manageNewMode() {
 
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_4_CAPTIVE_ORBS);
+  g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
 
   BSOS_SetDisplayCredits(secondsRemaining_);
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
