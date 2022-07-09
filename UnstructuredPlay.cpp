@@ -93,9 +93,12 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.updateScoreMultiplierLamps();
         }
 
-        g_machineState.qualifyMode();
-        g_machineState.updateCaptiveOrbsLamps();
-        g_machineState.updateRightOrbsReleaseLamp();
+        if (!g_machineState.anyModeQualified()) {
+          g_machineState.qualifyMode();
+          g_machineState.updateCaptiveOrbsLamps();
+          g_machineState.updateRightOrbsReleaseLamp();
+        }
+
         g_machineState.resetOrbsDropTargets(true, true, g_machineState.currentTime() + 250);
       }
 
