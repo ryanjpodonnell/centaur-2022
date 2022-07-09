@@ -19,6 +19,7 @@ MachineState::MachineState() {
   currentTime_                 = 0;
   ballEnteredTroughTime_       = 0;
   lastTiltWarningTime_         = 0;
+  mostRecentRolloverTime_      = 0;
   mostRecentSwitchHitTime_     = 0;
   mostRecentSwitchHit_         = 0xFF;
 
@@ -305,6 +306,10 @@ unsigned long MachineState::lastTiltWarningTime() {
   return lastTiltWarningTime_;
 }
 
+unsigned long MachineState::mostRecentRolloverTime() {
+  return mostRecentRolloverTime_;
+}
+
 unsigned long MachineState::mostRecentSwitchHitTime() {
   return mostRecentSwitchHitTime_;
 }
@@ -395,8 +400,7 @@ void MachineState::hideAllPlayerLamps() {
 void MachineState::increaseBonus(byte amountToAdd, boolean checkQueensChamberMultiplier) {
   byte multiplier = 1;
   if (checkQueensChamberMultiplier &&
-      g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
-      g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 1500) {
+      g_machineState.currentTime() - g_machineState.mostRecentRolloverTime() < 1500) {
     multiplier = 2;
   }
 
@@ -428,8 +432,7 @@ void MachineState::increaseQualifiedScoreMultiplier() {
 void MachineState::increaseScore(unsigned long amountToAdd, boolean checkQueensChamberMultiplier) {
   byte multiplier = 1;
   if (checkQueensChamberMultiplier &&
-      g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
-      g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime() < 1500) {
+      g_machineState.currentTime() - g_machineState.mostRecentRolloverTime() < 1500) {
     multiplier = 2;
   }
 
@@ -595,6 +598,10 @@ void MachineState::setMachineState(int id) {
 
 void MachineState::setMostRecentSwitchHit(byte value) {
   mostRecentSwitchHit_ = value;
+}
+
+void MachineState::setMostRecentRolloverTime() {
+  mostRecentRolloverTime_ = currentTime_;
 }
 
 void MachineState::setMostRecentSwitchHitTime() {

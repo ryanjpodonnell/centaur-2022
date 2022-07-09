@@ -49,6 +49,7 @@ class MachineState {
     unsigned long currentTime_;
     unsigned long highScore_;
     unsigned long lastTiltWarningTime_;
+    unsigned long mostRecentRolloverTime_;
     unsigned long mostRecentSwitchHitTime_;
 
     void          resetMachineState();
@@ -101,6 +102,7 @@ class MachineState {
     unsigned long dropRightDropTargets(unsigned long activationTime_);
     unsigned long highScore();
     unsigned long lastTiltWarningTime();
+    unsigned long mostRecentRolloverTime();
     unsigned long mostRecentSwitchHitTime();
     unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
@@ -152,6 +154,7 @@ class MachineState {
     void          setCurrentTime(unsigned long value);
     void          setHighScore(unsigned long value);
     void          setMachineState(int id);
+    void          setMostRecentRolloverTime();
     void          setMostRecentSwitchHit(byte value);
     void          setMostRecentSwitchHitTime();
     void          setNumberOfPlayers(byte value);

@@ -104,6 +104,7 @@ int Base::run(byte switchHit) {
       break;
 
     case SW_LEFT_SIDE_RO_BUTTON:
+      g_machineState.setMostRecentRolloverTime();
       g_soundHelper.playSound(SOUND_QUEENS_CHAMBER_ROLLOVER);
       if (!g_gameMode.bonusIncreased()) g_machineState.increaseBonus(1);
       manageDefaultScoringLogic(5000, switchHit);
@@ -139,8 +140,7 @@ int Base::run(byte switchHit) {
 *********************************************************************/
 byte Base::inlineMultiplier() {
   byte multiplier = 1;
-  if (g_machineState.mostRecentSwitchHit() == SW_LEFT_SIDE_RO_BUTTON &&
-      (g_machineState.currentTime() - g_machineState.mostRecentSwitchHitTime()) < 1500) {
+  if ((g_machineState.currentTime() - g_machineState.mostRecentRolloverTime()) < 1500) {
     multiplier = 2;
   }
 
