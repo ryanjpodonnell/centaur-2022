@@ -654,15 +654,37 @@ void PlayerState::updateQueensChamberLamps() {
 }
 
 void PlayerState::updateRightDropTargetsLamps() {
-  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_1) g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
-  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_2) g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
-  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_3) g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
-  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_4) g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW, true);
+  if (activeRightDropTarget_ == 0xFF) {
+    rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_1) {
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW, true);
+    rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_2) {
+    rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW, true);
+    rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_3) {
+    rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW, true);
+    rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+  }
+  if (activeRightDropTarget_ == SW_RIGHT_4_DROP_TARGET_4) {
+    rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+    rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+    rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+    g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW, true);
+  }
 
-  rightDropTargets_[0] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
-  rightDropTargets_[1] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
-  rightDropTargets_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
-  rightDropTargets_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW) : g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
 }
 
 void PlayerState::updateRightDropTargetsResetLamp() {
