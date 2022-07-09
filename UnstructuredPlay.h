@@ -10,6 +10,8 @@ class UnstructuredPlay {
     boolean       indicatorPlayed_;
     boolean       rerunOrbsSwitch_;
     boolean       rerunRightSwitch_;
+    boolean       waitingToRerunOrbsSwitch_;
+    boolean       waitingToRerunRightSwitch_;
     byte          rerunOrbsSwitchHit_;
     byte          rerunRightSwitchHit_;
     unsigned long hurryUpEndTime_;

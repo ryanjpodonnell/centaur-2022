@@ -61,18 +61,22 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       if (g_machineState.activeOrbsDropTarget() != 0xFF &&
           g_machineState.activeOrbsDropTarget() != switchHit &&
-          rerunOrbsSwitch_ == false) {
-        rerunOrbsSwitchHit_  = switchHit;
-        rerunOrbsSwitchTime_ = g_machineState.currentTime() + 110;
+          rerunOrbsSwitch_ == false &&
+          waitingToRerunOrbsSwitch_ == false) {
+        rerunOrbsSwitchHit_       = switchHit;
+        rerunOrbsSwitchTime_      = g_machineState.currentTime() + 110;
+        waitingToRerunOrbsSwitch_ = true;
         g_gameMode.setScoreIncreased(true);
       } else if (rerunOrbsSwitch_ == true) {
-        rerunOrbsSwitchHit_  = 0xFF;
-        rerunOrbsSwitchTime_ = 0;
-        rerunOrbsSwitch_     = false;
+        rerunOrbsSwitchHit_       = 0xFF;
+        rerunOrbsSwitchTime_      = 0;
+        rerunOrbsSwitch_          = false;
+        waitingToRerunOrbsSwitch_ = false;
         g_machineState.registerOrbsDropTarget(switchHit);
         g_machineState.manageOrbsDropTargetScoring(switchHit);
         g_machineState.increaseScore(1000);
         g_gameMode.setScoreIncreased(true);
+
       } else {
         g_machineState.registerOrbsDropTarget(switchHit);
         g_machineState.manageOrbsDropTargetScoring(switchHit);
@@ -106,14 +110,17 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
 
       if (g_machineState.activeRightDropTarget() != 0xFF &&
           g_machineState.activeRightDropTarget() != switchHit &&
-          rerunRightSwitch_ == false) {
-        rerunRightSwitchHit_  = switchHit;
-        rerunRightSwitchTime_ = g_machineState.currentTime() + 110;
+          rerunRightSwitch_ == false &&
+          waitingToRerunRightSwitch_ == false) {
+        rerunRightSwitchHit_       = switchHit;
+        rerunRightSwitchTime_      = g_machineState.currentTime() + 110;
+        waitingToRerunRightSwitch_ = true;
         g_gameMode.setScoreIncreased(true);
       } else if (rerunRightSwitch_ == true) {
-        rerunRightSwitchHit_  = 0xFF;
-        rerunRightSwitchTime_ = 0;
-        rerunRightSwitch_     = false;
+        rerunRightSwitchHit_       = 0xFF;
+        rerunRightSwitchTime_      = 0;
+        rerunRightSwitch_          = false;
+        waitingToRerunRightSwitch_ = false;
         g_machineState.registerRightDropTarget(switchHit);
         g_machineState.manageRightDropTargetScoring(switchHit);
         g_machineState.increaseScore(g_machineState.rightDropTargetsScoreValue());
@@ -244,14 +251,16 @@ void UnstructuredPlay::manageHurryUp() {
 
 void UnstructuredPlay::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
-  hurryUpActivated_     = false;
-  indicatorPlayed_      = false;
-  rerunOrbsSwitchHit_   = 0xFF;
-  rerunOrbsSwitchTime_  = 0;
-  rerunOrbsSwitch_      = false;
-  rerunRightSwitchHit_  = 0xFF;
-  rerunRightSwitchTime_ = 0;
-  rerunRightSwitch_     = false;
+  hurryUpActivated_          = false;
+  indicatorPlayed_           = false;
+  rerunOrbsSwitchHit_        = 0xFF;
+  rerunOrbsSwitchTime_       = 0;
+  rerunOrbsSwitch_           = false;
+  rerunRightSwitchHit_       = 0xFF;
+  rerunRightSwitchTime_      = 0;
+  rerunRightSwitch_          = false;
+  waitingToRerunOrbsSwitch_  = false;
+  waitingToRerunRightSwitch_ = false;
 
   g_machineState.showAllPlayerLamps();
 }
