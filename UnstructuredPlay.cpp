@@ -9,6 +9,7 @@ boolean UnstructuredPlay::hurryUpActivated() {
 byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) manageNewMode();
   manageHurryUp();
+  manageHurryUpCollect();
   managePlayerBonusLamps();
   manageShotIndicatorShow();
 
@@ -203,7 +204,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.updateQueensChamberLamps();
 
       if (hurryUpActivated_) {
-        endHurryUp();
+        collectHurryUp();
         g_machineState.increaseBonus(g_machineState.queensChamberBonusValue(), true);
         g_machineState.increaseScore(hurryUpValue_,                            true);
       } else {
@@ -232,6 +233,13 @@ void UnstructuredPlay::endModeViaBallEnded() {
 /*********************************************************************
     Private
 *********************************************************************/
+void UnstructuredPlay::collectHurryUp() {
+  if (DEBUG_MESSAGES) Serial.write("Hurry Up Collected\n\r");
+
+  hurryUpActivated_      = false;
+  hurryUpDisplayEndTime_ = g_machineState.currentTime() + 3000;
+}
+
 void UnstructuredPlay::endHurryUp() {
   if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
 
@@ -249,9 +257,14 @@ void UnstructuredPlay::manageHurryUp() {
   updateHurryUpLamps();
 }
 
+void UnstructuredPlay::manageHurryUpCollect() {
+  if (hurryUpDisplayEndTime_ && hurryUpDisplayEndTime_ < g_machineState.currentTime()) endHurryUp();
+}
+
 void UnstructuredPlay::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Unstructured Play Mode\n\r");
   hurryUpActivated_          = false;
+  hurryUpDisplayEndTime_     = 0;
   indicatorPlayed_           = false;
   rerunOrbsSwitchHit_        = 0xFF;
   rerunOrbsSwitchTime_       = 0;

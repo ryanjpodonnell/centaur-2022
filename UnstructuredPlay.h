@@ -14,6 +14,7 @@ class UnstructuredPlay {
     boolean       waitingToRerunRightSwitch_;
     byte          rerunOrbsSwitchHit_;
     byte          rerunRightSwitchHit_;
+    unsigned long hurryUpDisplayEndTime_;
     unsigned long hurryUpEndTime_;
     unsigned long hurryUpInitialValue_;
     unsigned long hurryUpStartedTime_;
@@ -23,8 +24,10 @@ class UnstructuredPlay {
     unsigned long rerunOrbsSwitchTime_;
     unsigned long rerunRightSwitchTime_;
 
+    void collectHurryUp();
     void endHurryUp();
     void manageHurryUp();
+    void manageHurryUpCollect();
     void manageNewMode();
     void managePlayerBonusLamps();
     void manageShotIndicatorShow();

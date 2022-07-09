@@ -105,7 +105,7 @@ void OrbMode1::manageNewMode() {
   g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
 
   BSOS_SetDisplayCredits(secondsRemaining_);
-  g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
+  g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN, SOUND_ALARM);
 
   unsigned long activationTime = g_machineState.currentTime() + 500;
   activationTime = g_machineState.resetInlineDropTargets(true, true, activationTime);

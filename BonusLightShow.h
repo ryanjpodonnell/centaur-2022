@@ -37,7 +37,7 @@ class BonusLightShow {
     void    end();
     void    reset();
     void    run();
-    void    start(byte lightShowId);
+    void    start(byte lightShowId, byte customSound = 0xFF);
 };
 
 #endif

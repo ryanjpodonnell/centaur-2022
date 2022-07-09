@@ -66,7 +66,7 @@ byte DestroyCentaur::endMode() {
   activationTime = g_machineState.resetOrbsDropTargets  (true, true, activationTime);
   activationTime = g_machineState.resetRightDropTargets (true, true, activationTime);
 
-  g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
+  g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN, SOUND_ALARM);
   g_displayHelper.showPlayerScores(0xFF);
 
   g_machineState.unqualifyAllModes();
