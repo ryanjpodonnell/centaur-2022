@@ -115,7 +115,7 @@ int GameMode::manageBallInTrough() {
     pushingBallFromOutlane_ = true;
 
     g_machineState.decreaseNumberOfBallsInPlay();
-    g_machineState.updateScoreMultiplierLamps();
+    if (!g_machineState.currentPlayerTilted()) g_machineState.updateScoreMultiplierLamps();
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
