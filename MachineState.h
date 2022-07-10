@@ -44,6 +44,7 @@ class MachineState {
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     int           machineStateId_;
+    unsigned long activationTime_;
     unsigned long currentTime_;
     unsigned long highScore_;
     unsigned long lastTiltWarningTime_;
@@ -96,16 +97,16 @@ class MachineState {
     int           initNewBall(bool curStateChanged);
     int           machineState();
     unsigned long currentTime();
-    unsigned long dropRightDropTargets(unsigned long activationTime_);
+    unsigned long dropRightDropTargets(unsigned long activationTime);
     unsigned long highScore();
     unsigned long lastTiltWarningTime();
     unsigned long mostRecentRolloverTime();
     unsigned long mostRecentSwitchHitTime();
     unsigned long queensChamberHurryUpValue();
     unsigned long queensChamberScoreValue();
-    unsigned long resetInlineDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime_ = 0);
-    unsigned long resetOrbsDropTargets  (boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime_ = 0);
-    unsigned long resetRightDropTargets (boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime_ = 0);
+    unsigned long resetInlineDropTargets(boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime = 0);
+    unsigned long resetOrbsDropTargets  (boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime = 0);
+    unsigned long resetRightDropTargets (boolean activateSolenoid = false, boolean resetProgress = false, unsigned long activationTime = 0);
     unsigned long rightDropTargetsScoreValue();
     unsigned long score(byte player = 0xFF);
     void          awardExtraBall();

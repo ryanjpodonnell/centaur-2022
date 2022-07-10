@@ -43,6 +43,9 @@ byte SkillShot::run(boolean gameModeChanged, byte switchHit) {
     case SW_COIN_3:
     case SW_CREDIT_BUTTON:
     case SW_OUTHOLE:
+    case SW_1ST_BALL_TROUGH:
+    case SW_4TH_BALL_TROUGH:
+    case SW_5TH_BALL_TROUGH:
     case 0xFF:
       break;
 

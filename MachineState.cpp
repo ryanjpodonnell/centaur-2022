@@ -16,6 +16,7 @@ MachineState::MachineState() {
   numberOfPlayers_             = 0;
   highScore_                   = 0;
 
+  activationTime_              = 0;
   currentTime_                 = 0;
   lastTiltWarningTime_         = 0;
   mostRecentRolloverTime_      = 0;
@@ -214,11 +215,9 @@ byte MachineState::numberOfBallsInPlay() {
 }
 
 byte MachineState::numberOfBallsInTrough() {
-  return BSOS_ReadSingleSwitchState(SW_1ST_BALL_TROUGH) +
-    BSOS_ReadSingleSwitchState(SW_4TH_BALL_TROUGH) +
-    BSOS_ReadSingleSwitchState(SW_5TH_BALL_TROUGH) +
-    BSOS_ReadSingleSwitchState(SW_END_OF_TROUGH) +
-    BSOS_ReadSingleSwitchState(SW_OUTHOLE);
+  if (!BSOS_ReadSingleSwitchState(SW_1ST_BALL_TROUGH) && !BSOS_ReadSingleSwitchState(SW_4TH_BALL_TROUGH))      return 0;
+  else if (BSOS_ReadSingleSwitchState(SW_1ST_BALL_TROUGH)  && !BSOS_ReadSingleSwitchState(SW_4TH_BALL_TROUGH)) return 1;
+  else if (BSOS_ReadSingleSwitchState(SW_1ST_BALL_TROUGH)  && BSOS_ReadSingleSwitchState(SW_4TH_BALL_TROUGH))  return 2;
 }
 
 byte MachineState::numberOfPlayers() {
@@ -247,10 +246,10 @@ int MachineState::initGamePlay() {
 }
 
 int MachineState::initNewBall(bool curStateChanged) {
-  unsigned long activationTime = 0;
 
   if (curStateChanged) {
     if (DEBUG_MESSAGES) Serial.write("Initializing new ball\n\r");
+    activationTime_ = 0;
 
     resetMachineState();
     setCurrentPlayer(currentPlayerNumber_);
@@ -262,11 +261,11 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_EnableSolenoidStack();
     BSOS_SetDisableFlippers(false);
 
-    activationTime = currentTime_ + 500;
-    activationTime = resetInlineDropTargets(true, true,  activationTime);
-    activationTime = resetOrbsDropTargets  (true, true,  activationTime);
-    activationTime = resetRightDropTargets (true, false, activationTime);
-    activationTime = dropRightDropTargets(activationTime);
+    activationTime_ = currentTime_ + 500;
+    activationTime_ = resetInlineDropTargets(true, true,  activationTime_);
+    activationTime_ = resetOrbsDropTargets  (true, true,  activationTime_);
+    activationTime_ = resetRightDropTargets (true, false, activationTime_);
+    activationTime_ = dropRightDropTargets(activationTime_);
 
     BSOS_SetDisplayBallInPlay(currentBallInPlay_);
     BSOS_SetDisplayCredits(credits_);
@@ -275,14 +274,25 @@ int MachineState::initNewBall(bool curStateChanged) {
     g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
     g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
 
-    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime);
+    if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+      BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime_);
+      activationTime_ += 1500;
+    }
   }
 
-  if (currentTime_ < activationTime) {
+  if (currentTime_ < activationTime_) {
     return MACHINE_STATE_INIT_NEW_BALL;
-  } else {
-    return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
+
+  if (currentTime_ >= activationTime_ && BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime_);
+    activationTime_ += 1500;
+
+    return MACHINE_STATE_INIT_NEW_BALL;
+  }
+
+  numberOfBallsInPlay_ = 1;
+  return MACHINE_STATE_NORMAL_GAMEPLAY;
 }
 
 int MachineState::machineState() {

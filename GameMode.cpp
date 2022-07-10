@@ -36,7 +36,7 @@ int GameMode::run(boolean curStateChanged) {
   managePlayerScore();
 
   int returnState = runGameLoop();
-  if (g_machineState.numberOfBallsInTrough() > (MAXIMUM_NUMBER_OF_BALLS_IN_PLAY - g_machineState.numberOfBallsInPlay())) {
+  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
     returnState = manageBallInTrough();
   } else {
     ballEnteredTroughTime_  = 0;
@@ -88,38 +88,44 @@ int GameMode::manageBallInTrough() {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
 
+  // ball has settled in SW_OUTHOLE for 1/2 second
+
   if (!g_machineState.playfieldValidated() && !g_machineState.currentPlayerTilted()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Returned To Shooter Lane\n\r");
     BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, g_machineState.currentTime());
     pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+  }
 
-  } else if (ballSaveActive() && !g_machineState.currentPlayerTilted()) {
+  if (ballSaveActive() && !g_machineState.currentPlayerTilted()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
-    // launch new ball from trough
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime());
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime() + 1000);
-
     // push ball from outhole to trough
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,         SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime() + 1250);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,         SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime());
+
+    // launch new ball from trough to playfield
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime() + 1500);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime() + 3000);
+
     pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+  }
 
-  } else if (g_machineState.numberOfBallsInPlay() > 1) {
+  if (g_machineState.numberOfBallsInTrough() != 2) {
     if (DEBUG_MESSAGES) Serial.write("Multiball Drained\n\r");
 
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, g_machineState.currentTime() + 1000);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, g_machineState.currentTime());
     pushingBallFromOutlane_ = true;
 
     g_machineState.decreaseNumberOfBallsInPlay();
     if (!g_machineState.currentPlayerTilted()) g_machineState.updateScoreMultiplierLamps();
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
+  }
 
-  } else {
+  if (g_machineState.numberOfBallsInTrough() == 2) {
     if (DEBUG_MESSAGES) Serial.write("Ball Ended\n\r");
 
     if (!g_machineState.currentPlayerTilted())     g_soundHelper.stopAudio();
