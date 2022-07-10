@@ -285,7 +285,7 @@ int MachineState::initNewBall(bool curStateChanged) {
   }
 
   if (currentTime_ >= activationTime_ && BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime_);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, currentTime_);
     activationTime_ += 1500;
 
     return MACHINE_STATE_INIT_NEW_BALL;
@@ -449,7 +449,7 @@ void MachineState::increaseScore(unsigned long amountToAdd, boolean checkQueensC
 }
 
 void MachineState::launchBallIntoPlay(int lag) {
-  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime_ + 100 + lag);
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           currentTime_ + lag);
   BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, currentTime_ + 1000 + lag);
 
   g_gameMode.setBallSaveEndTime(g_machineState.currentTime() + ((unsigned long)MULTIBALL_SAVE_NUMBER_OF_SECONDS * 1000));

@@ -20,6 +20,7 @@ class GameMode {
     byte          gameModeId_;
     unsigned long ballEnteredTroughTime_;
     unsigned long ballSaveEndTime_;
+    unsigned long ballSaveSolEndTime_;
     unsigned long ballTimeInTrough_;
     unsigned long currentFlashCycle_;
 

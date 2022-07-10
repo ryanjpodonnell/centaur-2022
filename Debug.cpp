@@ -16,11 +16,11 @@ int Debug::run(boolean curStateChanged) {
 }
 
 void Debug::manageNewState() {
+  if (DEBUG_MESSAGES) Serial.write("Entering Debug State\n\r");
   stateStartedTime_ = g_machineState.currentTime();
 
-  if (DEBUG_MESSAGES) {
-    Serial.write("Entering Debug State\n\r");
-  }
+  BSOS_EnableSolenoidStack();
+  BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime());
 
   g_soundHelper.stopAudio();
   g_lampsHelper.showAllLamps();

@@ -6,6 +6,7 @@ GameMode::GameMode() {
 
   ballEnteredTroughTime_  = 0;
   ballSaveEndTime_        = 0;
+  ballSaveSolEndTime_     = 0;
   bonusIncreased_         = false;
   overrideSound_          = false;
   pushingBallFromOutlane_ = false;
@@ -99,6 +100,8 @@ int GameMode::manageBallInTrough() {
   }
 
   if (ballSaveActive() && !g_machineState.currentPlayerTilted()) {
+    if (g_machineState.currentTime() < ballSaveSolEndTime_) return MACHINE_STATE_NORMAL_GAMEPLAY;
+
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
     // push ball from outhole to trough
@@ -106,9 +109,10 @@ int GameMode::manageBallInTrough() {
 
     // launch new ball from trough to playfield
     BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime() + 1500);
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime() + 3000);
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime() + 2500);
 
     pushingBallFromOutlane_ = true;
+    ballSaveSolEndTime_     = g_machineState.currentTime() + 3000;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
@@ -239,7 +243,8 @@ void GameMode::manageNewMode() {
   if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
 
   ballEnteredTroughTime_ = 0;
-  ballSaveEndTime_ = 0;
+  ballSaveEndTime_       = 0;
+  ballSaveSolEndTime_    = 0;
 
   setGameMode(GAME_MODE_SKILL_SHOT);
 }
