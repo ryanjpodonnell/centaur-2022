@@ -17,7 +17,6 @@ MachineState::MachineState() {
   highScore_                   = 0;
 
   currentTime_                 = 0;
-  ballEnteredTroughTime_       = 0;
   lastTiltWarningTime_         = 0;
   mostRecentRolloverTime_      = 0;
   mostRecentSwitchHitTime_     = 0;
@@ -148,10 +147,6 @@ boolean MachineState::topRolloversCompleted() {
   return currentPlayer_->topRolloversCompleted();
 }
 
-boolean MachineState::troughSwitchActivated() {
-  return troughSwitchActivated_;
-}
-
 byte MachineState::activeOrbsDropTarget() {
   return currentPlayer_->activeOrbsDropTarget();
 }
@@ -218,6 +213,14 @@ byte MachineState::numberOfBallsInPlay() {
   return numberOfBallsInPlay_;
 }
 
+byte MachineState::numberOfBallsInTrough() {
+  return BSOS_ReadSingleSwitchState(SW_1ST_BALL_TROUGH) +
+    BSOS_ReadSingleSwitchState(SW_4TH_BALL_TROUGH) +
+    BSOS_ReadSingleSwitchState(SW_5TH_BALL_TROUGH) +
+    BSOS_ReadSingleSwitchState(SW_END_OF_TROUGH) +
+    BSOS_ReadSingleSwitchState(SW_OUTHOLE);
+}
+
 byte MachineState::numberOfPlayers() {
   return numberOfPlayers_;
 }
@@ -275,7 +278,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, activationTime);
   }
 
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE) || currentTime_ < activationTime) {
+  if (currentTime_ < activationTime) {
     return MACHINE_STATE_INIT_NEW_BALL;
   } else {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -284,10 +287,6 @@ int MachineState::initNewBall(bool curStateChanged) {
 
 int MachineState::machineState() {
   return machineStateId_;
-}
-
-unsigned long MachineState::ballEnteredTroughTime() {
-  return ballEnteredTroughTime_;
 }
 
 unsigned long MachineState::currentTime() {
@@ -547,10 +546,6 @@ void MachineState::rotateQualifiedMode() {
   currentPlayer_->rotateQualifiedMode();
 }
 
-void MachineState::setBallEnteredTroughTime() {
-  ballEnteredTroughTime_ = currentTime_;
-}
-
 void MachineState::setBallSaveActivated() {
   ballSaveActivated_ = true;
 }
@@ -622,10 +617,6 @@ void MachineState::setScore(unsigned long value, byte player) {
   if (player == 1) player2_.setScore(value);
   if (player == 2) player3_.setScore(value);
   if (player == 3) player4_.setScore(value);
-}
-
-void MachineState::setTroughSwitchActivated(boolean value) {
-  troughSwitchActivated_ = value;
 }
 
 void MachineState::showAllPlayerLamps() {
@@ -737,7 +728,5 @@ void MachineState::resetMachineState() {
   extraBallCollected_    = false;
   playfieldValidated_    = false;
   samePlayerShootsAgain_ = false;
-  troughSwitchActivated_ = false;
-
-  numberOfTiltWarnings_          = 0;
+  numberOfTiltWarnings_  = 0;
 }

@@ -18,6 +18,7 @@ class GameMode {
     boolean       pushingBallFromOutlane_;
     boolean       scoreIncreased_;
     byte          gameModeId_;
+    unsigned long ballEnteredTroughTime_;
     unsigned long ballSaveEndTime_;
     unsigned long ballTimeInTrough_;
     unsigned long currentFlashCycle_;

@@ -4,6 +4,7 @@ GameMode::GameMode() {
   gameModeId_             = GAME_MODE_INITIALIZE;
   gameModeChanged_        = true;
 
+  ballEnteredTroughTime_  = 0;
   ballSaveEndTime_        = 0;
   bonusIncreased_         = false;
   overrideSound_          = false;
@@ -35,10 +36,10 @@ int GameMode::run(boolean curStateChanged) {
   managePlayerScore();
 
   int returnState = runGameLoop();
-  if (BSOS_ReadSingleSwitchState(SW_OUTHOLE)) {
+  if (g_machineState.numberOfBallsInTrough() > (MAXIMUM_NUMBER_OF_BALLS_IN_PLAY - g_machineState.numberOfBallsInPlay())) {
     returnState = manageBallInTrough();
   } else {
-    g_machineState.setTroughSwitchActivated(false);
+    ballEnteredTroughTime_  = 0;
     pushingBallFromOutlane_ = false;
   }
 
@@ -78,21 +79,18 @@ boolean GameMode::ballSaveLampActive() {
 }
 
 int GameMode::manageBallInTrough() {
-  if (!g_machineState.troughSwitchActivated()) {
-    g_machineState.setTroughSwitchActivated(true);
-    g_machineState.setBallEnteredTroughTime();
+  if (!ballEnteredTroughTime_) {
+    if (DEBUG_MESSAGES) Serial.write("Trough Activated\n\r");
+    ballEnteredTroughTime_ = g_machineState.currentTime();
   }
 
-  if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 ||
-      pushingBallFromOutlane_ ||
-      g_machineState.scoreIncreasing()
-     ) {
+  if ((g_machineState.currentTime() - ballEnteredTroughTime_) <= 500 || pushingBallFromOutlane_ || g_machineState.scoreIncreasing()) {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
   }
 
   if (!g_machineState.playfieldValidated() && !g_machineState.currentPlayerTilted()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Returned To Shooter Lane\n\r");
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, g_machineState.currentTime() + 100);
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER, SOL_OUTHOLE_KICKER_STRENGTH, g_machineState.currentTime());
     pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -100,9 +98,12 @@ int GameMode::manageBallInTrough() {
   } else if (ballSaveActive() && !g_machineState.currentPlayerTilted()) {
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
-    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime() + 100);
+    // launch new ball from trough
+    BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime());
     BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime() + 1000);
-    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,         SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime() + 1100);
+
+    // push ball from outhole to trough
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,         SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime() + 1250);
     pushingBallFromOutlane_ = true;
 
     return MACHINE_STATE_NORMAL_GAMEPLAY;
@@ -116,9 +117,6 @@ int GameMode::manageBallInTrough() {
     g_machineState.decreaseNumberOfBallsInPlay();
     g_machineState.updateScoreMultiplierLamps();
 
-    return MACHINE_STATE_NORMAL_GAMEPLAY;
-
-  } else if ((g_machineState.currentTime() - g_machineState.ballEnteredTroughTime()) <= 500 || pushingBallFromOutlane_) {
     return MACHINE_STATE_NORMAL_GAMEPLAY;
 
   } else {
@@ -234,6 +232,7 @@ void GameMode::manageNewMode() {
   g_machineState.increaseBonus(1);
   if (g_machineState.firstBallActive()) g_soundHelper.playSound(SOUND_DESTROY_CENTAUR);
 
+  ballEnteredTroughTime_ = 0;
   ballSaveEndTime_ = 0;
 
   setGameMode(GAME_MODE_SKILL_SHOT);

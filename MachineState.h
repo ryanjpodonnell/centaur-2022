@@ -36,7 +36,6 @@ class MachineState {
     boolean       machineStateChanged_;
     boolean       playfieldValidated_;
     boolean       samePlayerShootsAgain_;
-    boolean       troughSwitchActivated_;
     byte          credits_;
     byte          currentBallInPlay_;
     byte          currentPlayerNumber_;
@@ -45,7 +44,6 @@ class MachineState {
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     int           machineStateId_;
-    unsigned long ballEnteredTroughTime_;
     unsigned long currentTime_;
     unsigned long highScore_;
     unsigned long lastTiltWarningTime_;
@@ -78,7 +76,6 @@ class MachineState {
     boolean       samePlayerShootsAgain();
     boolean       scoreIncreasing();
     boolean       topRolloversCompleted();
-    boolean       troughSwitchActivated();
     byte          activeOrbsDropTarget();
     byte          activeRightDropTarget();
     byte          bonus(byte player = 0xFF);
@@ -90,6 +87,7 @@ class MachineState {
     byte          manageCreditButton(byte state);
     byte          mostRecentSwitchHit();
     byte          numberOfBallsInPlay();
+    byte          numberOfBallsInTrough();
     byte          numberOfPlayers();
     byte          qualifiedScoreMultiplier();
     byte          queensChamberBonusValue();
@@ -97,7 +95,6 @@ class MachineState {
     int           initGamePlay();
     int           initNewBall(bool curStateChanged);
     int           machineState();
-    unsigned long ballEnteredTroughTime();
     unsigned long currentTime();
     unsigned long dropRightDropTargets(unsigned long activationTime_);
     unsigned long highScore();
@@ -144,7 +141,6 @@ class MachineState {
     void          resetTopRollovers();
     void          rotatePlayerLamps();
     void          rotateQualifiedMode();
-    void          setBallEnteredTroughTime();
     void          setBallSaveActivated();
     void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
@@ -160,7 +156,6 @@ class MachineState {
     void          setNumberOfPlayers(byte value);
     void          setPlayfieldValidated();
     void          setScore(unsigned long value, byte player = 0xFF);
-    void          setTroughSwitchActivated(boolean value);
     void          showAllPlayerLamps();
     void          spotRightDropTarget();
     void          unqualifyAllModes();
