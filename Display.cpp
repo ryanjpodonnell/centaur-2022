@@ -204,11 +204,5 @@ void DisplayHelper::showScoreOverride(byte displayNumber) {
     BSOS_SetDisplayBlank(displayNumber, 0);
   } else {
     BSOS_SetDisplay(displayNumber, score, true, 1);
-    /* byte numDigits = numberOfDigits(score); */
-    /* if (numDigits < (BALLY_STERN_OS_NUM_DIGITS - 1)) { */
-    /*   showAnimatedPlayerScore(displayNumber, score); */
-    /* } else { */
-    /*   BSOS_SetDisplay(displayNumber, score, true, 1); */
-    /* } */
   }
 }
