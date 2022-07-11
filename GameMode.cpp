@@ -104,14 +104,17 @@ int GameMode::manageBallInTrough() {
 
     if (DEBUG_MESSAGES) Serial.write("Ball Saved\n\r");
 
-    // push ball from outhole to trough
-    if (g_machineState.numberOfBallsInTrough() != 2) {
+    // push ball from outhole to trough (in case the trough is empty)
+    if (g_machineState.numberOfBallsInTrough() == 0) {
       BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,       SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime());
     }
 
     // launch new ball from trough to playfield
     BSOS_PushToTimedSolenoidStack(SOL_BALL_RELEASE,           SOL_BALL_RELEASE_STRENGTH,           g_machineState.currentTime() + 1500);
     BSOS_PushToTimedSolenoidStack(SOL_BALL_KICK_TO_PLAYFIELD, SOL_BALL_KICK_TO_PLAYFIELD_STRENGTH, g_machineState.currentTime() + 2500);
+
+    // push ball from outhole to trough
+    BSOS_PushToTimedSolenoidStack(SOL_OUTHOLE_KICKER,         SOL_OUTHOLE_KICKER_STRENGTH,         g_machineState.currentTime() + 2750);
 
     pushingBallFromOutlane_ = true;
     ballSaveSolEndTime_     = g_machineState.currentTime() + 3000;
