@@ -223,12 +223,15 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged) {
       }
     }
   } else if (curState==MACHINE_STATE_TEST_FREE_PLAY) {
+    BSOS_SetDisplayBallInPlay(6);
     savedScoreStartByte = BSOS_FREE_PLAY_EEPROM_START_BYTE;
     savedValueByte     = true;
   } else if (curState==MACHINE_STATE_TEST_HISCORE) {
+    BSOS_SetDisplayBallInPlay(7);
     savedScoreStartByte = BSOS_HIGHSCORE_EEPROM_START_BYTE;
     savedValueUL       = true;
   } else if (curState==MACHINE_STATE_TEST_CREDITS) {
+    BSOS_SetDisplayBallInPlay(8);
     if (curStateChanged) {
       savedValue_ = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
       BSOS_SetDisplay(0, savedValue_, true);
@@ -240,16 +243,22 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged) {
       BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, savedValue_ & 0x000000FF);
     }
   } else if (curState==MACHINE_STATE_TEST_TOTAL_PLAYS) {
+    BSOS_SetDisplayBallInPlay(9);
     auditNumStartByte = BSOS_TOTAL_PLAYS_EEPROM_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_TOTAL_REPLAYS) {
+    BSOS_SetDisplayBallInPlay(10);
     auditNumStartByte = BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_HISCORE_BEAT) {
+    BSOS_SetDisplayBallInPlay(11);
     auditNumStartByte = BSOS_TOTAL_HISCORE_BEATEN_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_CHUTE_2_COINS) {
+    BSOS_SetDisplayBallInPlay(12);
     auditNumStartByte = BSOS_CHUTE_2_COINS_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_CHUTE_1_COINS) {
+    BSOS_SetDisplayBallInPlay(13);
     auditNumStartByte = BSOS_CHUTE_1_COINS_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_CHUTE_3_COINS) {
+    BSOS_SetDisplayBallInPlay(14);
     auditNumStartByte = BSOS_CHUTE_3_COINS_START_BYTE;
   }
 
