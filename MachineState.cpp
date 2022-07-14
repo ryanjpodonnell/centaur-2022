@@ -59,10 +59,10 @@ boolean MachineState::guardianRolloversCompleted() {
 }
 
 boolean MachineState::increaseNumberOfPlayers() {
-  if (credits_ < 1 && !FREE_PLAY) return false;
+  if (credits_ < 1 && !freePlay_) return false;
   if (numberOfPlayers_ >= 4) return false;
 
-  if (!FREE_PLAY) {
+  if (!freePlay_) {
     credits_ -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
     BSOS_SetDisplayCredits(credits_);
@@ -100,9 +100,9 @@ boolean MachineState::playfieldValidated() {
 }
 
 boolean MachineState::resetPlayers() {
-  if (credits_ < 1 && !FREE_PLAY) return false;
+  if (credits_ < 1 && !freePlay_) return false;
 
-  if (!FREE_PLAY) {
+  if (!freePlay_) {
     credits_ -= 1;
     BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
   }
@@ -115,7 +115,7 @@ boolean MachineState::resetPlayers() {
   g_displayHelper.showPlayerScores(0xFF);
   BSOS_SetDisplayCredits(credits_);
 
-  BSOS_WriteULToEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_PLAYS_EEPROM_START_BYTE) + 1);
+  BSOS_WriteULToEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE) + 1);
 
   return true;
 }
@@ -492,6 +492,8 @@ void MachineState::readStoredParameters() {
   setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_2_SCORE_START_BYTE, 0), 1);
   setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_3_SCORE_START_BYTE, 0), 2);
   setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_4_SCORE_START_BYTE, 0), 3);
+
+  freePlay_ = BSOS_ReadByteFromEEProm(BSOS_FREE_PLAY_EEPROM_START_BYTE);
 }
 
 void MachineState::registerGuardianRollover(byte switchHit) {
@@ -534,6 +536,10 @@ void MachineState::registerTiltWarning() {
 
 void MachineState::registerTopRollover(byte switchHit) {
   currentPlayer_->registerTopRollover(switchHit);
+}
+
+void MachineState::resetCurrentBallInPlay() {
+  currentBallInPlay_ = 0;
 }
 
 void MachineState::resetGuardianRollovers() {
@@ -611,10 +617,6 @@ void MachineState::setMostRecentRolloverTime() {
 
 void MachineState::setMostRecentSwitchHitTime() {
   mostRecentSwitchHitTime_ = currentTime_;
-}
-
-void MachineState::setNumberOfPlayers(byte value) {
-  numberOfPlayers_ = value;
 }
 
 void MachineState::setPlayfieldValidated() {

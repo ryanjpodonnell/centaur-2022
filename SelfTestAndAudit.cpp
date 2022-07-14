@@ -18,13 +18,50 @@ SelfTestAndAudit::SelfTestAndAudit() {
   currentSoundChanged_   = true;
 }
 
-int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetSwitch, byte slamSwitch) {
-  byte curSwitch = BSOS_PullFirstFromSwitchStack();
+int SelfTestAndAudit::run(int curState, boolean curStateChanged) {
+  if (curStateChanged) {
+    if (DEBUG_MESSAGES) Serial.write("Entering Self Test And Audit State\n\r");
+    g_soundHelper.stopAudio();
+  }
+
   int returnState = curState;
-  boolean resetDoubleClick = false;
+
+  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
+    returnState = runBase(returnState, curStateChanged);
+  }
+
+  if (returnState == MACHINE_STATE_ATTRACT) {
+    BSOS_SetDisplayCredits(g_machineState.credits(), true);
+    g_machineState.readStoredParameters();
+  }
+
+  return returnState;
+}
+
+
+unsigned long SelfTestAndAudit::lastSelfTestChangedTime() {
+  return lastSelfTestChange_;
+}
+
+
+void SelfTestAndAudit::setLastSelfTestChangedTime() {
+  lastSelfTestChange_ = g_machineState.currentTime();
+}
+
+/*********************************************************************
+    Private
+*********************************************************************/
+int SelfTestAndAudit::runBase(int curState, boolean curStateChanged) {
+  boolean        resetDoubleClick    = false;
+  boolean        savedValueByte      = false;
+  boolean        savedValueUL        = false;
+  byte           curSwitch           = BSOS_PullFirstFromSwitchStack();
+  byte           resetSwitch         = SW_CREDIT_BUTTON;
+  byte           slamSwitch          = SW_SLAM;
+  int            returnState         = curState;
+  unsigned long  currentTime         = g_machineState.currentTime();
+  unsigned short auditNumStartByte   = 0;
   unsigned short savedScoreStartByte = 0;
-  unsigned short auditNumStartByte = 0;
-  unsigned long currentTime = g_machineState.currentTime();
 
   if (curSwitch==resetSwitch) {
     resetHold_ = currentTime;
@@ -67,7 +104,7 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
       BSOS_SetDisplayBlank(count, 0x00);
     }
 
-    if (curState<=MACHINE_STATE_TEST_SCORE_LEVEL_1) {
+    if (curState<=MACHINE_STATE_TEST_FREE_PLAY) {
       BSOS_SetDisplayCredits(MACHINE_STATE_TEST_SOUNDS-curState);
       BSOS_SetDisplayBallInPlay(0, false);
     }
@@ -185,14 +222,12 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
         currentSoundChanged_ = true;
       }
     }
-  } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_1) {
-    savedScoreStartByte = BSOS_AWARD_SCORE_1_EEPROM_START_BYTE;
-  } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_2) {
-    savedScoreStartByte = BSOS_AWARD_SCORE_2_EEPROM_START_BYTE;
-  } else if (curState==MACHINE_STATE_TEST_SCORE_LEVEL_3) {
-    savedScoreStartByte = BSOS_AWARD_SCORE_3_EEPROM_START_BYTE;
-  } else if (curState==MACHINE_STATE_TEST_HISCR) {
+  } else if (curState==MACHINE_STATE_TEST_FREE_PLAY) {
+    savedScoreStartByte = BSOS_FREE_PLAY_EEPROM_START_BYTE;
+    savedValueByte     = true;
+  } else if (curState==MACHINE_STATE_TEST_HISCORE) {
     savedScoreStartByte = BSOS_HIGHSCORE_EEPROM_START_BYTE;
+    savedValueUL       = true;
   } else if (curState==MACHINE_STATE_TEST_CREDITS) {
     if (curStateChanged) {
       savedValue_ = BSOS_ReadByteFromEEProm(BSOS_CREDITS_EEPROM_BYTE);
@@ -208,7 +243,7 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
     auditNumStartByte = BSOS_TOTAL_PLAYS_EEPROM_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_TOTAL_REPLAYS) {
     auditNumStartByte = BSOS_TOTAL_REPLAYS_EEPROM_START_BYTE;
-  } else if (curState==MACHINE_STATE_TEST_HISCR_BEAT) {
+  } else if (curState==MACHINE_STATE_TEST_HISCORE_BEAT) {
     auditNumStartByte = BSOS_TOTAL_HISCORE_BEATEN_START_BYTE;
   } else if (curState==MACHINE_STATE_TEST_CHUTE_2_COINS) {
     auditNumStartByte = BSOS_CHUTE_2_COINS_START_BYTE;
@@ -218,7 +253,7 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
     auditNumStartByte = BSOS_CHUTE_3_COINS_START_BYTE;
   }
 
-  if (savedScoreStartByte) {
+  if (savedScoreStartByte && savedValueUL) {
     if (curStateChanged) {
       savedValue_ = BSOS_ReadULFromEEProm(savedScoreStartByte);
       BSOS_SetDisplay(0, savedValue_, true);
@@ -251,6 +286,19 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
     }
   }
 
+  if (savedScoreStartByte && savedValueByte) {
+    if (curStateChanged) {
+      savedValue_ = BSOS_ReadByteFromEEProm(savedScoreStartByte);
+      BSOS_SetDisplay(0, savedValue_, true);
+    }
+
+    if (curSwitch==resetSwitch) {
+      savedValue_ = (savedValue_ + 1) % 2;
+      BSOS_SetDisplay(0, savedValue_, true);
+      BSOS_WriteByteToEEProm(savedScoreStartByte, savedValue_);
+    }
+  }
+
   if (auditNumStartByte) {
     if (curStateChanged) {
       savedValue_ = BSOS_ReadULFromEEProm(auditNumStartByte);
@@ -266,36 +314,4 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged, byte resetS
   }
   
   return returnState;
-}
-
-int SelfTestAndAudit::run(int curState, boolean curStateChanged) {
-  if (curStateChanged) {
-    if (DEBUG_MESSAGES) {
-      Serial.write("Entering Self Test And Audit State\n\r");
-    }
-  }
-
-  int returnState = curState;
-  g_machineState.setNumberOfPlayers(0);
-
-  if (curState >= MACHINE_STATE_TEST_CHUTE_3_COINS) {
-    returnState = runBase(returnState, curStateChanged, SW_CREDIT_BUTTON, SW_SLAM);
-  }
-
-  if (returnState == MACHINE_STATE_ATTRACT) {
-    BSOS_SetDisplayCredits(g_machineState.credits(), true);
-    g_machineState.readStoredParameters();
-  }
-
-  return returnState;
-}
-
-
-unsigned long SelfTestAndAudit::lastSelfTestChangedTime() {
-  return lastSelfTestChange_;
-}
-
-
-void SelfTestAndAudit::setLastSelfTestChangedTime() {
-  lastSelfTestChange_ = g_machineState.currentTime();
 }

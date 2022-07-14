@@ -21,8 +21,6 @@
 #define SOLENOID_BUFFER_TIME             250
 #define TILT_WARNING_DEBOUNCE_TIME       1000
 
-#define FREE_PLAY                       1
-
 class MachineState {
   private:
     PlayerState*  currentPlayer_;
@@ -33,6 +31,7 @@ class MachineState {
     boolean       ballSaveActivated_;
     boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
+    boolean       freePlay_;
     boolean       machineStateChanged_;
     boolean       playfieldValidated_;
     boolean       samePlayerShootsAgain_;
@@ -137,6 +136,7 @@ class MachineState {
     void          registerRightDropTarget(byte switchHit);
     void          registerTiltWarning();
     void          registerTopRollover(byte switchHit);
+    void          resetCurrentBallInPlay();
     void          resetGuardianRollovers();
     void          resetTiltWarnings();
     void          resetTopRollovers();
@@ -154,7 +154,6 @@ class MachineState {
     void          setMostRecentRolloverTime();
     void          setMostRecentSwitchHit(byte value);
     void          setMostRecentSwitchHitTime();
-    void          setNumberOfPlayers(byte value);
     void          setPlayfieldValidated();
     void          setScore(unsigned long value, byte player = 0xFF);
     void          showAllPlayerLamps();

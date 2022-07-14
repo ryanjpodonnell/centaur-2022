@@ -76,13 +76,15 @@ boolean Attract::tauntEligible() {
 
 void Attract::manageNewState() {
   if (DEBUG_MESSAGES) Serial.write("Entering Attract State\n\r");
+  featureShowRunning_ = false;
+
+  g_machineState.resetCurrentBallInPlay();
 
   g_bonusLightShow.reset();
   g_lampsHelper.hideAllLamps();
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
 
-  featureShowRunning_ = false;
   score1_ = g_machineState.score(0);
   score2_ = g_machineState.score(1);
   score3_ = g_machineState.score(2);
@@ -100,6 +102,7 @@ void Attract::manageNewState() {
 
   if (g_machineState.highScore() > previousHighScore) {
     if (DEBUG_MESSAGES) Serial.write("Updating High Score\n\r");
+    BSOS_WriteULToEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE, BSOS_ReadULFromEEProm(BSOS_TOTAL_HISCORE_BEATEN_START_BYTE) + 1);
     BSOS_WriteULToEEProm(BSOS_HIGHSCORE_EEPROM_START_BYTE, g_machineState.highScore());
   }
 
