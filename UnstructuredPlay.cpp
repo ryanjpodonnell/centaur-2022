@@ -245,8 +245,8 @@ void UnstructuredPlay::collectHurryUp() {
 
 void UnstructuredPlay::endHurryUp() {
   if (DEBUG_MESSAGES) Serial.write("Hurry Up Ended\n\r");
-
-  hurryUpActivated_ = false;
+  hurryUpDisplayEndTime_ = 0;
+  hurryUpActivated_      = false;
   g_displayHelper.showPlayerScores(0xFF);
 
   g_lampsHelper.showLamps(LAMP_COLLECTION_QUEENS_CHAMBER_GI);
@@ -337,6 +337,7 @@ void UnstructuredPlay::startHurryUp(unsigned long value) {
   g_soundHelper.playSoundWithoutInterruptions(SOUND_SIREN_2);
   hurryUpActivated_           = true;
   hurryUpValue_               = value;
+  hurryUpMinimumValue_        = value * 0.2;
   hurryUpInitialValue_        = value;
   hurryUpStartedTime_         = g_machineState.currentTime();
   hurryUpEndTime_             = g_machineState.currentTime() + HURRY_UP_LENGTH + HURRY_UP_GRACE_PERIOD;
@@ -396,6 +397,8 @@ void UnstructuredPlay::updateHurryUpValue() {
 
   unsigned long value = hurryUpValuePerMillisecond_ * (timeSinceHurryUpStarted - HURRY_UP_GRACE_PERIOD);
   hurryUpValue_ = hurryUpInitialValue_ - value;
+
+  if (hurryUpValue_ < hurryUpMinimumValue_) hurryUpValue_ = hurryUpMinimumValue_;
 
   if (g_machineState.currentTime() >= hurryUpEndTime_) {
     endHurryUp();

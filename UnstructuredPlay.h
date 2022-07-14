@@ -17,6 +17,7 @@ class UnstructuredPlay {
     unsigned long hurryUpDisplayEndTime_;
     unsigned long hurryUpEndTime_;
     unsigned long hurryUpInitialValue_;
+    unsigned long hurryUpMinimumValue_;
     unsigned long hurryUpStartedTime_;
     unsigned long hurryUpValuePerMillisecond_;
     unsigned long hurryUpValue_;
