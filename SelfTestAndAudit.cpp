@@ -38,16 +38,6 @@ int SelfTestAndAudit::run(int curState, boolean curStateChanged) {
   return returnState;
 }
 
-
-unsigned long SelfTestAndAudit::lastSelfTestChangedTime() {
-  return lastSelfTestChange_;
-}
-
-
-void SelfTestAndAudit::setLastSelfTestChangedTime() {
-  lastSelfTestChange_ = g_machineState.currentTime();
-}
-
 /*********************************************************************
     Private
 *********************************************************************/

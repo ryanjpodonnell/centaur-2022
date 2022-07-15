@@ -39,8 +39,6 @@ class SelfTestAndAudit {
     SelfTestAndAudit();
 
     int           run(int curState, boolean curStateChanged);
-    unsigned long lastSelfTestChangedTime();
-    void          setLastSelfTestChangedTime();
 };
 
 #endif
