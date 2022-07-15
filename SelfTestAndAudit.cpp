@@ -238,7 +238,7 @@ int SelfTestAndAudit::runBase(int curState, boolean curStateChanged) {
     }
     if (curSwitch==resetSwitch || resetDoubleClick) {
       savedValue_ += 1;
-      if (savedValue_>20) savedValue_ = 0;
+      if (savedValue_>MAXIMUM_NUMBER_OF_CREDITS) savedValue_ = 0;
       BSOS_SetDisplay(0, savedValue_, true);
       BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, savedValue_ & 0x000000FF);
     }

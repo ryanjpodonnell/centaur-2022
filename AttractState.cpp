@@ -33,9 +33,7 @@ int Attract::run(boolean curStateChanged) {
     case SW_COIN_1:
     case SW_COIN_2:
     case SW_COIN_3:
-      g_soundHelper.playSound(SOUND_ENERGIZE_ME);
-      g_machineState.writeCoinToAudit(switchHit);
-      g_machineState.increaseCredits(true, 1);
+      g_machineState.manageCoinDrop(switchHit);
       break;
     case SW_SELF_TEST_SWITCH:
       if (g_machineState.currentTime() - g_selfTestAndAudit.lastSelfTestChangedTime() > 250) {
