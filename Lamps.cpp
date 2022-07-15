@@ -7,6 +7,21 @@ void LampsHelper::hideAllLamps() {
   BSOS_TurnOffAllLamps();
 }
 
+void LampsHelper::hideAllPlayfieldLamps() {
+  for (int count=0; count<BSOS_MAX_LAMPS; count++) {
+    if (count == LAMP_BALL_IN_PLAY)       continue;
+    if (count == LAMP_CREDIT_INDICATOR)   continue;
+    if (count == LAMP_GAME_OVER)          continue;
+    if (count == LAMP_HIGH_SCORE_TO_DATE) continue;
+    if (count == LAMP_MATCH)              continue;
+    if (count == LAMP_SHOOT_AGAIN)        continue;
+    if (count == LAMP_TILT)               continue;
+    if (count == LAMP_WARNING)            continue;
+
+    BSOS_SetLampState(count, 0, 0, 0);
+  }
+}
+
 void LampsHelper::hideLamp(byte lamp) {
   BSOS_SetLampState(lamp, 0);
 }

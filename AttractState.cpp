@@ -116,7 +116,7 @@ void Attract::manageFeatureShow() {
 
   if (featureCycle != currentFeatureCycle_) {
     currentFeatureCycle_ = featureCycle;
-    g_lampsHelper.hideAllLamps();
+    g_lampsHelper.hideAllPlayfieldLamps();
 
     switch(featureCycle) {
       case(1):
@@ -188,7 +188,7 @@ void Attract::manageLightShow() {
       }
     }
 
-    g_lampsHelper.hideAllLamps();
+    g_lampsHelper.hideAllPlayfieldLamps();
     if (currentStep == 0) g_lampsHelper.showLamp(LAMP_40K_BONUS);
     if (currentStep == 1) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_MIDDLE_RING);
     if (currentStep == 2) g_lampsHelper.showLamps(LAMP_COLLECTION_BONUS_OUTER_RING);

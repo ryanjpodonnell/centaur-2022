@@ -498,6 +498,7 @@ class LampsHelper {
     LampsHelper();
 
     void hideAllLamps();
+    void hideAllPlayfieldLamps();
     void hideLamp(byte lamp);
     void hideLamps(byte lampCollection);
     void showAllLamps();
