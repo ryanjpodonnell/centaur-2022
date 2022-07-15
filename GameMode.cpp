@@ -178,6 +178,7 @@ int GameMode::runGameLoop() {
   int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
 
   if (g_machineState.currentPlayerTilted()) {
+    g_displayHelper.showPlayerScores(0xFF);
     returnState = manageTilt();
   } else {
     returnState = runGameModes();
