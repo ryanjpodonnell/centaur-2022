@@ -14,9 +14,7 @@ Attract::Attract() {
 int Attract::run(boolean curStateChanged) {
   if (curStateChanged) manageNewState();
 
-  if (g_bonusLightShow.running()) {
-    g_bonusLightShow.run();
-  } else if (featureShowRunning_) {
+  if (featureShowRunning_) {
     manageFeatureShow();
   } else {
     manageLightShow();
@@ -71,7 +69,6 @@ void Attract::manageNewState() {
 
   g_machineState.resetCurrentBallInPlay();
 
-  g_bonusLightShow.reset();
   g_lampsHelper.hideAllLamps();
   g_lampsHelper.showLamp(LAMP_GAME_OVER);
 
@@ -173,6 +170,7 @@ void Attract::manageLightShow() {
         g_machineState.setScore(highScore, 2);
         g_machineState.setScore(highScore, 3);
         g_displayHelper.showPlayerScores(0xFF);
+        g_lampsHelper.showLamp(LAMP_HIGH_SCORE_TO_DATE);
         updateScores_ = false;
       }
     } else {
@@ -184,6 +182,7 @@ void Attract::manageLightShow() {
         g_machineState.setScore(score3_, 2);
         g_machineState.setScore(score4_, 3);
         g_displayHelper.showPlayerScores(0xFF);
+        g_lampsHelper.hideLamp(LAMP_HIGH_SCORE_TO_DATE);
         updateScores_ = false;
       }
     }
@@ -212,4 +211,6 @@ void Attract::startFeatureShow() {
   currentFeatureCycle_    = 0;
   featureShowRunning_     = true;
   featureShowStartedTime_ = g_machineState.currentTime();
+
+  g_lampsHelper.hideLamp(LAMP_HIGH_SCORE_TO_DATE);
 }
