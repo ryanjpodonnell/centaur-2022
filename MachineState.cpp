@@ -511,13 +511,23 @@ void MachineState::registerTiltWarning() {
     lastTiltWarningTime_ = currentTime_;
     numberOfTiltWarnings_ += 1;
 
+    if (numberOfTiltWarnings_ == 1) {
+      g_lampsHelper.showLamp(LAMP_WARNING);
+      g_lampsHelper.showLamp(LAMP_CREDIT_INDICATOR);
+    } else if (numberOfTiltWarnings_ == 2) {
+      g_lampsHelper.showLamp(LAMP_WARNING, true);
+      g_lampsHelper.showLamp(LAMP_CREDIT_INDICATOR, true);
+    }
+
     if (!currentPlayerTilted()) {
       g_soundHelper.playSoundWithoutInterruptions(SOUND_NO_CLASS_HUMAN);
     } else {
       if (DEBUG_MESSAGES) Serial.write("Ball Tilted\n\r");
 
       g_lampsHelper.hideAllLamps();
-      g_lampsHelper.showLamp(LAMP_TILT, false);
+      g_lampsHelper.showLamp(LAMP_BALL_IN_PLAY);
+      g_lampsHelper.showLamp(LAMP_TILT);
+
       BSOS_DisableSolenoidStack();
       BSOS_SetDisableFlippers(true);
 
