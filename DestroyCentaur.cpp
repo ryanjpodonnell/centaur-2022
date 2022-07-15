@@ -52,11 +52,6 @@ unsigned long DestroyCentaur::jackpotValue() {
   return jackpotValue_;
 }
 
-void DestroyCentaur::endModeViaBallEnded() {
-  g_lampsHelper.hideAllLamps();
-  g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
-}
-
 /*********************************************************************
     Private
 *********************************************************************/
@@ -70,7 +65,7 @@ byte DestroyCentaur::endMode() {
   g_displayHelper.showPlayerScores(0xFF);
 
   g_machineState.unqualifyAllModes();
-  g_lampsHelper.hideAllLamps();
+  g_lampsHelper.hideAllPlayfieldLamps();
   g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
 
   return GAME_MODE_UNSTRUCTURED_PLAY;
@@ -83,7 +78,7 @@ void DestroyCentaur::manageModeLamps() {
     byte currentStep = seed % 24;
 
     if (currentStep == 0) {
-      g_lampsHelper.hideAllLamps();
+      g_lampsHelper.hideAllPlayfieldLamps();
     } else if (currentStep == 1) {
       g_lampsHelper.showLamp(LAMP_RELEASE_ORB);
     } else if (currentStep == 2) {

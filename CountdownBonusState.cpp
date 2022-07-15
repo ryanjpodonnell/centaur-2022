@@ -86,6 +86,7 @@ void CountdownBonus::manageNewState() {
 
   g_bonusLightShow.reset();
   g_lampsHelper.hideAllLamps();
+  g_lampsHelper.showLamp(LAMP_BALL_IN_PLAY);
   g_soundHelper.stopAudio();
 
   BSOS_DisableSolenoidStack();

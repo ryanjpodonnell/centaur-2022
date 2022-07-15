@@ -15,7 +15,6 @@ class DestroyCentaur {
 
     byte          run(boolean currentStateChanged, byte switchHit);
     unsigned long jackpotValue();
-    void          endModeViaBallEnded();
 };
 
 #endif

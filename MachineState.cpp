@@ -264,6 +264,7 @@ int MachineState::initNewBall(bool curStateChanged) {
     BSOS_SetDisplayCredits(credits_);
 
     g_lampsHelper.hideAllLamps();
+    g_lampsHelper.showLamp(LAMP_BALL_IN_PLAY);
     g_lampsHelper.showLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
     g_gameMode.setGameMode(GAME_MODE_INITIALIZE);
 
