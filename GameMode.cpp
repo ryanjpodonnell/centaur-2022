@@ -155,29 +155,24 @@ int GameMode::manageBallInTrough() {
 }
 
 int GameMode::manageTilt() {
-  int returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
     switch (switchHit) {
-      case SW_SELF_TEST_SWITCH:
-        returnState = MACHINE_STATE_TEST_LIGHTS;
-        g_selfTestAndAudit.setLastSelfTestChangedTime();
+      case SW_CREDIT_BUTTON:
+        return g_machineState.manageCreditButton(MACHINE_STATE_NORMAL_GAMEPLAY);
         break;
       case SW_COIN_1:
       case SW_COIN_2:
       case SW_COIN_3:
         g_machineState.manageCoinDrop(switchHit);
         break;
-      case SW_CREDIT_BUTTON:
-        returnState = g_machineState.manageCreditButton(MACHINE_STATE_NORMAL_GAMEPLAY);
+      case SW_SELF_TEST_SWITCH:
+        return MACHINE_STATE_TEST_LIGHTS;
         break;
     }
-
-    switchHit = BSOS_PullFirstFromSwitchStack();
   }
 
-  return returnState;
+  return MACHINE_STATE_NORMAL_GAMEPLAY;
 }
 
 int GameMode::runGameLoop() {

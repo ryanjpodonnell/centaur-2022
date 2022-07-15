@@ -11,6 +11,23 @@ CountdownBonus::CountdownBonus() {
 int CountdownBonus::run(boolean curStateChanged) {
   if (curStateChanged) manageNewState();
 
+  byte switchHit;
+  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
+    switch(switchHit) {
+      case(SW_CREDIT_BUTTON):
+        return g_machineState.manageCreditButton(MACHINE_STATE_COUNTDOWN_BONUS);
+        break;
+      case SW_COIN_1:
+      case SW_COIN_2:
+      case SW_COIN_3:
+        g_machineState.manageCoinDrop(switchHit);
+        break;
+      case SW_SELF_TEST_SWITCH:
+        return MACHINE_STATE_TEST_LIGHTS;
+        break;
+    }
+  }
+
   unsigned long timeSinceStateStarted         = g_machineState.currentTime() - stateStartedTime_;
   unsigned long timeSinceStepDuractionChanged = g_machineState.currentTime() - stepDurationChangedTime_;
 

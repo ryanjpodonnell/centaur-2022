@@ -22,35 +22,31 @@ int Attract::run(boolean curStateChanged) {
     manageLightShow();
   }
 
-  int returnState = MACHINE_STATE_ATTRACT;
-  byte switchHit  = BSOS_PullFirstFromSwitchStack();
-
-  while (switchHit != SWITCH_STACK_EMPTY) {
+  byte switchHit;
+  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
-    case(SW_CREDIT_BUTTON):
-      return g_machineState.manageCreditButton(MACHINE_STATE_ATTRACT);
-      break;
-    case SW_COIN_1:
-    case SW_COIN_2:
-    case SW_COIN_3:
-      g_machineState.manageCoinDrop(switchHit);
-      break;
-    case SW_SELF_TEST_SWITCH:
-      returnState = MACHINE_STATE_TEST_LIGHTS;
-      break;
-    case SW_RIGHT_FLIPPER_BUTTON:
-      if (featureShowEligible()) startFeatureShow();
-      else if (tauntEligible()) {
-        g_soundHelper.playSound(SOUND_HA_HA_HA);
-        lastTaunt_ = g_machineState.currentTime();
-      }
-      break;
+      case(SW_CREDIT_BUTTON):
+        return g_machineState.manageCreditButton(MACHINE_STATE_ATTRACT);
+        break;
+      case SW_COIN_1:
+      case SW_COIN_2:
+      case SW_COIN_3:
+        g_machineState.manageCoinDrop(switchHit);
+        break;
+      case SW_SELF_TEST_SWITCH:
+        return MACHINE_STATE_TEST_LIGHTS;
+        break;
+      case SW_RIGHT_FLIPPER_BUTTON:
+        if (featureShowEligible()) startFeatureShow();
+        else if (tauntEligible()) {
+          g_soundHelper.playSound(SOUND_HA_HA_HA);
+          lastTaunt_ = g_machineState.currentTime();
+        }
+        break;
     }
-
-    switchHit = BSOS_PullFirstFromSwitchStack();
   }
 
-  return returnState;
+  return MACHINE_STATE_ATTRACT;
 }
 
 /*********************************************************************
@@ -77,6 +73,8 @@ void Attract::manageNewState() {
 
   g_bonusLightShow.reset();
   g_lampsHelper.hideAllLamps();
+  g_lampsHelper.showLamp(LAMP_GAME_OVER);
+
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
 
@@ -102,20 +100,6 @@ void Attract::manageNewState() {
   }
 
   BSOS_SetDisplayCredits(g_machineState.credits());
-
-  byte switchHit;
-  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
-    switch (switchHit) {
-      case SW_COIN_1:
-      case SW_COIN_2:
-      case SW_COIN_3:
-        g_machineState.writeCoinToAudit(switchHit);
-        g_machineState.increaseCredits(true, 1);
-        break;
-    }
-
-    switchHit = BSOS_PullFirstFromSwitchStack();
-  }
 }
 
 void Attract::manageFeatureShow() {

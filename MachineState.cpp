@@ -34,14 +34,6 @@ boolean MachineState::anyModeQualified() {
   return currentPlayer_->anyModeQualified();
 }
 
-boolean MachineState::ballSaveActivated() {
-  return ballSaveActivated_;
-}
-
-boolean MachineState::ballSaveUsed() {
-  return ballSaveUsed_;
-}
-
 boolean MachineState::currentPlayerTilted() {
   return numberOfTiltWarnings_ > MAXIMUM_NUMBER_OF_TILT_WARNINGS;
 }
@@ -189,7 +181,7 @@ byte MachineState::increaseCurrentPlayer() {
 
   if (currentBallInPlay_ > BALLS_PER_GAME) {
     numberOfPlayers_ = 0;
-    return MACHINE_STATE_ATTRACT;
+    return MACHINE_STATE_MATCH_MODE;
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
   }
@@ -198,12 +190,13 @@ byte MachineState::increaseCurrentPlayer() {
 byte MachineState::manageCreditButton(byte state) {
   if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
 
-  if (currentBallInPlay() == 1) {
-    increaseNumberOfPlayers();
+  if (currentBallInPlay() == 1 && increaseNumberOfPlayers()) {
     return state;
   } else if (resetPlayers()) {
     return MACHINE_STATE_RESTART_GAME;
   }
+
+  return state;
 }
 
 byte MachineState::mostRecentSwitchHit() {
@@ -420,8 +413,8 @@ void MachineState::increaseBonusMultiplier() {
   currentPlayer_->increaseBonusMultiplier();
 }
 
-void MachineState::increaseCredits(boolean playSound, byte numToAdd) {
-  credits_ += numToAdd;
+void MachineState::increaseCredits() {
+  credits_ += 1;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
 
   BSOS_WriteByteToEEProm(BSOS_CREDITS_EEPROM_BYTE, credits_);
@@ -458,7 +451,7 @@ void MachineState::launchBallIntoPlay(int lag) {
 void MachineState::manageCoinDrop(byte switchHit) {
   g_soundHelper.playSound(SOUND_ENERGIZE_ME);
   writeCoinToAudit(switchHit);
-  increaseCredits(true, 1);
+  increaseCredits();
 }
 
 void MachineState::manageInlineTargetScoring(byte switchHit) {
@@ -560,14 +553,6 @@ void MachineState::rotatePlayerLamps() {
 
 void MachineState::rotateQualifiedMode() {
   currentPlayer_->rotateQualifiedMode();
-}
-
-void MachineState::setBallSaveActivated() {
-  ballSaveActivated_ = true;
-}
-
-void MachineState::setBallSaveUsed(byte value) {
-  ballSaveUsed_ = value;
 }
 
 void MachineState::setBonus(byte value) {
@@ -735,8 +720,6 @@ void MachineState::writeCoinToAudit(byte switchHit) {
     Private
 *********************************************************************/
 void MachineState::resetMachineState() {
-  ballSaveActivated_     = false;
-  ballSaveUsed_          = false;
   extraBallCollected_    = false;
   playfieldValidated_    = false;
   samePlayerShootsAgain_ = false;

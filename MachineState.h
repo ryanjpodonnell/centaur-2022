@@ -28,8 +28,6 @@ class MachineState {
     PlayerState   player2_;
     PlayerState   player3_;
     PlayerState   player4_;
-    boolean       ballSaveActivated_;
-    boolean       ballSaveUsed_;
     boolean       extraBallCollected_;
     boolean       freePlay_;
     boolean       machineStateChanged_;
@@ -56,8 +54,6 @@ class MachineState {
     MachineState();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
-    boolean       ballSaveActivated();
-    boolean       ballSaveUsed();
     boolean       currentPlayerTilted();
     boolean       destroyCentaurQualified();
     boolean       firstBallActive();
@@ -117,7 +113,7 @@ class MachineState {
     void          hideAllPlayerLamps();
     void          increaseBonus(byte amountToAdd = 1, boolean checkQueensChamberMultiplier = false);
     void          increaseBonusMultiplier();
-    void          increaseCredits(boolean playSound = false, byte numToAdd = 1);
+    void          increaseCredits();
     void          increaseNumberOfBallsInPlay();
     void          increaseQualifiedScoreMultiplier();
     void          increaseScore(unsigned long amountToAdd, boolean checkQueensChamberMultiplier = false);
@@ -142,8 +138,6 @@ class MachineState {
     void          resetTopRollovers();
     void          rotatePlayerLamps();
     void          rotateQualifiedMode();
-    void          setBallSaveActivated();
-    void          setBallSaveUsed(byte value);
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
     void          setCredits(byte value);

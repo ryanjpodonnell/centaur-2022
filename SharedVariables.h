@@ -11,6 +11,7 @@
 #include "GameMode.h"
 #include "HertzLogging.h"
 #include "Lamps.h"
+#include "MatchSequence.h"
 #include "OrbMode1.h"
 #include "OrbMode2.h"
 #include "OrbMode3.h"
@@ -40,6 +41,7 @@ extern GameMode         g_gameMode;
 extern HertzLogging     g_hertzLogging;
 extern LampsHelper      g_lampsHelper;
 extern MachineState     g_machineState;
+extern MatchSequence    g_matchSequence;
 extern OrbMode1         g_orbMode1;
 extern OrbMode2         g_orbMode2;
 extern OrbMode3         g_orbMode3;

@@ -11,6 +11,7 @@ GameMode         g_gameMode;
 HertzLogging     g_hertzLogging;
 LampsHelper      g_lampsHelper;
 MachineState     g_machineState;
+MatchSequence    g_matchSequence;
 OrbMode1         g_orbMode1;
 OrbMode2         g_orbMode2;
 OrbMode3         g_orbMode3;
@@ -64,6 +65,9 @@ void loop() {
   } else if (machineState == MACHINE_STATE_ATTRACT) {
     machineState = g_attract.run(machineStateChanged);
 
+  } else if (machineState == MACHINE_STATE_RESTART_GAME) {
+    machineState = g_restartGame.run(machineStateChanged);
+
   } else if (machineState == MACHINE_STATE_INIT_GAMEPLAY) {
     machineState = g_machineState.initGamePlay();
 
@@ -76,8 +80,8 @@ void loop() {
   } else if (machineState == MACHINE_STATE_COUNTDOWN_BONUS) {
     machineState = g_countdownBonus.run(machineStateChanged);
 
-  } else if (machineState == MACHINE_STATE_RESTART_GAME) {
-    machineState = g_restartGame.run(machineStateChanged);
+  } else if (machineState == MACHINE_STATE_MATCH_MODE) {
+    machineState = g_matchSequence.run(machineStateChanged);
 
   } else if (machineState == MACHINE_STATE_BALL_OVER && g_machineState.samePlayerShootsAgain()) {
     machineState = g_machineState.initNewBall(machineStateChanged);

@@ -6,6 +6,23 @@ RestartGame::RestartGame() {
 int RestartGame::run(boolean curStateChanged) {
   if (curStateChanged) manageNewState();
 
+  byte switchHit;
+  while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
+    switch(switchHit) {
+      case(SW_CREDIT_BUTTON):
+        return g_machineState.manageCreditButton(MACHINE_STATE_RESTART_GAME);
+        break;
+      case SW_COIN_1:
+      case SW_COIN_2:
+      case SW_COIN_3:
+        g_machineState.manageCoinDrop(switchHit);
+        break;
+      case SW_SELF_TEST_SWITCH:
+        return MACHINE_STATE_TEST_LIGHTS;
+        break;
+    }
+  }
+
   if (g_bonusLightShow.running()) {
     g_bonusLightShow.run();
   } else {
@@ -26,6 +43,7 @@ void RestartGame::manageNewState() {
   g_bonusLightShow.reset();
   g_lampsHelper.hideAllLamps();
   g_soundHelper.stopAudio();
+
   BSOS_DisableSolenoidStack();
   BSOS_SetDisableFlippers(true);
 }

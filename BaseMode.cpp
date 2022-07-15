@@ -14,7 +14,6 @@ int Base::run(byte switchHit) {
 
     case SW_SELF_TEST_SWITCH:
       returnState = MACHINE_STATE_TEST_LIGHTS;
-      g_selfTestAndAudit.setLastSelfTestChangedTime();
       break;
 
     case SW_COIN_1:

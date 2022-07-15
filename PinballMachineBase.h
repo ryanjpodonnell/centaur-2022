@@ -1,12 +1,3 @@
-#define LAMP_SHOOT_AGAIN        40
-#define LAMP_MATCH              41
-#define LAMP_WARNING            42
-#define LAMP_CREDIT_INDICATOR   43
-#define LAMP_BALL_IN_PLAY       48
-#define LAMP_HIGH_SCORE_TO_DATE 49
-#define LAMP_GAME_OVER          50
-#define LAMP_TILT               51
-
 #define SW_4TH_BALL_TROUGH                    0
 #define SW_5TH_BALL_TROUGH                    1
 #define SW_TOP_RIGHT_LANE                     2
