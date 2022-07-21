@@ -397,6 +397,7 @@ void UnstructuredPlay::updateHurryUpValue() {
 
   unsigned long value = hurryUpValuePerMillisecond_ * (timeSinceHurryUpStarted - HURRY_UP_GRACE_PERIOD);
   hurryUpValue_ = hurryUpInitialValue_ - value;
+  hurryUpValue_ = hurryUpValue_ / 10 * 10;
 
   if (hurryUpValue_ < hurryUpMinimumValue_) hurryUpValue_ = hurryUpMinimumValue_;
 
