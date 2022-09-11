@@ -704,7 +704,7 @@ void PlayerState::updateRightDropTargetsSpotLamp() {
 }
 
 void PlayerState::updateRightOrbsReleaseLamp() {
-  if (anyModeQualified()) {
+  if (anyModeQualified() || destroyCentaurQualified()) {
     g_lampsHelper.showLamp(LAMP_RIGHT_LANE_RELEASE_ORBS, true);
   } else {
     g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
