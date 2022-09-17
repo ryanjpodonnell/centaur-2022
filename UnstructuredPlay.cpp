@@ -173,6 +173,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
     case SW_ORBS_RIGHT_LANE_TARGET:
       if (g_machineState.anyModeQualified() || g_machineState.destroyCentaurQualified()) {
         if (hurryUpActivated_) endHurryUp();
+        if (g_bonusLightShow.running()) g_bonusLightShow.end();
 
         returnState = g_machineState.startQualifiedMode();
         g_machineState.updateScoreMultiplierLamps();
