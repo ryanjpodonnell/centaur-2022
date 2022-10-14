@@ -10,14 +10,12 @@ byte OrbMode4::run(boolean gameModeChanged, byte switchHit) {
 
   switch(switchHit) {
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
-      if (allowAddTime_) {
-        totalTime_ += 5;
+      secondsRemaining_ += 5;
+      if (secondsRemaining_ >= ORB_MODE_4_MAX_SECONDS) secondsRemaining_ = ORB_MODE_4_MAX_SECONDS;
 
-        if (totalTime_ >= ORB_MODE_4_MAX_SECONDS) {
-          totalTime_ = ORB_MODE_4_MAX_SECONDS;
-          allowAddTime_ = false;
-        }
-      }
+      BSOS_SetDisplayCredits(secondsRemaining_);
+      if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
+
       break;
 
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
@@ -100,15 +98,13 @@ byte OrbMode4::endMode() {
 }
 
 void OrbMode4::manageModeLamps() {
-  allowAddTime_ ? g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW) : g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
-
   unsigned long seed = g_machineState.currentTime() / 3000;
-  if (seed != lastFlash_) {
+  if (seed != lastFlashRovingTarget_) {
     g_lampsHelper.hideLamps(LAMP_COLLECTION_ORBS_DROP_TARGET_ARROWS);
     g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
     g_lampsHelper.hideLamps(LAMP_COLLECTION_RIGHT_DROP_TARGET_ARROWS);
 
-    lastFlash_ = seed;
+    lastFlashRovingTarget_ = seed;
     byte currentStep = seed % 9;
     if (currentStep == 0) {
       currentJackpotTarget_ = SW_1ST_INLINE_DROP_TARGET;
@@ -161,19 +157,19 @@ void OrbMode4::manageDropsReset() {
 void OrbMode4::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 4\n\r");
 
-  allowAddTime_         = true;
-  currentJackpotTarget_ = 0xFF;
-  jackpotValue_         = 25000;
-  resetInlineDropsTime_ = 0;
-  resetOrbsDropsTime_   = 0;
-  resetRightDropsTime_  = 0;
-  secondsRemaining_     = ORB_MODE_4_INITIAL_SECONDS;
-  startedTime_          = g_machineState.currentTime();
-  totalTime_            = ORB_MODE_4_INITIAL_SECONDS;
+  currentJackpotTarget_      = 0xFF;
+  jackpotValue_              = 25000;
+  lastFlashRovingTarget_     = 0;
+  lastFlashSecondsRemaining_ = 0;
+  resetInlineDropsTime_      = 0;
+  resetOrbsDropsTime_        = 0;
+  resetRightDropsTime_       = 0;
+  secondsRemaining_          = ORB_MODE_4_INITIAL_SECONDS;
 
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_4_CAPTIVE_ORBS);
   g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
+  g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW);
 
   BSOS_SetDisplayCredits(secondsRemaining_);
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN, SOUND_ALARM);
@@ -185,11 +181,12 @@ void OrbMode4::manageNewMode() {
 }
 
 void OrbMode4::manageTimeRemaining() {
-  byte secondsSinceModeStarted = (g_machineState.currentTime() - startedTime_) / 1000;
-  byte secondsRemaining = (totalTime_ - secondsSinceModeStarted);
+  unsigned long seed = g_machineState.currentTime() / 1000; // 1 second
 
-  if (secondsRemaining != secondsRemaining_) {
-    secondsRemaining_ = secondsRemaining;
+  if (seed != lastFlashSecondsRemaining_) {
+    lastFlashSecondsRemaining_ = seed;
+
+    secondsRemaining_--;
     BSOS_SetDisplayCredits(secondsRemaining_);
     if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
 

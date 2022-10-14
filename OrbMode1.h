@@ -1,17 +1,15 @@
 #ifndef ORB_MODE_1_H
 #define ORB_MODE_1_H
 
-#define ORB_MODE_1_MAX_SECONDS     60
-#define ORB_MODE_1_INITIAL_SECONDS 30
+#define ORB_MODE_1_MAX_SECONDS     99
+#define ORB_MODE_1_INITIAL_SECONDS 46
 
 class OrbMode1 {
   private:
-    boolean       allowAddTime_;
     byte          currentJackpotTarget_;
     int           secondsRemaining_;
-    int           totalTime_;
     unsigned long jackpotValue_;
-    unsigned long startedTime_;
+    unsigned long lastFlash_;
 
     byte endMode();
     void manageModeLamps();

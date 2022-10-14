@@ -4,19 +4,16 @@ OrbMode3::OrbMode3() {}
 
 byte OrbMode3::run(boolean gameModeChanged, byte switchHit) {
   if (gameModeChanged) manageNewMode();
-  manageModeLamps();
   manageTimeRemaining();
 
   switch(switchHit) {
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
-      if (allowAddTime_) {
-        totalTime_ += 5;
+      secondsRemaining_ += 5;
+      if (secondsRemaining_ >= ORB_MODE_3_MAX_SECONDS) secondsRemaining_ = ORB_MODE_3_MAX_SECONDS;
 
-        if (totalTime_ >= ORB_MODE_3_MAX_SECONDS) {
-          totalTime_ = ORB_MODE_3_MAX_SECONDS;
-          allowAddTime_ = false;
-        }
-      }
+      BSOS_SetDisplayCredits(secondsRemaining_);
+      if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
+
       break;
 
     case SW_TOP_SPOT_1_THROUGH_4_TARGET:
@@ -69,22 +66,17 @@ byte OrbMode3::endMode() {
   return GAME_MODE_UNSTRUCTURED_PLAY;
 }
 
-void OrbMode3::manageModeLamps() {
-  allowAddTime_ ? g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW) : g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
-}
-
 void OrbMode3::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 3\n\r");
 
-  allowAddTime_         = true;
   jackpotValue_         = 25000;
+  lastFlash_            = 0;
   secondsRemaining_     = ORB_MODE_3_INITIAL_SECONDS;
-  startedTime_          = g_machineState.currentTime();
-  totalTime_            = ORB_MODE_3_INITIAL_SECONDS;
 
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_3_CAPTIVE_ORBS);
   g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
+  g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW);
 
   g_lampsHelper.showLamp(LAMP_LEFT_THUMPER_BUMPER,       true);
   g_lampsHelper.showLamp(LAMP_RIGHT_THUMPER_BUMPER,      true);
@@ -100,11 +92,12 @@ void OrbMode3::manageNewMode() {
 }
 
 void OrbMode3::manageTimeRemaining() {
-  byte secondsSinceModeStarted = (g_machineState.currentTime() - startedTime_) / 1000;
-  byte secondsRemaining = (totalTime_ - secondsSinceModeStarted);
+  unsigned long seed = g_machineState.currentTime() / 1000; // 1 second
 
-  if (secondsRemaining != secondsRemaining_) {
-    secondsRemaining_ = secondsRemaining;
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+
+    secondsRemaining_--;
     BSOS_SetDisplayCredits(secondsRemaining_);
     if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
 

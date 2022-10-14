@@ -9,14 +9,12 @@ byte OrbMode1::run(boolean gameModeChanged, byte switchHit) {
 
   switch(switchHit) {
     case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
-      if (allowAddTime_) {
-        totalTime_ += 5;
+      secondsRemaining_ += 5;
+      if (secondsRemaining_ >= ORB_MODE_1_MAX_SECONDS) secondsRemaining_ = ORB_MODE_1_MAX_SECONDS;
 
-        if (totalTime_ >= ORB_MODE_1_MAX_SECONDS) {
-          totalTime_ = ORB_MODE_1_MAX_SECONDS;
-          allowAddTime_ = false;
-        }
-      }
+      BSOS_SetDisplayCredits(secondsRemaining_);
+      if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
+
       break;
 
     case SW_ORBS_RIGHT_LANE_TARGET:
@@ -85,7 +83,6 @@ byte OrbMode1::endMode() {
 }
 
 void OrbMode1::manageModeLamps() {
-  allowAddTime_                                      ? g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW)                   : g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
   currentJackpotTarget_ == SW_ORBS_RIGHT_LANE_TARGET ? g_lampsHelper.showLamp(LAMP_COLLECT_BONUS_ARROW, true)                 : g_lampsHelper.hideLamp(LAMP_COLLECT_BONUS_ARROW);
   currentJackpotTarget_ == SW_1ST_INLINE_DROP_TARGET ? g_lampsHelper.showLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP, true) : g_lampsHelper.hideLamps(LAMP_COLLECTION_QUEENS_CHAMBER_HURRY_UP);
 }
@@ -93,16 +90,15 @@ void OrbMode1::manageModeLamps() {
 void OrbMode1::manageNewMode() {
   if (DEBUG_MESSAGES) Serial.write("Entering Orb Mode 1\n\r");
 
-  allowAddTime_         = true;
   currentJackpotTarget_ = SW_1ST_INLINE_DROP_TARGET;
   jackpotValue_         = 100000;
+  lastFlash_            = 0;
   secondsRemaining_     = ORB_MODE_1_INITIAL_SECONDS;
-  startedTime_          = g_machineState.currentTime();
-  totalTime_            = ORB_MODE_1_INITIAL_SECONDS;
 
   g_machineState.hideAllPlayerLamps();
   g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
   g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
+  g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW);
 
   BSOS_SetDisplayCredits(secondsRemaining_);
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN, SOUND_ALARM);
@@ -114,11 +110,12 @@ void OrbMode1::manageNewMode() {
 }
 
 void OrbMode1::manageTimeRemaining() {
-  byte secondsSinceModeStarted = (g_machineState.currentTime() - startedTime_) / 1000;
-  byte secondsRemaining = (totalTime_ - secondsSinceModeStarted);
+  unsigned long seed = g_machineState.currentTime() / 1000; // 1 second
 
-  if (secondsRemaining != secondsRemaining_) {
-    secondsRemaining_ = secondsRemaining;
+  if (seed != lastFlash_) {
+    lastFlash_ = seed;
+
+    secondsRemaining_--;
     BSOS_SetDisplayCredits(secondsRemaining_);
     if (!g_bonusLightShow.running()) g_lampsHelper.showBonusLamps(secondsRemaining_);
 
