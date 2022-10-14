@@ -8,6 +8,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
 
   switch(switchHit) {
     case SW_1ST_INLINE_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_1);
       g_machineState.registerInlineDropTarget(switchHit);
 
       g_soundHelper.playSoundWithoutInterruptions(SOUND_HA_HA_HA);
@@ -15,6 +16,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       break;
 
     case SW_2ND_INLINE_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_2);
       g_machineState.registerInlineDropTarget(switchHit);
 
       g_soundHelper.playSoundWithoutInterruptions(SOUND_TRY);
@@ -22,6 +24,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       break;
 
     case SW_3RD_INLINE_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_3);
       g_machineState.registerInlineDropTarget(switchHit);
 
       g_soundHelper.playSoundWithoutInterruptions(SOUND_BAD_MOVE_HUMAN);
@@ -29,6 +32,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       break;
 
     case SW_4TH_INLINE_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_4);
       g_machineState.registerInlineDropTarget(switchHit);
 
       g_soundHelper.playSoundWithoutInterruptions(SOUND_CHALLENGE_ME);
@@ -43,6 +47,97 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       g_soundHelper.playSoundWithoutInterruptions(SOUND_CRASH);
       g_gameMode.setOverrideSound(true);
       return endMode();
+
+    case SW_LEFT_THUMPER_BUMPER:
+      g_lampsHelper.showLamp(LAMP_LEFT_THUMPER_BUMPER);
+      break;
+
+    case SW_RIGHT_THUMPER_BUMPER:
+      g_lampsHelper.showLamp(LAMP_RIGHT_THUMPER_BUMPER);
+      break;
+
+    case SW_LEFT_SLINGSHOT:
+      g_lampsHelper.showLamp(LAMP_LEFT_SLINGSHOT_GI);
+      break;
+
+    case SW_RIGHT_SLINGSHOT:
+      g_lampsHelper.showLamp(LAMP_RIGHT_SLINGSHOT_GI);
+      break;
+
+    case SW_TOP_LEFT_LANE:
+      g_lampsHelper.showLamp(LAMP_TOP_LEFT_ROLLOVER);
+      break;
+
+    case SW_TOP_MIDDLE_LANE:
+      g_lampsHelper.showLamp(LAMP_TOP_MIDDLE_ROLLOVER);
+      break;
+
+    case SW_TOP_RIGHT_LANE:
+      g_lampsHelper.showLamp(LAMP_TOP_RIGHT_ROLLOVER);
+      break;
+
+    case SW_LEFT_OUTLANE:
+      g_lampsHelper.showLamp(LAMP_LEFT_OUT_ROLLOVER);
+      break;
+
+    case SW_LEFT_RETURN_LANE:
+      g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER);
+      break;
+
+    case SW_RIGHT_OUTLANE:
+      g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER);
+      break;
+
+    case SW_RIGHT_RETURN_LANE:
+      g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER);
+      break;
+
+    case SW_O_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_O_DROP_TARGET_ARROW);
+      break;
+
+    case SW_R_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_R_DROP_TARGET_ARROW);
+      break;
+
+    case SW_B_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_B_DROP_TARGET_ARROW);
+      break;
+
+    case SW_S_DROP_TARGET:
+      g_lampsHelper.showLamp(LAMP_S_DROP_TARGET_ARROW);
+      break;
+
+    case SW_RIGHT_4_DROP_TARGET_1:
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_10_ARROW);
+      break;
+
+    case SW_RIGHT_4_DROP_TARGET_2:
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
+      break;
+
+    case SW_RIGHT_4_DROP_TARGET_3:
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_40_ARROW);
+      break;
+
+    case SW_RIGHT_4_DROP_TARGET_4:
+      g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
+      break;
+
+    case SW_ORBS_RIGHT_LANE_TARGET:
+      g_lampsHelper.showLamp(LAMP_RIGHT_LANE_2X);
+      g_lampsHelper.showLamp(LAMP_RIGHT_LANE_3X);
+      g_lampsHelper.showLamp(LAMP_RIGHT_LANE_4X);
+      g_lampsHelper.showLamp(LAMP_RIGHT_LANE_5X);
+      break;
+
+    case SW_RESET_1_THROUGH_4_TARGETS_TARGET:
+      g_lampsHelper.showLamp(LAMP_RESET_1_THROUGH_4_ARROW);
+      break;
+
+    case SW_TOP_SPOT_1_THROUGH_4_TARGET:
+      g_lampsHelper.showLamp(LAMP_SPOT_1_THROUGH_4);
+      break;
   }
 
   return GAME_MODE_DESTROY_CENTAUR;
@@ -78,9 +173,7 @@ void DestroyCentaur::manageModeLamps() {
     byte currentStep = seed % 24;
 
     if (currentStep == 0) {
-      g_lampsHelper.hideAllPlayfieldLamps();
     } else if (currentStep == 1) {
-      g_lampsHelper.showLamp(LAMP_RELEASE_ORB);
     } else if (currentStep == 2) {
       g_lampsHelper.showLamp(LAMP_1_CAPTIVE_ORBS);
       g_lampsHelper.showLamp(LAMP_2_CAPTIVE_ORBS);
@@ -95,7 +188,6 @@ void DestroyCentaur::manageModeLamps() {
       g_lampsHelper.showLamp(LAMP_5K_BONUS);
       g_lampsHelper.showLamp(LAMP_6K_BONUS);
     } else if (currentStep == 4) {
-      g_lampsHelper.hideLamp(LAMP_RELEASE_ORB);
       g_lampsHelper.showLamp(LAMP_3K_BONUS);
       g_lampsHelper.showLamp(LAMP_5X_BONUS);
       g_lampsHelper.showLamp(LAMP_60K_BONUS);
@@ -119,6 +211,7 @@ void DestroyCentaur::manageModeLamps() {
       g_lampsHelper.hideLamp(LAMP_4K_BONUS);
       g_lampsHelper.hideLamp(LAMP_5K_BONUS);
       g_lampsHelper.hideLamp(LAMP_6K_BONUS);
+      g_lampsHelper.showLamp(LAMP_20K_BONUS);
       g_lampsHelper.showLamp(LAMP_2K_BONUS);
       g_lampsHelper.showLamp(LAMP_2X_BONUS);
       g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
@@ -140,6 +233,7 @@ void DestroyCentaur::manageModeLamps() {
       g_lampsHelper.showLamp(LAMP_10K_BONUS);
       g_lampsHelper.showLamp(LAMP_RIGHT_DROP_TARGET_20_ARROW);
     } else if (currentStep == 9) {
+      g_lampsHelper.hideLamp(LAMP_20K_BONUS);
       g_lampsHelper.hideLamp(LAMP_2K_BONUS);
       g_lampsHelper.hideLamp(LAMP_2X_BONUS);
       g_lampsHelper.hideLamp(LAMP_RIGHT_DROP_TARGET_80_ARROW);
@@ -233,6 +327,7 @@ void DestroyCentaur::manageNewMode() {
 
   jackpotValue_ = 1;
   g_machineState.hideAllPlayerLamps();
+  g_lampsHelper.hideAllPlayfieldLamps();
   g_lampsHelper.hideLamps(LAMP_COLLECTION_GENERAL_ILLUMINATION);
 
   g_bonusLightShow.start(BONUS_LIGHT_SHOW_SPIN);
