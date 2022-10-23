@@ -54,6 +54,7 @@ class MachineState {
     MachineState();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
+    boolean       centaurDestroyed();
     boolean       currentPlayerTilted();
     boolean       destroyCentaurQualified();
     boolean       firstBallActive();
@@ -140,6 +141,7 @@ class MachineState {
     void          rotateQualifiedMode();
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
+    void          setCentaurDestoyed(boolean value);
     void          setCredits(byte value);
     void          setCurrentPlayer(byte value);
     void          setCurrentTime(unsigned long value);
@@ -158,6 +160,7 @@ class MachineState {
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
+    void          updateOrbs50KLamp();
     void          updateOrbsDropTargetsLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateQueensChamberLamps();

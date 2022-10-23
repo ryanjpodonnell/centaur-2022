@@ -42,6 +42,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
     case SW_INLINE_BACK_TARGET:
       g_machineState.registerInlineDropTarget(switchHit);
       g_machineState.increaseScore(jackpotValue_, true);
+      g_machineState.setCentaurDestoyed(true);
       g_gameMode.setScoreIncreased(true);
 
       g_soundHelper.playSoundWithoutInterruptions(SOUND_CRASH);

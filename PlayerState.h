@@ -14,6 +14,7 @@
 
 class PlayerState {
   private:
+    boolean       centaurDestroyed_;
     boolean       destroyCentaurQualified_;
     boolean       orbsDropTargetsCompletedInOrder_;
     boolean       rightDropTargetsCompletedInOrder_;
@@ -47,6 +48,7 @@ class PlayerState {
     boolean       allModesCompleted();
     boolean       allowRightDropTargetProgress();
     boolean       anyModeQualified();
+    boolean       centaurDestroyed();
     boolean       destroyCentaurQualified();
     boolean       guardianRolloversCompleted();
     boolean       orbsDropTargetsAllStanding();
@@ -99,6 +101,7 @@ class PlayerState {
     void          rotateQualifiedMode();
     void          setBonus(byte value);
     void          setBonusMultiplier(byte value);
+    void          setCentaurDestoyed(boolean value);
     void          setScore(unsigned long value);
     void          spotRightDropTarget();
     void          unqualifyAllModes();
@@ -107,6 +110,7 @@ class PlayerState {
     void          updateBonusLamps();
     void          updateCaptiveOrbsLamps();
     void          updateGuardianRolloverLamps();
+    void          updateOrbs50KLamp();
     void          updateOrbsDropTargetsLamps();
     void          updatePlayerScore(boolean flashCurrent = false, boolean dashCurrent = false);
     void          updateQueensChamberLamps();

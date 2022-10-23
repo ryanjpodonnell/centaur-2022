@@ -34,6 +34,10 @@ boolean MachineState::anyModeQualified() {
   return currentPlayer_->anyModeQualified();
 }
 
+boolean MachineState::centaurDestroyed() {
+  return currentPlayer_->centaurDestroyed();
+}
+
 boolean MachineState::currentPlayerTilted() {
   return numberOfTiltWarnings_ > MAXIMUM_NUMBER_OF_TILT_WARNINGS;
 }
@@ -389,6 +393,7 @@ void MachineState::flashRightDropTargetsLamps() {
 }
 
 void MachineState::hideAllPlayerLamps() {
+  g_lampsHelper.hideLamp(LAMP_ORBS_50K);
   g_lampsHelper.hideLamp(LAMP_RESET_1_THROUGH_4_ARROW);
   g_lampsHelper.hideLamp(LAMP_RIGHT_LANE_RELEASE_ORBS);
   g_lampsHelper.hideLamp(LAMP_SPOT_1_THROUGH_4);
@@ -574,6 +579,10 @@ void MachineState::setBonusMultiplier(byte value) {
   currentPlayer_->setBonusMultiplier(value);
 }
 
+void MachineState::setCentaurDestoyed(boolean value) {
+  currentPlayer_->setCentaurDestoyed(value);
+}
+
 void MachineState::setCredits(byte value) {
   credits_ = value;
   if (credits_ > MAXIMUM_NUMBER_OF_CREDITS) credits_ = MAXIMUM_NUMBER_OF_CREDITS;
@@ -631,6 +640,7 @@ void MachineState::showAllPlayerLamps() {
   updateBonusLamps();
   updateCaptiveOrbsLamps();
   updateGuardianRolloverLamps();
+  updateOrbs50KLamp();
   updateOrbsDropTargetsLamps();
   updateQueensChamberLamps();
   updateRightDropTargetsLamps();
@@ -667,6 +677,10 @@ void MachineState::updateCaptiveOrbsLamps() {
 
 void MachineState::updateGuardianRolloverLamps() {
   currentPlayer_->updateGuardianRolloverLamps();
+}
+
+void MachineState::updateOrbs50KLamp() {
+  currentPlayer_->updateOrbs50KLamp();
 }
 
 void MachineState::updateOrbsDropTargetsLamps() {

@@ -99,6 +99,11 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           g_machineState.updateRightOrbsReleaseLamp();
         }
 
+        if (g_machineState.centaurDestroyed()) {
+          g_machineState.increaseScore(50000);
+          g_gameMode.setScoreIncreased(true);
+        }
+
         g_machineState.resetOrbsDropTargets(true, true, g_machineState.currentTime() + 250);
       }
 

@@ -27,6 +27,10 @@ boolean PlayerState::anyModeQualified() {
          modeStatus_[3] == MODE_STATUS_QUALIFIED;
 }
 
+boolean PlayerState::centaurDestroyed() {
+  return centaurDestroyed_;
+}
+
 boolean PlayerState::destroyCentaurQualified() {
   return destroyCentaurQualified_;
 }
@@ -433,8 +437,9 @@ void PlayerState::resetPlayerState() {
 
   activeInlineDropTarget_           = SW_1ST_INLINE_DROP_TARGET;
 
-  rightDropTargetsResetQualified_ = false;
+  centaurDestroyed_               = false;
   destroyCentaurQualified_        = false;
+  rightDropTargetsResetQualified_ = false;
 
   bonusMultiplier_          = 1;
   bonus_                    = 0;
@@ -509,6 +514,10 @@ void PlayerState::setBonus(byte value) {
 void PlayerState::setBonusMultiplier(byte value) {
   if (value > MAX_BONUS_MULTIPLIER) value = MAX_BONUS_MULTIPLIER;
   bonusMultiplier_ = value;
+}
+
+void PlayerState::setCentaurDestoyed(boolean value) {
+  centaurDestroyed_ = value;
 }
 
 void PlayerState::setScore(unsigned long value) {
@@ -588,6 +597,10 @@ void PlayerState::updateGuardianRolloverLamps() {
   guardianLights_[1] ? g_lampsHelper.showLamp(LAMP_LEFT_RETURN_ROLLOVER)  : g_lampsHelper.hideLamp(LAMP_LEFT_RETURN_ROLLOVER);
   guardianLights_[2] ? g_lampsHelper.showLamp(LAMP_RIGHT_RETURN_ROLLOVER) : g_lampsHelper.hideLamp(LAMP_RIGHT_RETURN_ROLLOVER);
   guardianLights_[3] ? g_lampsHelper.showLamp(LAMP_RIGHT_OUT_ROLLOVER)    : g_lampsHelper.hideLamp(LAMP_RIGHT_OUT_ROLLOVER);
+}
+
+void PlayerState::updateOrbs50KLamp() {
+  centaurDestroyed_ ? g_lampsHelper.showLamp(LAMP_ORBS_50K) : g_lampsHelper.hideLamp(LAMP_ORBS_50K);
 }
 
 void PlayerState::updateOrbsDropTargetsLamps() {
