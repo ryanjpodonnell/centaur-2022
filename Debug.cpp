@@ -29,4 +29,7 @@ void Debug::manageNewState() {
   g_machineState.setScore(BALLY_STERN_OS_MAJOR_VERSION, 2);
   g_machineState.setScore(BALLY_STERN_OS_MINOR_VERSION, 3);
   g_displayHelper.showPlayerScores(0xFF);
+
+  BSOS_SetDisplayBallInPlay(0);
+  BSOS_SetDisplayCredits(0);
 }

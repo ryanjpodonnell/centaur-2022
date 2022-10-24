@@ -11,15 +11,17 @@
 #define MACHINE_STATE_RESTART_GAME    101
 #define MACHINE_STATE_MATCH_MODE      110
 
-#define BALLS_PER_GAME                   3
-#define BALL_SAVE_NUMBER_OF_SECONDS      5
-#define DEFAULT_HIGH_SCORE               10000
-#define MAXIMUM_NUMBER_OF_BALLS_IN_PLAY  5
-#define MAXIMUM_NUMBER_OF_CREDITS        99
-#define MAXIMUM_NUMBER_OF_TILT_WARNINGS  2
-#define MULTIBALL_SAVE_NUMBER_OF_SECONDS 15
-#define SOLENOID_BUFFER_TIME             250
-#define TILT_WARNING_DEBOUNCE_TIME       1000
+#define BALLS_PER_GAME                     3
+#define BALL_SAVE_NUMBER_OF_SECONDS        5
+#define COINS_PER_CREDIT                   2
+#define DEFAULT_HIGH_SCORE                 10000
+#define MAXIMUM_NUMBER_OF_BALLS_IN_PLAY    5
+#define MAXIMUM_NUMBER_OF_COINS_PER_CREDIT 4
+#define MAXIMUM_NUMBER_OF_CREDITS          99
+#define MAXIMUM_NUMBER_OF_TILT_WARNINGS    2
+#define MULTIBALL_SAVE_NUMBER_OF_SECONDS   15
+#define SOLENOID_BUFFER_TIME               250
+#define TILT_WARNING_DEBOUNCE_TIME         1000
 
 class MachineState {
   private:
@@ -33,11 +35,13 @@ class MachineState {
     boolean       machineStateChanged_;
     boolean       playfieldValidated_;
     boolean       samePlayerShootsAgain_;
+    byte          coins_;
     byte          credits_;
     byte          currentBallInPlay_;
     byte          currentPlayerNumber_;
     byte          mostRecentSwitchHit_;
     byte          numberOfBallsInPlay_;
+    byte          numberOfCoinsPerCredit_;
     byte          numberOfPlayers_;
     byte          numberOfTiltWarnings_;
     int           machineStateId_;

@@ -9,6 +9,7 @@ MachineState::MachineState() {
   machineStateId_              = MACHINE_STATE_DEBUG;
   machineStateChanged_         = true;
 
+  coins_                       = 0;
   credits_                     = 0;
   currentBallInPlay_           = 0;
   currentPlayerNumber_         = 0;
@@ -457,7 +458,12 @@ void MachineState::launchBallIntoPlay(int lag) {
 void MachineState::manageCoinDrop(byte switchHit) {
   g_soundHelper.playSound(SOUND_ENERGIZE_ME);
   writeCoinToAudit(switchHit);
-  increaseCredits();
+
+  coins_ += 1;
+  if (coins_ == numberOfCoinsPerCredit_) {
+    coins_ = 0;
+    increaseCredits();
+  }
 }
 
 void MachineState::manageInlineTargetScoring(byte switchHit) {
@@ -492,7 +498,8 @@ void MachineState::readStoredParameters() {
   setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_3_SCORE_START_BYTE, 0), 2);
   setScore(BSOS_ReadULFromEEProm(BSOS_PLAYER_4_SCORE_START_BYTE, 0), 3);
 
-  freePlay_ = BSOS_ReadByteFromEEProm(BSOS_FREE_PLAY_EEPROM_START_BYTE);
+  numberOfCoinsPerCredit_ = BSOS_ReadByteFromEEProm(BSOS_FREE_PLAY_EEPROM_START_BYTE);
+  freePlay_ = numberOfCoinsPerCredit_ == 0 ? true : false;
 }
 
 void MachineState::registerGuardianRollover(byte switchHit) {
