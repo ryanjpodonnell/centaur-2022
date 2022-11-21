@@ -34,6 +34,7 @@ class MachineState {
     boolean       freePlay_;
     boolean       machineStateChanged_;
     boolean       playfieldValidated_;
+    boolean       resettingPlayers_;
     boolean       samePlayerShootsAgain_;
     byte          coins_;
     byte          credits_;
@@ -154,6 +155,7 @@ class MachineState {
     void          setMostRecentRolloverTime();
     void          setMostRecentSwitchHit(byte value);
     void          setMostRecentSwitchHitTime();
+    void          setNumberOfPlayers(byte value);
     void          setPlayfieldValidated();
     void          setScore(unsigned long value, byte player = 0xFF);
     void          showAllPlayerLamps();

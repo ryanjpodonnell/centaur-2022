@@ -582,10 +582,6 @@ void PlayerState::updateCaptiveOrbsLamps() {
   }
 
   for (byte modeIterator = 0; modeIterator < 4; modeIterator++) {
-    char buf[128];
-    sprintf(buf, "Mode %d status = %d\n", modeIterator, modeStatus_[modeIterator]);
-    Serial.write(buf);
-
     if (modeStatus_[modeIterator] == MODE_STATUS_NOT_QUALIFIED) g_lampsHelper.hideLamp(captiveOrbsLamps_[modeIterator]);
     if (modeStatus_[modeIterator] == MODE_STATUS_QUALIFIED)     g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator], true);
     if (modeStatus_[modeIterator] == MODE_STATUS_COMPLETED)     g_lampsHelper.showLamp(captiveOrbsLamps_[modeIterator]);

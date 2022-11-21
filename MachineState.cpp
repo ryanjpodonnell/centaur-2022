@@ -98,6 +98,7 @@ boolean MachineState::playfieldValidated() {
 
 boolean MachineState::resetPlayers() {
   if (credits_ < 1 && !freePlay_) return false;
+  if (numberOfPlayers_ >= 4) return false;
 
   if (!freePlay_) {
     credits_ -= 1;
@@ -185,7 +186,6 @@ byte MachineState::increaseCurrentPlayer() {
   }
 
   if (currentBallInPlay_ > BALLS_PER_GAME) {
-    numberOfPlayers_ = 0;
     return MACHINE_STATE_MATCH_MODE;
   } else {
     return MACHINE_STATE_INIT_NEW_BALL;
@@ -195,9 +195,13 @@ byte MachineState::increaseCurrentPlayer() {
 byte MachineState::manageCreditButton(byte state) {
   if (DEBUG_MESSAGES) Serial.write("Start game button pressed\n\r");
 
-  if (currentBallInPlay() == 1 && increaseNumberOfPlayers()) {
+  if (currentBallInPlay() == 0 && resettingPlayers_) {
+    increaseNumberOfPlayers();
+    return state;
+  } else if (currentBallInPlay() == 1 && increaseNumberOfPlayers()) {
     return state;
   } else if (resetPlayers()) {
+    resettingPlayers_ = true;
     return MACHINE_STATE_RESTART_GAME;
   }
 
@@ -239,6 +243,7 @@ int MachineState::initGamePlay() {
 
   currentBallInPlay_ = 1;
   currentPlayerNumber_ = 0;
+  resettingPlayers_ = false;
 
   return MACHINE_STATE_INIT_NEW_BALL;
 }
@@ -629,6 +634,10 @@ void MachineState::setMostRecentRolloverTime() {
 
 void MachineState::setMostRecentSwitchHitTime() {
   mostRecentSwitchHitTime_ = currentTime_;
+}
+
+void MachineState::setNumberOfPlayers(byte value) {
+  numberOfPlayers_ = value;
 }
 
 void MachineState::setPlayfieldValidated() {

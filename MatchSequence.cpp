@@ -69,6 +69,7 @@ byte MatchSequence::run(boolean gameModeChanged) {
 
   if (numMatchSpins_ > 43) {
     if (g_machineState.currentTime() > (matchSequenceStartTime_ + matchDelay_)) {
+      g_machineState.setNumberOfPlayers(0);
       return MACHINE_STATE_ATTRACT;
     }
   }
@@ -77,9 +78,9 @@ byte MatchSequence::run(boolean gameModeChanged) {
     if ((scoreMatches_ >> count) & 0x01) {
       // If this score matches, we're going to flash the last two digits
       if ( (g_machineState.currentTime() / 200) % 2 ) {
-        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) & 0x0F);
+        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) & 0x1F);
       } else {
-        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) | 0x30);
+        BSOS_SetDisplayBlank(count, BSOS_GetDisplayBlank(count) | 0x60);
       }
     }
   }
