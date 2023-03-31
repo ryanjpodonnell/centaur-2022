@@ -201,6 +201,7 @@ byte MachineState::manageCreditButton(byte state) {
   } else if (currentBallInPlay() == 1 && increaseNumberOfPlayers()) {
     return state;
   } else if (resetPlayers()) {
+    currentBallInPlay_ = 0;
     resettingPlayers_ = true;
     return MACHINE_STATE_RESTART_GAME;
   }
