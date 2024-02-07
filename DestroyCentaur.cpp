@@ -11,6 +11,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_1);
       g_machineState.registerInlineDropTarget(switchHit);
 
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
       g_soundHelper.playSoundWithoutInterruptions(SOUND_HA_HA_HA);
       g_gameMode.setOverrideSound(true);
       break;
@@ -19,6 +20,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_2);
       g_machineState.registerInlineDropTarget(switchHit);
 
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
       g_soundHelper.playSoundWithoutInterruptions(SOUND_TRY);
       g_gameMode.setOverrideSound(true);
       break;
@@ -27,6 +29,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_3);
       g_machineState.registerInlineDropTarget(switchHit);
 
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
       g_soundHelper.playSoundWithoutInterruptions(SOUND_BAD_MOVE_HUMAN);
       g_gameMode.setOverrideSound(true);
       break;
@@ -35,6 +38,7 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       g_lampsHelper.showLamp(LAMP_QUEENS_CHAMBER_GI_4);
       g_machineState.registerInlineDropTarget(switchHit);
 
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
       g_soundHelper.playSoundWithoutInterruptions(SOUND_CHALLENGE_ME);
       g_gameMode.setOverrideSound(true);
       break;
@@ -45,6 +49,9 @@ byte DestroyCentaur::run(boolean gameModeChanged, byte switchHit) {
       g_machineState.setCentaurDestoyed(true);
       g_gameMode.setScoreIncreased(true);
 
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 300);
+      BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 600);
       g_soundHelper.playSoundWithoutInterruptions(SOUND_CRASH);
       g_gameMode.setOverrideSound(true);
       return endMode();

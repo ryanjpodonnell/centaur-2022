@@ -51,9 +51,14 @@ byte MatchSequence::run(boolean gameModeChanged) {
 
   if (numMatchSpins_ >= 40 && numMatchSpins_ <= 43) {
     if (g_machineState.currentTime() > (matchSequenceStartTime_ + matchDelay_)) {
-      if ((g_machineState.numberOfPlayers() > (numMatchSpins_ - 40)) && ((g_machineState.score(numMatchSpins_ - 40) / 10) % 10) == matchDigit_) {
-        scoreMatches_ |= (1 << (numMatchSpins_ - 40));
+      byte playerNumber = numMatchSpins_ - 40;
+
+      if ((g_machineState.numberOfPlayers() > (playerNumber)) && ((g_machineState.score(playerNumber) / 10) % 10) == matchDigit_) {
+        scoreMatches_ |= (1 << (playerNumber));
+
         g_machineState.increaseCredits();
+        BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + (300 * playerNumber));
+
         matchDelay_ += 1000;
         numMatchSpins_ += 1;
 
