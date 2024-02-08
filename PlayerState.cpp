@@ -622,6 +622,13 @@ void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
         valueToIncrease *= 10;
       }
       score_ += valueToIncrease;
+
+      if (score_ > g_machineState.highScore()) {
+        BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
+        BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 300);
+        BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 600);
+        BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 900);
+      }
     }
   }
 
