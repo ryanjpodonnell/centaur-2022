@@ -65,7 +65,7 @@ byte UnstructuredPlay::run(boolean gameModeChanged, byte switchHit) {
           rerunOrbsSwitch_ == false &&
           waitingToRerunOrbsSwitch_ == false) {
         rerunOrbsSwitchHit_       = switchHit;
-        rerunOrbsSwitchTime_      = g_machineState.currentTime() + 110;
+        rerunOrbsSwitchTime_      = g_machineState.currentTime() + 200;
         waitingToRerunOrbsSwitch_ = true;
         g_gameMode.setScoreIncreased(true);
       } else if (rerunOrbsSwitch_ == true) {
