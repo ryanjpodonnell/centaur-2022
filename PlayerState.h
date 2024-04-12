@@ -51,6 +51,7 @@ class PlayerState {
     boolean       centaurDestroyed();
     boolean       destroyCentaurQualified();
     boolean       guardianRolloversCompleted();
+    boolean       knockerHasKnocked_;
     boolean       orbsDropTargetsAllStanding();
     boolean       orbsDropTargetsCompleted();
     boolean       orbsDropTargetsCompletedInOrder();

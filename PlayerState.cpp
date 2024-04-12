@@ -439,6 +439,7 @@ void PlayerState::resetPlayerState() {
 
   centaurDestroyed_               = false;
   destroyCentaurQualified_        = false;
+  knockerHasKnocked_              = false;
   rightDropTargetsResetQualified_ = false;
 
   bonusMultiplier_          = 1;
@@ -623,11 +624,12 @@ void PlayerState::updatePlayerScore(boolean flashCurrent, boolean dashCurrent) {
       }
       score_ += valueToIncrease;
 
-      if (score_ > g_machineState.highScore()) {
+      if (score_ > g_machineState.highScore() && knockerHasKnocked_ == false) {
         BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime());
         BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 300);
         BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 600);
         BSOS_PushToTimedSolenoidStack(SOL_KNOCKER, SOL_KNOCKER_STRENGTH, g_machineState.currentTime() + 900);
+        knockerHasKnocked_ = true;
       }
     }
   }
