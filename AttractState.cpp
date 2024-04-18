@@ -20,6 +20,8 @@ int Attract::run(boolean curStateChanged) {
     manageLightShow();
   }
 
+  g_displayHelper.showPlayerScores(0xFF);
+
   byte switchHit;
   while ((switchHit = BSOS_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY) {
     switch(switchHit) {
@@ -169,7 +171,6 @@ void Attract::manageLightShow() {
         g_machineState.setScore(highScore, 1);
         g_machineState.setScore(highScore, 2);
         g_machineState.setScore(highScore, 3);
-        g_displayHelper.showPlayerScores(0xFF);
         g_lampsHelper.showLamp(LAMP_HIGH_SCORE_TO_DATE);
         updateScores_ = false;
       }
@@ -181,7 +182,6 @@ void Attract::manageLightShow() {
         g_machineState.setScore(score2_, 1);
         g_machineState.setScore(score3_, 2);
         g_machineState.setScore(score4_, 3);
-        g_displayHelper.showPlayerScores(0xFF);
         g_lampsHelper.hideLamp(LAMP_HIGH_SCORE_TO_DATE);
         updateScores_ = false;
       }
